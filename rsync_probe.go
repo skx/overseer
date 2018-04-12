@@ -15,20 +15,20 @@ import (
 //
 // We store state in the `input` field.
 //
-type FTPTest struct {
+type RSYNCTest struct {
 	input string
 }
 
 //
 // Run the test against the specified target.
 //
-func (s *FTPTest) runTest(target string) error {
+func (s *RSYNCTest) runTest(target string) error {
 	var err error
 
 	//
 	// The default port to connect to.
 	//
-	port := 21
+	port := 873
 
 	//
 	// If the user specified a different port update it.
@@ -76,8 +76,8 @@ func (s *FTPTest) runTest(target string) error {
 	}
 	conn.Close()
 
-	if !strings.Contains(banner, "220") {
-		return errors.New("Banner doesn't look like an FTP success")
+	if !strings.Contains(banner, "RSYNC") {
+		return errors.New("Banner doesn't look like an rsync-banner")
 	}
 
 	return nil
@@ -88,7 +88,7 @@ func (s *FTPTest) runTest(target string) error {
 // field; this could be used if there are protocol-specific options
 // to be understood.
 //
-func (s *FTPTest) setLine(input string) {
+func (s *RSYNCTest) setLine(input string) {
 	s.input = input
 }
 
@@ -96,7 +96,7 @@ func (s *FTPTest) setLine(input string) {
 // Register our protocol-tester.
 //
 func init() {
-	Register("ftp", func() ProtocolTest {
-		return &FTPTest{}
+	Register("rsync", func() ProtocolTest {
+		return &RSYNCTest{}
 	})
 }

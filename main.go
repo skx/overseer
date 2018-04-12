@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"regexp"
@@ -31,6 +32,8 @@ var ConfigOptions struct {
 	Timeout  int
 	Verbose  bool
 	Version  bool
+	IPv4     bool
+	IPv6     bool
 }
 
 var (
@@ -40,9 +43,14 @@ var (
 	version = "master/latest"
 
 	//
-	// The default timeout period
+	// The timeout period to use for EVERY protocol-type.
 	//
 	TIMEOUT = time.Second * 10
+
+	//
+	// Macro-targets
+	//
+	MACROS = make(map[string][]string)
 )
 
 //
@@ -116,11 +124,52 @@ func postPurple(test_type string, test_target string, input string, result error
 func processLine(input string) {
 
 	//
-	// Our tests are all of the form:
+	// Our input will contain lines of two forms:
 	//
-	//  TARGET must run PROTOCOL [OPTIONA EXTRA ARGS]
+	//  MACRO are host1, host2, host3
 	//
-	// Look to see if this line matches
+	// NOTE: Macro-names are UPPERCASE, and redefinining a macro
+	//       is an error - because it would be too confusing otherwise.
+	//
+	//
+	//  TARGET must run PROTOCOL [OPTIONAL EXTRA ARGS]
+	//
+
+	//
+	// Is this a macro-definition?
+	//
+	macro := regexp.MustCompile("^([A-Z0-9]+)\\s+are\\s+(.*)$")
+	match := macro.FindStringSubmatch(input)
+	if len(match) == 3 {
+
+		name := match[1]
+		vals := match[2]
+
+		//
+		// If this macro-exists that is a fatal error
+		//
+		if MACROS[name] != nil {
+			fmt.Printf("Redefinining a macro is a fatal error!\n")
+			fmt.Printf("A macro named '%s' already exists.\n", name)
+			os.Exit(1)
+		}
+
+		//
+		// The macro-value is a comma-separated list of hosts
+		//
+		hosts := strings.Split(vals, ",")
+
+		//
+		// Save each host away, under the name of the macro.
+		//
+		for _, ent := range hosts {
+			MACROS[name] = append(MACROS[name], strings.TrimSpace(ent))
+		}
+		return
+	}
+
+	//
+	// Look to see if this line matches the testing line
 	//
 	re := regexp.MustCompile("^([^ \t]+)\\s+must\\s+run\\s+([a-z]+)")
 	out := re.FindStringSubmatch(input)
@@ -129,6 +178,7 @@ func processLine(input string) {
 	// If it didn't then we have a malformed line
 	//
 	if len(out) != 3 {
+		fmt.Printf("WARNING: Unrecognized line - '%s'\n", input)
 		return
 	}
 
@@ -139,11 +189,66 @@ func processLine(input string) {
 	test_type := out[2]
 
 	//
+	// Is this target a macro?
+	//
+	// If so we expand for each host in the macro-definition and
+	// execute those expanded versions in turn.
+	//
+	hosts := MACROS[test_target]
+	if len(hosts) > 0 {
+
+		//
+		// So we have a bunch of hosts that this macro-name
+		// should be replaced with.
+		//
+		for _, i := range hosts {
+
+			//
+			// Reparse the line for each host by taking advantage
+			// of the fact the first entry in the line is the
+			// target.
+			//
+			// So we change:
+			//
+			//  HOSTS must run xxx..
+			//
+			// Into:
+			//
+			//   host1 must run xxx.
+			//   host2 must run xxx.
+			//   ..
+			//   hostN must run xxx.
+			//
+			split := regexp.MustCompile("^([^\\s]+)\\s+(.*)$")
+			line := split.FindStringSubmatch(input)
+
+			//
+			// Create a new test, with the macro-host
+			// in-place of the original target.
+			//
+			new := fmt.Sprintf("%s %s\n", i, line[2])
+
+			//
+			// Call ourselves to run the test.
+			//
+			processLine(new)
+		}
+
+		//
+		// We've called ourself (processLine) with the updated
+		// line for each host in the macro-definition.
+		//
+		// So we can return here.
+		//
+		return
+	}
+
+	//
 	// Look for a suitable protocol handler
 	//
 	tmp := ProtocolHandler(test_type)
 	if tmp == nil {
-		fmt.Printf("Uknown protocol handler invoked '%s'\n", test_type)
+		fmt.Printf("WARNING: Unknown protocol handler '%s'\n", test_type)
 		return
 	}
 
@@ -154,29 +259,76 @@ func processLine(input string) {
 	tmp.setLine(input)
 
 	//
-	// Run the damn test :)
+	// Each test will be executed for each address-family, unless it is
+	// a HTTP-test.
 	//
-	if ConfigOptions.Verbose {
-		fmt.Printf("Running %s test against %s\n", test_type, test_target)
-	}
+	var targets []string
 
-	result := tmp.runTest(test_target)
-
-	if result == nil {
-		if ConfigOptions.Verbose {
-			fmt.Printf("Test passed!\n")
-		}
-
+	//
+	// If this is a http-test then just add our existing target
+	//
+	if strings.HasPrefix(test_target, "http://") {
+		targets = append(targets, test_target)
 	} else {
-		if ConfigOptions.Verbose {
-			fmt.Printf("Test failed; %s\n", result.Error())
+
+		//
+		// Otherwise resolve the target as much
+		// as we can.  This will mean that an SSH-test, for example,
+		// will be carried out for each address-family which is
+		// present in DNS.
+		//
+		ips, err := net.LookupIP(test_target)
+		if err != nil {
+			fmt.Printf("WARNING: Failed to resolve %s\n", test_target)
+			return
+		}
+		for _, ip := range ips {
+			if ip.To4() != nil {
+				if ConfigOptions.IPv4 {
+					targets = append(targets, fmt.Sprintf("%s", ip))
+				}
+			}
+			if ip.To16() != nil && ip.To4() == nil {
+				if ConfigOptions.IPv6 {
+					targets = append(targets, fmt.Sprintf("%s", ip))
+				}
+			}
 		}
 	}
 
 	//
-	// Post the result to purple
+	// Now for each target, run the test.
 	//
-	postPurple(test_type, test_target, input, result)
+	for _, target := range targets {
+
+		//
+		// Show what we're doing.
+		//
+		if ConfigOptions.Verbose {
+			fmt.Printf("Running %s test against %s with address %s\n", test_type, test_target, target)
+		}
+
+		//
+		// Run the test.
+		//
+		result := tmp.runTest(target)
+
+		if result == nil {
+			if ConfigOptions.Verbose {
+				fmt.Printf("Test passed!\n")
+			}
+
+		} else {
+			if ConfigOptions.Verbose {
+				fmt.Printf("Test failed; %s\n", result.Error())
+			}
+		}
+
+		//
+		// Post the result to purple
+		//
+		postPurple(test_type, test_target, input, result)
+	}
 }
 
 //
@@ -233,6 +385,8 @@ func main() {
 	//
 	// Our command-line options
 	//
+	flag.BoolVar(&ConfigOptions.IPv4, "4", true, "Should we run IPv4 tests?")
+	flag.BoolVar(&ConfigOptions.IPv6, "6", false, "Should we run IPv6 tests?")
 	flag.BoolVar(&ConfigOptions.Verbose, "verbose", true, "Should we be verbose?")
 	flag.BoolVar(&ConfigOptions.Version, "version", false, "Show our version and exit.")
 	flag.IntVar(&ConfigOptions.Timeout, "timeout", 0, "Set a timeout period, in seconds, for all tests.")

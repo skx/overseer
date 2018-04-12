@@ -11,7 +11,7 @@ to experiment with class-factories in golang.
 
 It might look like a remote protocol-tester, in [golang](https://golang.org),
 but it isn't really.  Specifically compared to the obvious comparison
-project, custodian, we lack the notion of macros, the ability to pull tests via HTTP(S).  The project is also not configured to work in a distributed fasion.
+project, custodian, we lack the ability to pull tests via HTTP(S), and we're single-host only.
 
 
 ## Usage
@@ -34,28 +34,45 @@ For example:
 The tests defined in [input.txt](input.txt) each work, demonstrating
 the successful registration and lookup of protocol tests for:
 
+* FTP
 * HTTP & HTTPS
   * Note that no certificate validation is coded explicitly.
-* Redis
+* redis
+* rsync
+* SMTP
 * SSH
 
-The test for FTP is deliberately broken, and tests for `rsync`, `imap`,
-`smtp`, `ping`, etc, are missing.
+Tests for `imap`, `ping`, etc, are missing.
 
 
-## TODO
+## Address Families
 
-All tests should work against all available protocols - for example
-we should be resolving names as IPv4 and IPv6 addresses, and testing
-anything that replies.
+Because we're living in exciting and modern times the `overseer` application
+will handle both IPv4 and IPv6 connections.
 
-This means we need to parse/inject fake tests such that:
+This is achieved by duplicating tests.  For example given the following input-line:
 
      mail.steve.org.uk must run smtp
 
-Becomes:
+What actually happens is that _two_ tests are executed:
 
      176.9.183.102 must run smtp
      2a01:4f8:151:6083::102 must run smtp
 
-This actually paves the way to definining macros, I guess..
+This is achieved by resolving the target, `mail.steve.org.uk` in this case, and running the test against each result.
+
+If your host is not running with dual-stacks you can disable a particular family via:
+
+     # IPv6 only
+     overseer -4=false -6=true
+
+     # IPv4 only
+     overseer -4=true -6=false
+
+The default is to enable both IPv6 and IPv4 testing.
+
+
+## TODO
+
+* Document the definition and usage of macros.
+* Update HTTP-test to work on IPv4 & IPv6

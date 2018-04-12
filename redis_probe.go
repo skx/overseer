@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/go-redis/redis"
 )
@@ -63,12 +64,24 @@ func (s *REDISTest) runTest(target string) error {
 	}
 
 	//
-	// Attempt to connect
+	// Default to connecting to an IPv4-address
+	//
+	address := fmt.Sprintf("%s:%d", target, port)
+
+	//
+	// If we find a ":" we know it is an IPv6 address though
+	//
+	if strings.Contains(target, ":") {
+		address = fmt.Sprintf("[%s]:%d", target, port)
+	}
+
+	//
+	// Attempt to connect to the host with the optional password
 	//
 	client := redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%d", target, port),
-		Password: password, // no password set
-		DB:       0,        // use default DB
+		Addr:     address,
+		Password: password,
+		DB:       0, // use default DB
 	})
 
 	//
