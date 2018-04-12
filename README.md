@@ -36,14 +36,16 @@ the successful registration and lookup of protocol tests for:
 
 * FTP
 * HTTP & HTTPS
-  * Note that no certificate validation is coded explicitly.
+   * Note that no certificate validation is coded explicitly.
+* IMAPS
+   * Use `mail.example.com must run imaps insecure` to skip TLS validation.
 * ping
 * redis
 * rsync
 * SMTP
 * SSH
 
-Tests for `imap`, and other protocols, are missing.
+Tests for other protocols will be added based upon need & demand.
 
 
 ## Address Families
