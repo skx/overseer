@@ -10,8 +10,8 @@ This is a toy repository which contains some code designed to allow me
 to experiment with class-factories in golang.
 
 It might look like a remote protocol-tester, in [golang](https://golang.org),
-but it isn't really.
-
+but it isn't really.  Specifically compared to the obvious comparison
+project, custodian, we lack the notion of macros, the ability to pull tests via HTTP(S).  The project is also not configured to work in a distributed fasion.
 
 
 ## Usage
