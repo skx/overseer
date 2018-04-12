@@ -70,8 +70,3 @@ If your host is not running with dual-stacks you can disable a particular family
      overseer [-4=true] -6=false
 
 The default is to enable both IPv6 and IPv4 testing.
-
-
-## TODO
-
-* Update HTTP-test to work on IPv4 & IPv6
