@@ -268,7 +268,7 @@ func processLine(input string) {
 	//
 	// If this is a http-test then just add our existing target
 	//
-	if strings.HasPrefix(test_target, "http://") {
+	if strings.HasPrefix(test_target, "http") {
 		targets = append(targets, test_target)
 	} else {
 
@@ -306,7 +306,7 @@ func processLine(input string) {
 		// Show what we're doing.
 		//
 		if ConfigOptions.Verbose {
-			fmt.Printf("Running %s test against %s with address %s\n", test_type, test_target, target)
+			fmt.Printf("Running %s test against %s (%s)\n", test_type, test_target, target)
 		}
 
 		//
@@ -316,12 +316,12 @@ func processLine(input string) {
 
 		if result == nil {
 			if ConfigOptions.Verbose {
-				fmt.Printf("Test passed!\n")
+				fmt.Printf("\tTest passed.\n")
 			}
 
 		} else {
 			if ConfigOptions.Verbose {
-				fmt.Printf("Test failed; %s\n", result.Error())
+				fmt.Printf("\tTest failed: %s\n", result.Error())
 			}
 		}
 
