@@ -72,7 +72,7 @@ func postPurple(test_type string, test_target string, input string, result error
 	//
 	values := map[string]string{
 		"id":      hash,
-		"subject": fmt.Sprintf("%s", test_target),
+		"subject": test_target,
 	}
 
 	//
