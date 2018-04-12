@@ -8,6 +8,6 @@ matrix:
   - go: tip
 
 script:
-- "./build-all"
+- ".travis/build-all"
 - go get golang.org/x/tools/cmd/cover
 - go test -coverprofile fmt
