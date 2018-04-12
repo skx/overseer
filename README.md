@@ -6,13 +6,14 @@
 
 # Overseer
 
-This is a toy repository which contains some code designed to allow me
-to experiment with class-factories in golang.
+Overseer is a small utility which is designed to replicate a well-known
+remote protocol tester.
 
-It might look like a remote protocol-tester, in [golang](https://golang.org),
-but it isn't really.  Specifically compared to the obvious comparison
-project, custodian, we lack the ability to pull tests via HTTP(S), and we're single-host only.
+In short this application lets you monitor the health of a network,
+raising/clearing alerts with the [purppura](https://github.com/skx/purppura/)
+notificaiton system.
 
+Unlike the system upon which it is based it is single-host only.
 
 ## Usage
 

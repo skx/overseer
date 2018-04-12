@@ -79,6 +79,16 @@ REDIS must run redis
 #
 
 
+
+#
+# IMAPS is a good thing.
+#
+# In this context "insecure" means "don't validate the SSL certificate",
+# this fails because we connect by IP address..
+#
+mail.steve.org.uk must run imaps insecure
+
+
 #
 # This concludes our testing.
 #
