@@ -64,10 +64,10 @@ This is achieved by resolving the target, `mail.steve.org.uk` in this case, and 
 If your host is not running with dual-stacks you can disable a particular family via:
 
      # IPv6 only
-     overseer -4=false -6=true
+     overseer -4=false [-6=true]
 
      # IPv4 only
-     overseer -4=true -6=false
+     overseer [-4=true] -6=false
 
 The default is to enable both IPv6 and IPv4 testing.
 
