@@ -74,5 +74,4 @@ The default is to enable both IPv6 and IPv4 testing.
 
 ## TODO
 
-* Document the definition and usage of macros.
 * Update HTTP-test to work on IPv4 & IPv6

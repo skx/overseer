@@ -8,7 +8,6 @@
 #
 # Test that the HTTP versions redirect to the secure version.
 #
-# NOTE: We don
 http://steve.fi/ must run http  with status 301 with content 'https://steve.fi'
 http://www.steve.fi/ must run http  with status 302 with content 'https://steve.fi'
 
@@ -60,6 +59,24 @@ localhost must run redis
 #
 mail.steve.org.uk must run smtp
 mail.steve.org.uk must run smtp on 587
+
+
+#
+# Macros allow you to cut down on duplication if you want to run the
+# same test against a group of hosts
+#
+REDIS are 127.0.0.1, ::1
+REDIS must run redis
+
+#
+# Similarly you might wish to test SSH against a whole bunch of related
+# hosts, so you might try this:
+#
+#   SSH_HOSTS are host1.example.com, host2.example.com, host3.example.com
+#   SSH_HOSTS must run ssh
+#
+# All of the protocol-tests allow this expansion __EXCEPT__ for the http-test.
+#
 
 
 #
