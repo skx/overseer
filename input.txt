@@ -1,0 +1,60 @@
+#
+# Comments are OK and are prefixed with a leading '#'.
+#
+
+#
+# My website is at https://steve.fi/, there are redirections
+# in place for HTTP and for www-prefixed access.
+#
+# Test that the HTTP versions redirect to the secure version.
+#
+# NOTE: We don
+http://steve.fi/ must run http  with status 301 with content 'https://steve.fi'
+http://www.steve.fi/ must run http  with status 302 with content 'https://steve.fi'
+
+#
+# We don't like www. round here
+#
+https://www.steve.fi/ must run http with status 302 with content 'https://steve.fi'
+
+#
+# So the final test is that we have decent content.
+#
+https://steve.fi/ must run http  with status 200 with content 'Steve Kemp'
+
+
+#
+# Now we should do more testing!
+#
+# Test any OpenSSH probe against localhost, on the non-standard port 2222.
+#
+localhost must run ssh on port 2222
+
+#
+# If you didn't want to use a non-standard port you'd just write:
+#
+#    localhost must run ssh
+#
+
+#
+# Redis should run on localhost.
+#
+localhost must run redis
+
+#
+# If a password is required to connect to redis then set it like so:
+#
+#    localhost must run redis with password 'secrit!'
+#
+# If a non-standard port is used:
+#
+#    localhost must run redis on port 1234
+#
+# Of course these can be combined:
+#
+#    localhost must run redis on port 1234 with password 'p4ssw0rd'
+#
+
+#
+# This concludes our testing.
+#
