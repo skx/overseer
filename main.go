@@ -6,7 +6,6 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"crypto/sha1"
 	"encoding/base64"
@@ -17,9 +16,10 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"regexp"
 	"strings"
 	"time"
+
+	"github.com/skx/overseer/parser"
 )
 
 //
@@ -47,11 +47,6 @@ var (
 	// The timeout period to use for EVERY protocol-type.
 	//
 	TIMEOUT = time.Second * 10
-
-	//
-	// Macro-targets
-	//
-	MACROS = make(map[string][]string)
 )
 
 //
@@ -121,129 +116,19 @@ func postPurple(test_type string, test_target string, input string, result error
 }
 
 //
-// Process a single line from our configuration-file.
+// run_test is a callback invoked by the parser when a job
+// has been successfully parsed
 //
-func processLine(input string) {
+// It runs the test.
+//
+func run_test(tst parser.Test) error {
 
 	//
-	// Our input will contain lines of two forms:
+	// Setup our local state.
 	//
-	//  MACRO are host1, host2, host3
-	//
-	// NOTE: Macro-names are UPPERCASE, and redefinining a macro
-	//       is an error - because it would be too confusing otherwise.
-	//
-	//
-	//  TARGET must run PROTOCOL [OPTIONAL EXTRA ARGS]
-	//
-
-	//
-	// Is this a macro-definition?
-	//
-	macro := regexp.MustCompile("^([A-Z0-9]+)\\s+are\\s+(.*)$")
-	match := macro.FindStringSubmatch(input)
-	if len(match) == 3 {
-
-		name := match[1]
-		vals := match[2]
-
-		//
-		// If this macro-exists that is a fatal error
-		//
-		if MACROS[name] != nil {
-			fmt.Printf("Redefinining a macro is a fatal error!\n")
-			fmt.Printf("A macro named '%s' already exists.\n", name)
-			os.Exit(1)
-		}
-
-		//
-		// The macro-value is a comma-separated list of hosts
-		//
-		hosts := strings.Split(vals, ",")
-
-		//
-		// Save each host away, under the name of the macro.
-		//
-		for _, ent := range hosts {
-			MACROS[name] = append(MACROS[name], strings.TrimSpace(ent))
-		}
-		return
-	}
-
-	//
-	// Look to see if this line matches the testing line
-	//
-	re := regexp.MustCompile("^([^ \t]+)\\s+must\\s+run\\s+([a-z]+)")
-	out := re.FindStringSubmatch(input)
-
-	//
-	// If it didn't then we have a malformed line
-	//
-	if len(out) != 3 {
-		fmt.Printf("WARNING: Unrecognized line - '%s'\n", input)
-		return
-	}
-
-	//
-	// Save the type + target away
-	//
-	test_target := out[1]
-	test_type := out[2]
-
-	//
-	// Is this target a macro?
-	//
-	// If so we expand for each host in the macro-definition and
-	// execute those expanded versions in turn.
-	//
-	hosts := MACROS[test_target]
-	if len(hosts) > 0 {
-
-		//
-		// So we have a bunch of hosts that this macro-name
-		// should be replaced with.
-		//
-		for _, i := range hosts {
-
-			//
-			// Reparse the line for each host by taking advantage
-			// of the fact the first entry in the line is the
-			// target.
-			//
-			// So we change:
-			//
-			//  HOSTS must run xxx..
-			//
-			// Into:
-			//
-			//   host1 must run xxx.
-			//   host2 must run xxx.
-			//   ..
-			//   hostN must run xxx.
-			//
-			split := regexp.MustCompile("^([^\\s]+)\\s+(.*)$")
-			line := split.FindStringSubmatch(input)
-
-			//
-			// Create a new test, with the macro-host
-			// in-place of the original target.
-			//
-			new := fmt.Sprintf("%s %s\n", i, line[2])
-
-			//
-			// Call ourselves to run the test.
-			//
-			processLine(new)
-		}
-
-		//
-		// We've called ourself (processLine) with the updated
-		// line for each host in the macro-definition.
-		//
-		// So we can return here.
-		//
-		return
-	}
+	test_type := tst.Type
+	test_target := tst.Target
+	input := tst.Input
 
 	//
 	// Look for a suitable protocol handler
@@ -252,7 +137,7 @@ func processLine(input string) {
 	if tmp == nil {
 		fmt.Printf("WARNING: Unknown protocol handler '%s'\n", test_type)
 		postPurple(test_type, test_target, input, errors.New(fmt.Sprintf("Uknown protocol-handler %s", test_type)))
-		return
+		return nil
 	}
 
 	//
@@ -285,7 +170,7 @@ func processLine(input string) {
 
 			postPurple(test_type, test_target, input, errors.New(fmt.Sprintf("Failed to resolve name %s", test_target)))
 			fmt.Printf("WARNING: Failed to resolve %s\n", test_target)
-			return
+			return nil
 		}
 		for _, ip := range ips {
 			if ip.To4() != nil {
@@ -334,52 +219,8 @@ func processLine(input string) {
 		//
 		postPurple(test_type, target, input, result)
 	}
-}
 
-//
-// Open the given configuration file, and parse it line-by-line.
-//
-func processFile(path string) {
-
-	//
-	// Open the given file.
-	//
-	file, err := os.Open(path)
-	if err != nil {
-		fmt.Printf("Error opening %s - %s\n", path, err.Error())
-		return
-	}
-	defer file.Close()
-
-	//
-	// We'll process it line by line
-	//
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-
-		//
-		// Get a line and trim leading/trailing whitespace
-		//
-		line := scanner.Text()
-		line = strings.TrimSpace(line)
-
-		//
-		// If the line wasn't empty, and didn't start with
-		// a comment then process it.
-		//
-		if (line != "") && (!strings.HasPrefix(line, "#")) {
-			processLine(line)
-		}
-	}
-
-	//
-	// Was there an error with the scanner?  If so catch it
-	// here.  To be honest I'm not sure if anything needs to
-	// happen here
-	//
-	if err := scanner.Err(); err != nil {
-		panic(err)
-	}
+	return nil
 }
 
 //
@@ -427,6 +268,16 @@ func main() {
 	// Process each named file as a configuration file.
 	//
 	for _, file := range flag.Args() {
-		processFile(file)
+
+		//
+		// Create an object to parse the given file.
+		//
+		helper := parser.New(file)
+
+		//
+		// For each parsed job call `run_test` to invoke it
+		//
+		helper.Parse(run_test)
 	}
+
 }
