@@ -11,6 +11,7 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"net"
@@ -250,6 +251,7 @@ func processLine(input string) {
 	tmp := ProtocolHandler(test_type)
 	if tmp == nil {
 		fmt.Printf("WARNING: Unknown protocol handler '%s'\n", test_type)
+		postPurple(test_type, test_target, input, errors.New(fmt.Sprintf("Uknown protocol-handler %s", test_type)))
 		return
 	}
 
@@ -280,6 +282,8 @@ func processLine(input string) {
 		//
 		ips, err := net.LookupIP(test_target)
 		if err != nil {
+
+			postPurple(test_type, test_target, input, errors.New(fmt.Sprintf("Failed to resolve name %s", test_target)))
 			fmt.Printf("WARNING: Failed to resolve %s\n", test_target)
 			return
 		}
