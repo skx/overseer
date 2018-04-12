@@ -7,7 +7,7 @@
 // NOTE: This deliberately does not follow redirections, to allow enhanced
 // testing.
 //
-package main
+package protocols
 
 import (
 	"context"
@@ -19,6 +19,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 //
@@ -27,13 +28,14 @@ import (
 // We store state in the `input` field.
 //
 type HTTPTest struct {
-	input string
+	input   string
+	timeout time.Duration
 }
 
 //
 // Make a HTTP-test against the given URL.
 //
-func (s *HTTPTest) runTest(target string) error {
+func (s *HTTPTest) RunTest(target string) error {
 
 	//
 	// We want to turn the target URL into an IPv4 and IPv6
@@ -98,62 +100,98 @@ func (s *HTTPTest) runTest(target string) error {
 	// Now we're going to run the testing
 	//
 
-	//
-	// IPv4 only?
-	//
-	if (ConfigOptions.IPv4 == true) && (ConfigOptions.IPv6 == false) {
-		if len(ipv4) > 0 {
-			err := s.RunHTTPTest(target, ipv4[0])
+	executed := 0
+
+	// ipv4
+	if len(ipv4) > 0 {
+		fmt.Printf("\tIPv4 - %s\n", ipv4[0])
+		err := s.RunHTTPTest(target, ipv4[0])
+		if err != nil {
 			return err
-		} else {
-			return errors.New(fmt.Sprintf("Failed to resolve %s to IPv4 address", target))
 		}
+		executed += 1
 	}
 
-	//
-	// IPv6 only?
-	//
-	if (ConfigOptions.IPv6 == true) && (ConfigOptions.IPv4 == false) {
-		if len(ipv6) > 0 {
-			err := s.RunHTTPTest(target, ipv6[0])
+	// ipv6
+	if len(ipv6) > 0 {
+		fmt.Printf("\tIPv6 - %s\n", ipv6[0])
+		err := s.RunHTTPTest(target, ipv6[0])
+		if err != nil {
 			return err
-		} else {
-			return errors.New(fmt.Sprintf("Failed to resolve %s to IPv6 address", target))
 		}
+		executed += 1
 	}
+
+	return nil
+
+	// 	if executed < 1 {
+	// 		return errors.New(fmt.Sprintf("Failed to perform HTTP test of target %s", target))
+	// 	}
+	// }
 
 	//
-	// Both?
+	// Commented code is broken :)
 	//
-	if (ConfigOptions.IPv6 == true) && (ConfigOptions.IPv4 == true) {
-		executed := 0
+	// Right now we'll run one test against each family and failure
+	// to run the tests is a real failure
+	//
 
-		// ipv4
-		if len(ipv4) > 0 {
-			err := s.RunHTTPTest(target, ipv4[0])
-			if err != nil {
-				return err
-			}
-			executed += 1
-		}
+	// //
+	// // IPv4 only?
+	// //
+	// if (ConfigOptions.IPv4 == true) && (ConfigOptions.IPv6 == false) {
+	// 	if len(ipv4) > 0 {
+	// 		err := s.RunHTTPTest(target, ipv4[0])
+	// 		return err
+	// 	} else {
+	// 		return errors.New(fmt.Sprintf("Failed to resolve %s to IPv4 address", target))
+	// 	}
+	// }
 
-		// ipv6
-		if len(ipv6) > 0 {
-			err := s.RunHTTPTest(target, ipv6[0])
-			if err != nil {
-				return err
-			}
-			executed += 1
-		}
+	// //
+	// // IPv6 only?
+	// //
+	// if (ConfigOptions.IPv6 == true) && (ConfigOptions.IPv4 == false) {
+	// 	if len(ipv6) > 0 {
+	// 		err := s.RunHTTPTest(target, ipv6[0])
+	// 		return err
+	// 	} else {
+	// 		return errors.New(fmt.Sprintf("Failed to resolve %s to IPv6 address", target))
+	// 	}
+	// }
 
-		if executed < 1 {
-			return errors.New(fmt.Sprintf("Failed to perform HTTP test of target %s", target))
-		}
-	}
+	// //
+	// // Both?
+	// //
+	// if (ConfigOptions.IPv6 == true) && (ConfigOptions.IPv4 == true) {
+	// 	executed := 0
 
-	if (ConfigOptions.IPv6 == false) && (ConfigOptions.IPv4 == false) {
-		return errors.New("IPv4 AND IPv6 are disabled, no HTTP test is possible.")
-	}
+	// 	// ipv4
+	// 	if len(ipv4) > 0 {
+	// 		err := s.RunHTTPTest(target, ipv4[0])
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 		executed += 1
+	// 	}
+
+	// 	// ipv6
+	// 	if len(ipv6) > 0 {
+	// 		err := s.RunHTTPTest(target, ipv6[0])
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 		executed += 1
+	// 	}
+
+	// 	if executed < 1 {
+	// 		return errors.New(fmt.Sprintf("Failed to perform HTTP test of target %s", target))
+	// 	}
+	// }
+
+	// if (ConfigOptions.IPv6 == false) && (ConfigOptions.IPv4 == false) {
+	// 	return errors.New("IPv4 AND IPv6 are disabled, no HTTP test is possible.")
+	// }
 	return nil
 }
 
@@ -188,7 +226,7 @@ func (s *HTTPTest) RunHTTPTest(target string, address string) error {
 	// the magical transport we've just created.
 	//
 	var netClient = &http.Client{
-		Timeout: TIMEOUT,
+		Timeout: s.timeout,
 
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
@@ -267,8 +305,15 @@ func (s *HTTPTest) RunHTTPTest(target string, address string) error {
 // field; this could be used if there are protocol-specific
 // options to be understood.
 //
-func (s *HTTPTest) setLine(input string) {
+func (s *HTTPTest) SetLine(input string) {
 	s.input = input
+}
+
+//
+// Store the timeout value for this protocol-test
+//
+func (s *HTTPTest) SetTimeout(timeout time.Duration) {
+	s.timeout = timeout
 }
 
 //

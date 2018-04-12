@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/skx/overseer/parser"
+	"github.com/skx/overseer/protocols"
 )
 
 //
@@ -133,7 +134,7 @@ func run_test(tst parser.Test) error {
 	//
 	// Look for a suitable protocol handler
 	//
-	tmp := ProtocolHandler(test_type)
+	tmp := protocols.ProtocolHandler(test_type)
 	if tmp == nil {
 		fmt.Printf("WARNING: Unknown protocol handler '%s'\n", test_type)
 		postPurple(test_type, test_target, input, errors.New(fmt.Sprintf("Uknown protocol-handler %s", test_type)))
@@ -144,8 +145,8 @@ func run_test(tst parser.Test) error {
 	// Pass the full input-line to our protocol tester
 	// to allow any extra options/flags to be parsed
 	//
-	tmp.setLine(input)
-
+	tmp.SetLine(input)
+	tmp.SetTimeout(TIMEOUT)
 	//
 	// Each test will be executed for each address-family, unless it is
 	// a HTTP-test.
@@ -201,7 +202,7 @@ func run_test(tst parser.Test) error {
 		//
 		// Run the test.
 		//
-		result := tmp.runTest(target)
+		result := tmp.RunTest(target)
 
 		if result == nil {
 			if ConfigOptions.Verbose {
@@ -278,7 +279,7 @@ func main() {
 		// For each parsed job call `run_test` to invoke it
 		//
 		err := helper.Parse(run_test)
-		if ( err != nil ) {
+		if err != nil {
 			fmt.Printf("Error parsing file: %s\n", err.Error())
 		}
 	}

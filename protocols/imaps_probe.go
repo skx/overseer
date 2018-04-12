@@ -1,13 +1,15 @@
-package main
+package protocols
 
 import (
-	"bufio"
-	"errors"
+	"crypto/tls"
 	"fmt"
 	"net"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
+
+	client "github.com/emersion/go-imap/client"
 )
 
 //
@@ -15,20 +17,22 @@ import (
 //
 // We store state in the `input` field.
 //
-type FTPTest struct {
-	input string
+type IMAPSTest struct {
+	input   string
+	timeout time.Duration
 }
 
 //
 // Run the test against the specified target.
 //
-func (s *FTPTest) runTest(target string) error {
+func (s *IMAPSTest) RunTest(target string) error {
+
 	var err error
 
 	//
 	// The default port to connect to.
 	//
-	port := 21
+	port := 993
 
 	//
 	// If the user specified a different port update it.
@@ -43,9 +47,13 @@ func (s *FTPTest) runTest(target string) error {
 	}
 
 	//
-	// Set an explicit timeout
+	// Insecure operation allows us to skip validation of
+	// the SSL certificate
 	//
-	d := net.Dialer{Timeout: TIMEOUT}
+	insecure := false
+	if strings.Contains(s.input, " insecure") {
+		insecure = true
+	}
 
 	//
 	// Default to connecting to an IPv4-address
@@ -59,25 +67,21 @@ func (s *FTPTest) runTest(target string) error {
 		address = fmt.Sprintf("[%s]:%d", target, port)
 	}
 
-	//
-	// Make the TCP connection.
-	//
-	conn, err := d.Dial("tcp", address)
-	if err != nil {
-		return err
+	var dial = &net.Dialer{
+		Timeout: s.timeout,
 	}
 
-	//
-	// Read the banner.
-	//
-	banner, err := bufio.NewReader(conn).ReadString('\n')
+	if insecure {
+		tls := &tls.Config{
+			InsecureSkipVerify: true,
+		}
+		_, err = client.DialWithDialerTLS(dial, address, tls)
+	} else {
+		_, err = client.DialWithDialerTLS(dial, address, nil)
+	}
+
 	if err != nil {
 		return err
-	}
-	conn.Close()
-
-	if !strings.Contains(banner, "220") {
-		return errors.New("Banner doesn't look like an FTP success")
 	}
 
 	return nil
@@ -88,15 +92,22 @@ func (s *FTPTest) runTest(target string) error {
 // field; this could be used if there are protocol-specific options
 // to be understood.
 //
-func (s *FTPTest) setLine(input string) {
+func (s *IMAPSTest) SetLine(input string) {
 	s.input = input
+}
+
+//
+// Store the timeout value for this protocol-test
+//
+func (s *IMAPSTest) SetTimeout(timeout time.Duration) {
+	s.timeout = timeout
 }
 
 //
 // Register our protocol-tester.
 //
 func init() {
-	Register("ftp", func() ProtocolTest {
-		return &FTPTest{}
+	Register("imaps", func() ProtocolTest {
+		return &IMAPSTest{}
 	})
 }

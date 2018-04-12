@@ -1,7 +1,8 @@
-package main
+package protocols
 
 import (
 	"sync"
+	"time"
 )
 
 //
@@ -16,7 +17,7 @@ type ProtocolTest interface {
 	// If the test passed nil is returned, otherwise a suitable
 	// error object.
 	//
-	runTest(target string) error
+	RunTest(target string) error
 
 	//
 	// This function is invoked with the complete line
@@ -30,7 +31,12 @@ type ProtocolTest interface {
 	// There is no general purpose way to specify options, so the
 	// test itself can look for option-flags it recognizes.
 	//
-	setLine(input string)
+	SetLine(input string)
+
+	//
+	// Set the timeout period for this test
+	//
+	SetTimeout(timeout time.Duration)
 }
 
 //

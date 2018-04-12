@@ -1,14 +1,14 @@
-package main
+package protocols
 
 import (
-	"crypto/tls"
+	"bufio"
+	"errors"
 	"fmt"
 	"net"
 	"regexp"
 	"strconv"
 	"strings"
-
-	client "github.com/emersion/go-imap/client"
+	"time"
 )
 
 //
@@ -16,21 +16,21 @@ import (
 //
 // We store state in the `input` field.
 //
-type IMAPSTest struct {
-	input string
+type SMTPTest struct {
+	input   string
+	timeout time.Duration
 }
 
 //
 // Run the test against the specified target.
 //
-func (s *IMAPSTest) runTest(target string) error {
-
+func (s *SMTPTest) RunTest(target string) error {
 	var err error
 
 	//
 	// The default port to connect to.
 	//
-	port := 993
+	port := 25
 
 	//
 	// If the user specified a different port update it.
@@ -45,13 +45,9 @@ func (s *IMAPSTest) runTest(target string) error {
 	}
 
 	//
-	// Insecure operation allows us to skip validation of
-	// the SSL certificate
+	// Set an explicit timeout
 	//
-	insecure := false
-	if strings.Contains(s.input, " insecure") {
-		insecure = true
-	}
+	d := net.Dialer{Timeout: s.timeout}
 
 	//
 	// Default to connecting to an IPv4-address
@@ -65,21 +61,25 @@ func (s *IMAPSTest) runTest(target string) error {
 		address = fmt.Sprintf("[%s]:%d", target, port)
 	}
 
-	var dial = &net.Dialer{
-		Timeout: TIMEOUT,
-	}
-
-	if insecure {
-		tls := &tls.Config{
-			InsecureSkipVerify: true,
-		}
-		_, err = client.DialWithDialerTLS(dial, address, tls)
-	} else {
-		_, err = client.DialWithDialerTLS(dial, address, nil)
-	}
-
+	//
+	// Make the TCP connection.
+	//
+	conn, err := d.Dial("tcp", address)
 	if err != nil {
 		return err
+	}
+
+	//
+	// Read the banner.
+	//
+	banner, err := bufio.NewReader(conn).ReadString('\n')
+	if err != nil {
+		return err
+	}
+	conn.Close()
+
+	if !strings.Contains(banner, "SMTP") {
+		return errors.New("Banner doesn't look like an SMTP server")
 	}
 
 	return nil
@@ -90,15 +90,22 @@ func (s *IMAPSTest) runTest(target string) error {
 // field; this could be used if there are protocol-specific options
 // to be understood.
 //
-func (s *IMAPSTest) setLine(input string) {
+func (s *SMTPTest) SetLine(input string) {
 	s.input = input
+}
+
+//
+// Store the timeout value for this protocol-test
+//
+func (s *SMTPTest) SetTimeout(timeout time.Duration) {
+	s.timeout = timeout
 }
 
 //
 // Register our protocol-tester.
 //
 func init() {
-	Register("imaps", func() ProtocolTest {
-		return &IMAPSTest{}
+	Register("smtp", func() ProtocolTest {
+		return &SMTPTest{}
 	})
 }

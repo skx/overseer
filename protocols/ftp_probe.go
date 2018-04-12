@@ -1,4 +1,4 @@
-package main
+package protocols
 
 import (
 	"bufio"
@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 //
@@ -15,20 +16,21 @@ import (
 //
 // We store state in the `input` field.
 //
-type RSYNCTest struct {
-	input string
+type FTPTest struct {
+	input   string
+	timeout time.Duration
 }
 
 //
 // Run the test against the specified target.
 //
-func (s *RSYNCTest) runTest(target string) error {
+func (s *FTPTest) RunTest(target string) error {
 	var err error
 
 	//
 	// The default port to connect to.
 	//
-	port := 873
+	port := 21
 
 	//
 	// If the user specified a different port update it.
@@ -45,7 +47,7 @@ func (s *RSYNCTest) runTest(target string) error {
 	//
 	// Set an explicit timeout
 	//
-	d := net.Dialer{Timeout: TIMEOUT}
+	d := net.Dialer{Timeout: s.timeout}
 
 	//
 	// Default to connecting to an IPv4-address
@@ -76,8 +78,8 @@ func (s *RSYNCTest) runTest(target string) error {
 	}
 	conn.Close()
 
-	if !strings.Contains(banner, "RSYNC") {
-		return errors.New("Banner doesn't look like an rsync-banner")
+	if !strings.Contains(banner, "220") {
+		return errors.New("Banner doesn't look like an FTP success")
 	}
 
 	return nil
@@ -88,15 +90,22 @@ func (s *RSYNCTest) runTest(target string) error {
 // field; this could be used if there are protocol-specific options
 // to be understood.
 //
-func (s *RSYNCTest) setLine(input string) {
+func (s *FTPTest) SetLine(input string) {
 	s.input = input
+}
+
+//
+// Store the timeout value for this protocol-test
+//
+func (s *FTPTest) SetTimeout(timeout time.Duration) {
+	s.timeout = timeout
 }
 
 //
 // Register our protocol-tester.
 //
 func init() {
-	Register("rsync", func() ProtocolTest {
-		return &RSYNCTest{}
+	Register("ftp", func() ProtocolTest {
+		return &FTPTest{}
 	})
 }

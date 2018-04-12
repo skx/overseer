@@ -1,4 +1,4 @@
-package main
+package protocols
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"net"
 	"os/exec"
 	"syscall"
+	"time"
 )
 
 //
@@ -67,7 +68,7 @@ func (s *PINGTest) Ping6(target string) bool {
 //
 // Run the test against the specified target.
 //
-func (s *PINGTest) runTest(target string) error {
+func (s *PINGTest) RunTest(target string) error {
 
 	ip := net.ParseIP(target)
 
@@ -102,8 +103,11 @@ func (s *PINGTest) runTest(target string) error {
 // field; this could be used if there are protocol-specific options
 // to be understood.
 //
-func (s *PINGTest) setLine(input string) {
+func (s *PINGTest) SetLine(input string) {
 	s.input = input
+}
+func (s *PINGTest) SetTimeout(timeout time.Duration) {
+	// NOP
 }
 
 //

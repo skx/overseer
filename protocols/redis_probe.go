@@ -2,13 +2,14 @@
 // This is our redis protocol-test.
 //
 //
-package main
+package protocols
 
 import (
 	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-redis/redis"
 )
@@ -19,13 +20,14 @@ import (
 // We store state in the `input` field.
 //
 type REDISTest struct {
-	input string
+	input   string
+	timeout time.Duration
 }
 
 //
 // Make a Redis-test against the given target.
 //
-func (s *REDISTest) runTest(target string) error {
+func (s *REDISTest) RunTest(target string) error {
 
 	//
 	// Predeclare our error
@@ -106,8 +108,15 @@ func (s *REDISTest) runTest(target string) error {
 // field; this could be used if there are protocol-specific
 // options to be understood.
 //
-func (s *REDISTest) setLine(input string) {
+func (s *REDISTest) SetLine(input string) {
 	s.input = input
+}
+
+//
+// Store the timeout value for this protocol-test
+//
+func (s *REDISTest) SetTimeout(timeout time.Duration) {
+	s.timeout = timeout
 }
 
 //
