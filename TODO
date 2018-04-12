@@ -1,0 +1,43 @@
+
+## Quick
+
+* Create a test-options object
+
+  - Will store timeout
+  - Will store ipv4 + ipv6 enabled
+
+* Pass test-options to worker
+
+
+
+## Harder
+
+We should use sub-commands so that we have four distinct commands:
+
+
+1. Parse jobs and add to redis:
+
+    $ overseer parse input.txt
+
+2.  Pull jobs from redis, execute them in turn:
+
+    $ overseer worker
+
+3. Run jobs from local-file only:
+
+    $ overseer local file.txt
+
+4.  Show queue
+
+    $ overseer stats
+
+5.  Show version
+
+    $ overseer version
+
+
+## Final
+
+Pimp.
+
+Document.
