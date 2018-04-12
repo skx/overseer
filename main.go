@@ -277,7 +277,10 @@ func main() {
 		//
 		// For each parsed job call `run_test` to invoke it
 		//
-		helper.Parse(run_test)
+		err := helper.Parse(run_test)
+		if ( err != nil ) {
+			fmt.Printf("Error parsing file: %s\n", err.Error())
+		}
 	}
 
 }
