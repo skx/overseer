@@ -27,6 +27,7 @@ import (
 //
 var ConfigOptions struct {
 	Purppura string
+	Verbose  bool
 	Version  bool
 }
 
@@ -135,7 +136,7 @@ func processLine(input string) {
 	//
 	tmp := ProtocolHandler(test_type)
 	if tmp == nil {
-		fmt.Printf("Uknonw protocol handler invoked %s\n", test_type)
+		fmt.Printf("Uknown protocol handler invoked '%s'\n", test_type)
 		return
 	}
 
@@ -148,15 +149,21 @@ func processLine(input string) {
 	//
 	// Run the damn test :)
 	//
-	fmt.Printf("Running %s test against %s\n", test_type, test_target)
+	if ConfigOptions.Verbose {
+		fmt.Printf("Running %s test against %s\n", test_type, test_target)
+	}
 
 	result := tmp.runTest(test_target)
 
 	if result == nil {
-		fmt.Printf("Test passed!\n")
+		if ConfigOptions.Verbose {
+			fmt.Printf("Test passed!\n")
+		}
 
 	} else {
-		fmt.Printf("Test failed; %s\n", result.Error())
+		if ConfigOptions.Verbose {
+			fmt.Printf("Test failed; %s\n", result.Error())
+		}
 	}
 
 	//
@@ -219,6 +226,7 @@ func main() {
 	//
 	// Our command-line options
 	//
+	flag.BoolVar(&ConfigOptions.Verbose, "verbose", true, "Should we be verbose?")
 	flag.BoolVar(&ConfigOptions.Version, "version", false, "Show our version and exit.")
 	flag.StringVar(&ConfigOptions.Purppura, "purppura", "", "Specify the purppura-endpoint.")
 	flag.Parse()
@@ -234,7 +242,8 @@ func main() {
 	//
 	// Otherwise ensure we have at least one configuration-file.
 	//
-	if len(os.Args) < 2 {
+
+	if len(flag.Args()) < 1 {
 		fmt.Printf("Usage %s file1 file2 .. fileN\n", os.Args[0])
 		os.Exit(1)
 	}
@@ -242,7 +251,7 @@ func main() {
 	//
 	// Process each named file as a configuration file.
 	//
-	for _, file := range os.Args[1:] {
+	for _, file := range flag.Args() {
 		processFile(file)
 	}
 }
