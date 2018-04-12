@@ -17,6 +17,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"time"
 )
 
 //
@@ -27,15 +28,21 @@ import (
 //
 var ConfigOptions struct {
 	Purppura string
+	Timeout  int
 	Verbose  bool
 	Version  bool
 }
 
-//
-// Our version number.
-//
 var (
+	//
+	// Our version number.
+	//
 	version = "master/latest"
+
+	//
+	// The default timeout period
+	//
+	TIMEOUT = time.Second * 10
 )
 
 //
@@ -228,6 +235,7 @@ func main() {
 	//
 	flag.BoolVar(&ConfigOptions.Verbose, "verbose", true, "Should we be verbose?")
 	flag.BoolVar(&ConfigOptions.Version, "version", false, "Show our version and exit.")
+	flag.IntVar(&ConfigOptions.Timeout, "timeout", 0, "Set a timeout period, in seconds, for all tests.")
 	flag.StringVar(&ConfigOptions.Purppura, "purppura", "", "Specify the purppura-endpoint.")
 	flag.Parse()
 
@@ -237,6 +245,14 @@ func main() {
 	if ConfigOptions.Version {
 		fmt.Printf("overseer %s\n", version)
 		os.Exit(0)
+	}
+
+	//
+	// If we got a timeout value then update our global timeout
+	// period to be that number of seconds.
+	//
+	if ConfigOptions.Timeout != 0 {
+		TIMEOUT = time.Second * time.Duration(ConfigOptions.Timeout)
 	}
 
 	//

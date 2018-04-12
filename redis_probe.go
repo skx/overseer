@@ -5,8 +5,6 @@
 package main
 
 import (
-	//	"errors"
-	//	"fmt"
 	"fmt"
 	"regexp"
 	"strconv"

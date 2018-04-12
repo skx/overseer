@@ -17,7 +17,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 )
 
 //
@@ -38,7 +37,7 @@ func (s *HTTPTest) runTest(target string) error {
 	// Setup an explicit timeout
 	//
 	var netClient = &http.Client{
-		Timeout: time.Second * 10,
+		Timeout: TIMEOUT,
 
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse

@@ -8,7 +8,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 )
 
 //
@@ -46,7 +45,7 @@ func (s *SSHTest) runTest(target string) error {
 	//
 	// Set an explicit timeout
 	//
-	d := net.Dialer{Timeout: time.Second * 10}
+	d := net.Dialer{Timeout: TIMEOUT}
 
 	//
 	// Make the TCP connection.
