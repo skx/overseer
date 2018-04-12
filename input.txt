@@ -56,5 +56,12 @@ localhost must run redis
 #
 
 #
+# Now we can test that we get a response from a remote SMTP server
+#
+mail.steve.org.uk must run smtp
+mail.steve.org.uk must run smtp on 587
+
+
+#
 # This concludes our testing.
 #
