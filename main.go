@@ -69,9 +69,10 @@ func postPurple(test_type string, test_target string, input string, result error
 
 	//
 	// We need a stable ID for each test - get one by hashing the
-	// complete input-line
+	// complete input-line and the target we executed against.
 	//
 	hasher := sha1.New()
+	hasher.Write([]byte(test_target))
 	hasher.Write([]byte(input))
 	hash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 
@@ -80,7 +81,7 @@ func postPurple(test_type string, test_target string, input string, result error
 	//
 	values := map[string]string{
 		"id":      hash,
-		"subject": test_target,
+		"subject": input,
 	}
 
 	//
@@ -327,7 +328,7 @@ func processLine(input string) {
 		//
 		// Post the result to purple
 		//
-		postPurple(test_type, test_target, input, result)
+		postPurple(test_type, target, input, result)
 	}
 }
 
