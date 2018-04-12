@@ -41,3 +41,21 @@ the successful registration and lookup of protocol tests for:
 
 The test for FTP is deliberately broken, and tests for `rsync`, `imap`,
 `smtp`, `ping`, etc, are missing.
+
+
+## TODO
+
+All tests should work against all available protocols - for example
+we should be resolving names as IPv4 and IPv6 addresses, and testing
+anything that replies.
+
+This means we need to parse/inject fake tests such that:
+
+     mail.steve.org.uk must run smtp
+
+Becomes:
+
+     176.9.183.102 must run smtp
+     2a01:4f8:151:6083::102 must run smtp
+
+This actually paves the way to definining macros, I guess..
