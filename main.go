@@ -11,6 +11,7 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -19,10 +20,36 @@ import (
 )
 
 //
+// ConfigOptions is the globally visible structure which is designed to
+// hold our configuration-options - as set by the command-line flags.
+//
+// It is perhaps poor practice to do things this way, but it eases coding.
+//
+var ConfigOptions struct {
+	Purppura string
+	Version  bool
+}
+
+//
+// Our version number.
+//
+var (
+	version = "master/latest"
+)
+
+//
 // Regardless of whether a test fails/passes we must pass the result
-// on to purpurra.
+// on to purppura.
 //
 func postPurple(test_type string, test_target string, input string, result error) {
+
+	//
+	// If we don't have a server configured then
+	// return without sending
+	//
+	if ConfigOptions.Purppura == "" {
+		return
+	}
 
 	//
 	// We need a stable ID for each test - get one by hashing the
@@ -64,14 +91,14 @@ func postPurple(test_type string, test_target string, input string, result error
 	jsonValue, _ := json.Marshal(values)
 
 	//
-	// Post to purpurra
+	// Post to purppura
 	//
-	_, err := http.Post("http://localhost:8080/events",
+	_, err := http.Post(ConfigOptions.Purppura,
 		"application/json",
 		bytes.NewBuffer(jsonValue))
 
 	if err != nil {
-		fmt.Printf("failed to submit test to purpurra\n")
+		fmt.Printf("failed to submit test to purppura\n")
 	}
 }
 
@@ -190,7 +217,22 @@ func processFile(path string) {
 func main() {
 
 	//
-	// Ensure we have at least one configuration-file.
+	// Our command-line options
+	//
+	flag.BoolVar(&ConfigOptions.Version, "version", false, "Show our version and exit.")
+	flag.StringVar(&ConfigOptions.Purppura, "purppura", "", "Specify the purppura-endpoint.")
+	flag.Parse()
+
+	//
+	// If we're to show our version, do so.
+	//
+	if ConfigOptions.Version {
+		fmt.Printf("overseer %s\n", version)
+		os.Exit(0)
+	}
+
+	//
+	// Otherwise ensure we have at least one configuration-file.
 	//
 	if len(os.Args) < 2 {
 		fmt.Printf("Usage %s file1 file2 .. fileN\n", os.Args[0])

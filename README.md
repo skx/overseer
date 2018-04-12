@@ -18,10 +18,14 @@ but it isn't really.
 Build the application as per usual golang standards.  Then launch
 via:
 
-     ./overseer config.file config.file.two config.file.three ... config.file.N
+      $ ./overseer config.file config.file.two config.file.three ... config.file.N
 
 Each test will be parsed and executed one by one.  The results of the
-tests will be output to the console and _also_ posted to  [purppura](https://github.com/skx/purppura), which is assumed to be running on the localhost.
+tests will be output to the console and if the end-point of a [purppura](https://github.com/skx/purppura) server is defined it receive the results of the tests too.
+
+For example:
+
+       $ ./overseer -purppura=http://localhost:8080/events input.txt
 
 
 ## Status
@@ -29,18 +33,10 @@ tests will be output to the console and _also_ posted to  [purppura](https://git
 The tests defined in [input.txt](input.txt) each work, demonstrating
 the successful registration and lookup of protocol tests for:
 
-* HTTP
-* HTTPS
+* HTTP & HTTPS
+  * Note that no certificate validation is coded explicitly.
 * Redis
 * SSH
 
 The test for FTP is deliberately broken, and tests for `rsync`, `imap`,
 `smtp`, `ping`, etc, are missing.
-
-
-## TODO
-
-* Make purppura optional.
-  * But right now it is, since submission-errors are ignored.
-* Command-line flags.
-  * For verbosity, global timeout, and the target purppura server.
