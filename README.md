@@ -11,7 +11,7 @@ remote protocol tester.
 
 In short this application lets you monitor the health of a network,
 raising/clearing alerts with the [purppura](https://github.com/skx/purppura/)
-notificaiton system.
+notification system.
 
 Unlike the system upon which it is based it is single-host only.
 
