@@ -386,7 +386,7 @@ func main() {
 	// Our command-line options
 	//
 	flag.BoolVar(&ConfigOptions.IPv4, "4", true, "Should we run IPv4 tests?")
-	flag.BoolVar(&ConfigOptions.IPv6, "6", false, "Should we run IPv6 tests?")
+	flag.BoolVar(&ConfigOptions.IPv6, "6", true, "Should we run IPv6 tests?")
 	flag.BoolVar(&ConfigOptions.Verbose, "verbose", true, "Should we be verbose?")
 	flag.BoolVar(&ConfigOptions.Version, "version", false, "Show our version and exit.")
 	flag.IntVar(&ConfigOptions.Timeout, "timeout", 0, "Set a timeout period, in seconds, for all tests.")
