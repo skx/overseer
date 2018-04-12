@@ -37,12 +37,13 @@ the successful registration and lookup of protocol tests for:
 * FTP
 * HTTP & HTTPS
   * Note that no certificate validation is coded explicitly.
+* ping
 * redis
 * rsync
 * SMTP
 * SSH
 
-Tests for `imap`, `ping`, etc, are missing.
+Tests for `imap`, and other protocols, are missing.
 
 
 ## Address Families
