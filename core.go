@@ -31,7 +31,7 @@ var ConfigOptions struct {
 // Regardless of whether a test fails/passes we must pass the result
 // on to purppura.
 //
-func postPurple(test_type string, test_target string, input string, result error) {
+func postPurple(tst parser.Test, result error) {
 
 	//
 	// If we don't have a server configured then
@@ -40,6 +40,10 @@ func postPurple(test_type string, test_target string, input string, result error
 	if ConfigOptions.Purppura == "" {
 		return
 	}
+
+	test_type := tst.Type
+	test_target := tst.Target
+	input := tst.Input
 
 	//
 	// We need a stable ID for each test - get one by hashing the
@@ -145,7 +149,7 @@ func run_test(tst parser.Test, opts protocols.TestOptions) error {
 	tmp := protocols.ProtocolHandler(test_type)
 	if tmp == nil {
 		fmt.Printf("WARNING: Unknown protocol handler '%s'\n", test_type)
-		postPurple(test_type, test_target, input, errors.New(fmt.Sprintf("Uknown protocol-handler %s", test_type)))
+		postPurple(tst, errors.New(fmt.Sprintf("Unknown protocol-handler %s", test_type)))
 		return nil
 	}
 
@@ -182,7 +186,7 @@ func run_test(tst parser.Test, opts protocols.TestOptions) error {
 		ips, err := net.LookupIP(test_target)
 		if err != nil {
 
-			postPurple(test_type, test_target, input, errors.New(fmt.Sprintf("Failed to resolve name %s", test_target)))
+			postPurple(tst, errors.New(fmt.Sprintf("Failed to resolve name %s", test_target)))
 			fmt.Printf("WARNING: Failed to resolve %s\n", test_target)
 			return nil
 		}
@@ -231,7 +235,15 @@ func run_test(tst parser.Test, opts protocols.TestOptions) error {
 		//
 		// Post the result to purple
 		//
-		postPurple(test_type, target, input, result)
+		// First update the target to the thing we probed,
+		// which might not necessarily be that which was
+		// written.
+		//
+		//  i.e. "mail.steve.org.uk must run ssh"
+		// might become "1.2.3.4 must run ssh"
+		//
+		tst.Target = target
+		postPurple(tst, result)
 	}
 
 	return nil
