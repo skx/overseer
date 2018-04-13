@@ -6,7 +6,9 @@
 
 # Overseer
 
-Overseer is a simple golang based remote protocol tester, which allows you to monitor the health of a network, raising and clearing alerts with the [purppura](https://github.com/skx/purppura/) notification system.
+Overseer is a simple golang based remote protocol tester, which allows you to monitor the health of a network.
+
+When tests fail, because hosts/services are down, alerts can be generated via a simple plugin-based system.  Currently there is only a single notification plugin distributed with the project, which uses the [purppura](https://github.com/skx/purppura/) notification system.
 
 "Remote Protocol Tester" sounds a little vague, so to be more concrete this application lets you test services are running and has built-in support for testing:
 
@@ -59,8 +61,13 @@ In real-world situation you'd also define a [purppura](https://github.com/skx/pu
 
      $ overseer local -verbose \
      $ overseer local \
-        -purppura=http://localhost:8080/events -verbose \
+        -notifier=purppura \
+        -notifier-data=http://localhost:8080/events \
+        -verbose \
         test.file.1 test.file.2
+
+I'd be happy to accept notification-modules for other systems, but for the
+moment only `purppura` is available.
 
 (It is assumed you'd add a cronjob to run the tests every few minutes.)
 
@@ -77,9 +84,18 @@ On __one__ host run the following to add your tests to the redis queue:
 
 This will parse the tests and add them to the redis queue, now on as many hosts as you wish you can now run an instance of the worker:
 
-       $ overseer worker -verbose -redis-host=queue.example.com:6379
+       $ overseer worker -verbose \
+          -redis-host=queue.example.com:6379 \
+          [-redis-pass='secret']
 
-The `worker` sub-command watches the redis-queue, and executes tests as they become available.
+The `worker` sub-command watches the redis-queue, and executes tests as they become available.  Again note that you'll need to configure your notification too, as shown previously on the simpler setup.  Something like this should be sufficient:
+
+       $ overseer worker \
+          -verbose
+          -redis-host=queue.example.com:6379 \
+          [-redis-pass=secret] \
+          -notifier=purppura \
+          -notifier-data=http://localhost:8080/events \
 
 (It is assumed you'd leave the workers running, under systemd or similar, and run `overseer enqueue ...` via cron to ensure the queue was constantly refilled with tests for the worker(s) to execute.)
 
