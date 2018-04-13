@@ -106,6 +106,10 @@ func (s *PINGTest) RunTest(target string) error {
 func (s *PINGTest) SetLine(input string) {
 	s.input = input
 }
+
+//
+// Store the options for this test
+//
 func (s *PINGTest) SetOptions(opts TestOptions) {
 	s.options = opts
 }

@@ -94,7 +94,7 @@ func (s *RSYNCTest) SetLine(input string) {
 }
 
 //
-// Store the timeout value for this protocol-test
+// Store the options for this test
 //
 func (s *RSYNCTest) SetOptions(opts TestOptions) {
 	s.options = opts

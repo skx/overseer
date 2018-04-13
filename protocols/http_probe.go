@@ -296,7 +296,7 @@ func (s *HTTPTest) SetLine(input string) {
 }
 
 //
-// Store the options value for this protocol-test
+// Store the options for this test
 //
 func (s *HTTPTest) SetOptions(opts TestOptions) {
 	s.options = opts

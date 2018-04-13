@@ -94,7 +94,7 @@ func (s *SSHTest) SetLine(input string) {
 }
 
 //
-// Store the options for this protocol-test
+// Store the options for this test
 //
 func (s *SSHTest) SetOptions(opts TestOptions) {
 	s.options = opts

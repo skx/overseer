@@ -96,7 +96,7 @@ func (s *IMAPSTest) SetLine(input string) {
 }
 
 //
-// Store the options for this protocol-test
+// Store the options for this test
 //
 func (s *IMAPSTest) SetOptions(opts TestOptions) {
 	s.options = opts

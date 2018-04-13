@@ -112,7 +112,7 @@ func (s *REDISTest) SetLine(input string) {
 }
 
 //
-// Store the timeout value for this protocol-test
+// Store the options for this test
 //
 func (s *REDISTest) SetOptions(opts TestOptions) {
 	s.options = opts
