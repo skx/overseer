@@ -1,101 +1,16 @@
 package main
 
 import (
-	"bytes"
-	"crypto/sha1"
-	"encoding/base64"
-	"encoding/json"
-
 	"errors"
 	"fmt"
 	"net"
-	"net/http"
 	"regexp"
 	"strings"
 
+	"github.com/skx/overseer/notifiers"
 	"github.com/skx/overseer/parser"
 	"github.com/skx/overseer/protocols"
 )
-
-//
-// ConfigOptions is the globally visible structure which is designed to
-// hold our configuration-options - as set by the command-line flags.
-//
-// It is perhaps poor practice to do things this way, but it eases coding.
-//
-var ConfigOptions struct {
-	Purppura string
-}
-
-//
-// Regardless of whether a test fails/passes we must pass the result
-// on to purppura.
-//
-func postPurple(tst parser.Test, result error) {
-
-	//
-	// If we don't have a server configured then
-	// return without sending
-	//
-	if ConfigOptions.Purppura == "" {
-		return
-	}
-
-	test_type := tst.Type
-	test_target := tst.Target
-	input := tst.Input
-
-	//
-	// We need a stable ID for each test - get one by hashing the
-	// complete input-line and the target we executed against.
-	//
-	hasher := sha1.New()
-	hasher.Write([]byte(test_target))
-	hasher.Write([]byte(input))
-	hash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
-
-	//
-	// All alerts will have an ID + Subject field.
-	//
-	values := map[string]string{
-		"id":      hash,
-		"subject": input,
-	}
-
-	//
-	// If the test failed we'll set the detail + trigger a raise
-	//
-	if result != nil {
-		values["detail"] =
-			fmt.Sprintf("<p>The <code>%s</code> test against <code>%s</code> failed:</p><p><pre>%s</pre></p>",
-				test_type, test_target, result.Error())
-		values["raise"] = "now"
-	} else {
-		//
-		// Otherwise the test passed and so all is OK
-		//
-		values["detail"] =
-			fmt.Sprintf("<p>The <code>%s</code> test against <code>%s</code> passed.</p>",
-				test_type, test_target)
-		values["raise"] = "clear"
-	}
-
-	//
-	// Export the fields to json to post.
-	//
-	jsonValue, _ := json.Marshal(values)
-
-	//
-	// Post to purppura
-	//
-	_, err := http.Post(ConfigOptions.Purppura,
-		"application/json",
-		bytes.NewBuffer(jsonValue))
-
-	if err != nil {
-		fmt.Printf("failed to submit test to purppura\n")
-	}
-}
 
 //
 // Run the given test, with the options
@@ -106,7 +21,7 @@ func postPurple(tst parser.Test, result error) {
 // For the moment it remains because it is used to parse the string
 // fetched from redis.
 //
-func run_test_string(tst string, opts protocols.TestOptions) error {
+func run_test_string(tst string, opts protocols.TestOptions, notifier notifiers.Notifier) error {
 
 	var obj parser.Test
 
@@ -127,14 +42,15 @@ func run_test_string(tst string, opts protocols.TestOptions) error {
 	obj.Type = out[2]
 	obj.Input = tst
 
-	return (run_test(obj, opts))
+	return (run_test(obj, opts, notifier))
 
 }
 
 //
-// Run the given test, with the options.
+// Run the given test, with the options, and send notification with the
+// given notifier.
 //
-func run_test(tst parser.Test, opts protocols.TestOptions) error {
+func run_test(tst parser.Test, opts protocols.TestOptions, notifier notifiers.Notifier) error {
 
 	//
 	// Setup our local state.
@@ -149,7 +65,9 @@ func run_test(tst parser.Test, opts protocols.TestOptions) error {
 	tmp := protocols.ProtocolHandler(test_type)
 	if tmp == nil {
 		fmt.Printf("WARNING: Unknown protocol handler '%s'\n", test_type)
-		postPurple(tst, errors.New(fmt.Sprintf("Unknown protocol-handler %s", test_type)))
+		if notifier != nil {
+			notifier.Notify(tst, errors.New(fmt.Sprintf("Unknown protocol-handler %s", test_type)))
+		}
 		return nil
 	}
 
@@ -186,7 +104,9 @@ func run_test(tst parser.Test, opts protocols.TestOptions) error {
 		ips, err := net.LookupIP(test_target)
 		if err != nil {
 
-			postPurple(tst, errors.New(fmt.Sprintf("Failed to resolve name %s", test_target)))
+			if notifier != nil {
+				notifier.Notify(tst, errors.New(fmt.Sprintf("Failed to resolve name %s", test_target)))
+			}
 			fmt.Printf("WARNING: Failed to resolve %s\n", test_target)
 			return nil
 		}
@@ -243,7 +163,9 @@ func run_test(tst parser.Test, opts protocols.TestOptions) error {
 		// might become "1.2.3.4 must run ssh"
 		//
 		tst.Target = target
-		postPurple(tst, result)
+		if notifier != nil {
+			notifier.Notify(tst, result)
+		}
 	}
 
 	return nil

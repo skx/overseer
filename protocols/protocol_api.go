@@ -5,31 +5,36 @@ import (
 	"time"
 )
 
+// TestOptions are options which are passed to
+// ever test-handler, via `SetOptions`.
 //
-// Options that tests can work with.
-//
+// The options can change the way the test operates.
 type TestOptions struct {
+	// Timeout for the single test, in seconds
 	Timeout time.Duration
+
+	// Should the test consider itself to be running verbosely?
 	Verbose bool
-	IPv4    bool
-	IPv6    bool
+
+	// Should the test probe IPv4 addresses?
+	IPv4 bool
+
+	// Should the test probe IPv6 addresses?
+	IPv6 bool
 }
 
-//
 // ProtocolTest interface is the core of our code, it
 // defines the implementation methods which must be
 // implemented to add a new protocol-test.
-//
 type ProtocolTest interface {
 	//
 	// Run the test against the given target.
 	//
-	// If the test passed nil is returned, otherwise a suitable
-	// error object.
+	// Return a suitable error if the test fails, or
+	// nil to indicate it passed.
 	//
 	RunTest(target string) error
 
-	//
 	// This function is invoked with the complete line
 	// from the parser.  This is useful as some tests might
 	// wish to allow extra options to be specified.
@@ -43,9 +48,7 @@ type ProtocolTest interface {
 	//
 	SetLine(input string)
 
-	//
 	// Set the options for this test.
-	//
 	SetOptions(opts TestOptions)
 }
 

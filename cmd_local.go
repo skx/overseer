@@ -11,16 +11,18 @@ import (
 	"time"
 
 	"github.com/google/subcommands"
+	"github.com/skx/overseer/notifiers"
 	"github.com/skx/overseer/parser"
 	"github.com/skx/overseer/protocols"
 )
 
 type localCmd struct {
-	IPv4     bool
-	IPv6     bool
-	Purppura string
-	Timeout  int
-	Verbose  bool
+	IPv4         bool
+	IPv6         bool
+	Notifier     string
+	NotifierData string
+	Timeout      int
+	Verbose      bool
 }
 
 //
@@ -42,7 +44,10 @@ func (p *localCmd) SetFlags(f *flag.FlagSet) {
 	f.BoolVar(&p.IPv4, "4", true, "Enable IPv4 tests.")
 	f.BoolVar(&p.IPv6, "6", true, "Enable IPv6 tests.")
 	f.IntVar(&p.Timeout, "timeout", 10, "The global timeout for all tests, in seconds.")
-	f.StringVar(&p.Purppura, "purppura", "", "Specify the URL of the purppura end-point.")
+
+	// Notifier setup
+	f.StringVar(&p.Notifier, "notifier", "", "Specify the notifier object to use.")
+	f.StringVar(&p.NotifierData, "notifier-data", "", "Specify the notifier data to use.")
 }
 
 //
@@ -59,7 +64,29 @@ func (p *localCmd) run_test(tst parser.Test) error {
 	opts.IPv6 = p.IPv6
 	opts.Timeout = time.Duration(p.Timeout) * time.Second
 
-	return run_test(tst, opts)
+
+	//
+	// Create a notifier.
+	//
+	var notifier notifiers.Notifier
+
+	if ( p.Notifier != "" ) {
+		notifier = notifiers.NotifierType(p.Notifier)
+
+		//
+		// Set the options
+		//
+		if ( p.NotifierData != "" ) {
+			var nopt notifiers.Options
+			nopt.Data = p.NotifierData
+			notifier.SetOptions(nopt)
+		}
+	}
+
+	//
+	// Now run the test
+	//
+	return run_test(tst, opts, notifier)
 }
 
 //
@@ -68,10 +95,12 @@ func (p *localCmd) run_test(tst parser.Test) error {
 func (p *localCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 
 	//
-	// Set the global purppura end-point
+	// Get the notifier
 	//
-	ConfigOptions.Purppura = p.Purppura
 
+	//
+	// Run all the tests
+	//
 	for _, file := range f.Args() {
 
 		//

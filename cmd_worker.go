@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/skx/overseer/notifiers"
 	"github.com/skx/overseer/protocols"
 
 	"github.com/go-redis/redis"
@@ -19,7 +20,8 @@ import (
 type workerCmd struct {
 	IPv4          bool
 	IPv6          bool
-	Purppura      string
+	Notifier      string
+	NotifierData  string
 	RedisHost     string
 	RedisPassword string
 	Timeout       int
@@ -48,7 +50,10 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 	f.IntVar(&p.Timeout, "timeout", 10, "The global timeout for all tests, in seconds.")
 	f.StringVar(&p.RedisHost, "redis-host", "localhost:6379", "Specify the address of the redis queue.")
 	f.StringVar(&p.RedisPassword, "redis-pass", "", "Specify the password for the redis queue.")
-	f.StringVar(&p.Purppura, "purppura", "", "Specify the URL of the purppura end-point.")
+
+	// Notifier setup
+	f.StringVar(&p.Notifier, "notifier", "", "Specify the notifier object to use.")
+	f.StringVar(&p.NotifierData, "", "http://localhost:8080/events", "Specify the notifier data to use.")
 }
 
 //
@@ -57,9 +62,22 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 
 	//
-	// Set the global purppura end-point
+	// Create a notifier.
 	//
-	ConfigOptions.Purppura = p.Purppura
+	var notifier notifiers.Notifier
+
+	if ( p.Notifier != "" ) {
+		notifier = notifiers.NotifierType(p.Notifier)
+
+		//
+		// Set the options
+		//
+		if ( p.NotifierData != "" ) {
+			var nopt notifiers.Options
+			nopt.Data = p.NotifierData
+			notifier.SetOptions(nopt)
+		}
+	}
 
 	//
 	// Connect to the redis-host.
@@ -96,7 +114,7 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 		test, _ := p._r.LPop("overseer.jobs").Result()
 
 		if test != "" {
-			run_test_string(test, opts)
+			run_test_string(test, opts, notifier)
 		}
 
 	}
