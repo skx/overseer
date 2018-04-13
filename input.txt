@@ -1,5 +1,22 @@
+##
 #
-# Comments are OK and are prefixed with a leading '#'.
+# Comments are supported and are prefixed with a leading '#'.
+#
+####
+#
+#
+# The general form of our test definitions is:
+#
+#  TARGET must run PROTOCOL [test-specific options]
+#
+# So if you wish to test that a host is running ftp you'd write:
+#
+#  ftp.example.com must run ftp
+#
+# When it comes to running HTTP/HTTPS tests the target must be an URL,
+# and success is determined by the HTTP status-code.  Additional options
+# allow you to specify what you regard as a failure - such as a 301/302
+# status-code, and some text in the response-body.
 #
 
 #
@@ -15,8 +32,8 @@
 #   2.  The URL of the target in the body (which Apache does automatically).
 #
 #
-http://steve.fi/ must run http  with status 301 with content 'https://steve.fi'
-http://www.steve.fi/ must run http  with status 302 with content 'https://steve.fi'
+http://steve.fi/ must run http with status 301 with content 'https://steve.fi'
+http://www.steve.fi/ must run http with status 302 with content 'https://steve.fi'
 
 #
 # We don't like www. round here.
@@ -26,7 +43,7 @@ https://www.steve.fi/ must run http with status 302 with content 'https://steve.
 #
 # So the final test is that we have decent content on the single "real" site.
 #
-https://steve.fi/ must run http  with status 200 with content 'Steve Kemp'
+https://steve.fi/ must run http with status 200 with content 'Steve Kemp'
 
 
 #
