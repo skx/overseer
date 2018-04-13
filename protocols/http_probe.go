@@ -264,7 +264,7 @@ func (s *HTTPTest) RunHTTPTest(target string, address string) error {
 	// IPv4 and IPv6 making a single test useless.
 	//
 	if ok != status && (ok != 999) {
-		return errors.New(fmt.Sprintf("Status code was %s not %s", status, ok))
+		return errors.New(fmt.Sprintf("Status code was %s not %d", status, ok))
 	}
 
 	//
