@@ -90,7 +90,7 @@ func (s *DNSTest) lookup(server string, name string, ltype string) ([]string, er
 		case *dns.MX:
 			mx_name := ent.(*dns.MX).Mx
 			mx_prio := ent.(*dns.MX).Preference
-			results = append(results, fmt.Sprintf("%d\t%s", mx_prio, mx_name))
+			results = append(results, fmt.Sprintf("%d %s", mx_prio, mx_name))
 		case *dns.NS:
 			nameserver := ent.(*dns.NS).Ns
 			results = append(results, nameserver)
