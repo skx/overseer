@@ -85,10 +85,13 @@ func (s *Parser) Parse(cb ParsedTest) error {
 // one was found.
 func (s *Parser) parseLine(input string, cb ParsedTest) error {
 
+	//
+	// Ensure that we have a callback.
+	//
 	if cb == nil {
-		fmt.Printf("NIL callbck")
-		return nil
+		return errors.New( "nil callback submitted to parseLine")
 	}
+
 	//
 	// Our input will contain lines of two forms:
 	//
