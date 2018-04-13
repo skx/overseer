@@ -70,7 +70,7 @@ the successful registration and lookup of protocol tests for:
 * FTP
 * HTTP & HTTPS
    * Note that no certificate validation is coded explicitly.
-* IMAPS
+* IMAP & IMAPS
    * Use `mail.example.com must run imaps insecure` to skip TLS validation.
 * ping
 * POP3
