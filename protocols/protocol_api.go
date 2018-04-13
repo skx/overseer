@@ -52,23 +52,23 @@ type ProtocolTest interface {
 //
 // This is a map of known-tests.
 //
-var abilities = struct {
-	m map[string]AbilityCtor
+var handlers = struct {
+	m map[string]TestCtor
 	sync.RWMutex
-}{m: make(map[string]AbilityCtor)}
+}{m: make(map[string]TestCtor)}
 
 //
 // A constructor-function.
 //
-type AbilityCtor func() ProtocolTest
+type TestCtor func() ProtocolTest
 
 //
 // Register a test-type with a constructor.
 //
-func Register(id string, newfunc AbilityCtor) {
-	abilities.Lock()
-	abilities.m[id] = newfunc
-	abilities.Unlock()
+func Register(id string, newfunc TestCtor) {
+	handlers.Lock()
+	handlers.m[id] = newfunc
+	handlers.Unlock()
 }
 
 //
@@ -76,9 +76,9 @@ func Register(id string, newfunc AbilityCtor) {
 // if we can.
 //
 func ProtocolHandler(id string) (a ProtocolTest) {
-	abilities.RLock()
-	ctor, ok := abilities.m[id]
-	abilities.RUnlock()
+	handlers.RLock()
+	ctor, ok := handlers.m[id]
+	handlers.RUnlock()
 	if ok {
 		a = ctor()
 	}
