@@ -149,7 +149,7 @@ func (s *DNSTest) RunTest(target string) error {
 	//
 	//  for $HOSTNAME resolving $TYPE as '$RESULT'.
 	//
-	report := regexp.MustCompile("for\\s+([^\\s+]+)\\s+resolving\\s+([^\\s]+)\\s+as\\s+'([^']+)'")
+	report := regexp.MustCompile("for\\s+([^\\s+]+)\\s+resolving\\s+([^\\s]+)\\s+as\\s+'([^']*)'")
 	out := report.FindStringSubmatch(s.input)
 
 	if len(out) == 4 {

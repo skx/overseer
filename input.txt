@@ -64,6 +64,16 @@ NAMESERVERS are rachel.ns.cloudflare.com, clark.ns.cloudflare.com
 NAMESERVERS must run dns for steve.fi resolving A as '176.9.183.100'
 NAMESERVERS must run dns for steve.fi resolving AAAA as '2a01:4f8:151:6083::100'
 
+#
+# You can confirm that a record shouldn't exist by looking for a result
+# of ''.
+#
+# For example the following host I setup as IPv4 only, so an AAAA record
+# would be a mistake:
+#
+NAMESERVERS must run dns for alert.steve.fi resolving A    as '176.9.183.100'
+NAMESERVERS must run dns for alert.steve.fi resolving AAAA as ''
+
 
 #
 # Now we should do more testing!
