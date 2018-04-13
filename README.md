@@ -81,6 +81,8 @@ the successful registration and lookup of protocol tests for:
 * rsync
 * SMTP
 * SSH
+* XMPP
+
 
 Tests for other protocols will be added based upon need & demand.
 
