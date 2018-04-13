@@ -17,12 +17,13 @@ import (
 )
 
 type workerCmd struct {
-	Redis    string
-	_r       *redis.Client
-	Verbose  bool
-	Purppura string
-	IPv4     bool
-	IPv6     bool
+	RedisHost     string
+	RedisPassword string
+	_r            *redis.Client
+	Verbose       bool
+	Purppura      string
+	IPv4          bool
+	IPv6          bool
 }
 
 //
@@ -43,7 +44,8 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 	f.BoolVar(&p.Verbose, "verbose", false, "Show more output.")
 	f.BoolVar(&p.IPv4, "4", true, "Enable IPv4 tests.")
 	f.BoolVar(&p.IPv6, "6", true, "Enable IPv6 tests.")
-	f.StringVar(&p.Redis, "redis", "localhost:6379", "Specify the address of the redis queue.")
+	f.StringVar(&p.RedisHost, "redis-host", "localhost:6379", "Specify the address of the redis queue.")
+	f.StringVar(&p.RedisPassword, "redis-pass", "", "Specify the password for the redis queue.")
 	f.StringVar(&p.Purppura, "purppura", "", "Specify the URL of the purppura end-point.")
 }
 
@@ -61,8 +63,9 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 	// Connect to the redis-host.
 	//
 	p._r = redis.NewClient(&redis.Options{
-		Addr: p.Redis,
-		DB:   0, // use default DB
+		Addr:     p.RedisHost,
+		Password: p.RedisPassword,
+		DB:       0, // use default DB
 	})
 
 	//
