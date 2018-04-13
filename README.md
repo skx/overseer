@@ -79,7 +79,9 @@ in parallel.   Overseer supports this via the use of a shared [redis](https://re
 
 On __one__ host run the following to add your tests to the redis queue:
 
-       $ overseer enqueue -redis-host=queue.example.com:6379 \
+       $ overseer enqueue \
+           -redis-host=queue.example.com:6379 \
+           [-redis-pass='secret.here'] \
            test.file.1 test.file.2 .. test.file.N
 
 This will parse the tests and add them to the redis queue, now on as many hosts as you wish you can now run an instance of the worker:
