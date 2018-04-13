@@ -65,12 +65,15 @@ On as many hosts as you wish you can now run workers which will await tests, and
 The tests defined in [input.txt](input.txt) each work, demonstrating
 the successful registration and lookup of protocol tests for:
 
+* DNS
+  * Lookups of A, AAAA, MX, NS, and TXT records.
 * FTP
 * HTTP & HTTPS
    * Note that no certificate validation is coded explicitly.
 * IMAPS
    * Use `mail.example.com must run imaps insecure` to skip TLS validation.
 * ping
+* POP3
 * redis
 * rsync
 * SMTP
