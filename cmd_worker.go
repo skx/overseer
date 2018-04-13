@@ -17,13 +17,14 @@ import (
 )
 
 type workerCmd struct {
-	RedisHost     string
-	RedisPassword string
-	_r            *redis.Client
-	Verbose       bool
-	Purppura      string
 	IPv4          bool
 	IPv6          bool
+	Purppura      string
+	RedisHost     string
+	RedisPassword string
+	Timeout       int
+	Verbose       bool
+	_r            *redis.Client
 }
 
 //
@@ -44,6 +45,7 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 	f.BoolVar(&p.Verbose, "verbose", false, "Show more output.")
 	f.BoolVar(&p.IPv4, "4", true, "Enable IPv4 tests.")
 	f.BoolVar(&p.IPv6, "6", true, "Enable IPv6 tests.")
+	f.IntVar(&p.Timeout, "timeout", 10, "The global timeout for all tests, in seconds.")
 	f.StringVar(&p.RedisHost, "redis-host", "localhost:6379", "Specify the address of the redis queue.")
 	f.StringVar(&p.RedisPassword, "redis-pass", "", "Specify the password for the redis queue.")
 	f.StringVar(&p.Purppura, "purppura", "", "Specify the URL of the purppura end-point.")
@@ -84,7 +86,7 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 	opts.Verbose = p.Verbose
 	opts.IPv4 = p.IPv4
 	opts.IPv6 = p.IPv6
-	opts.Timeout = 10 * time.Second
+	opts.Timeout = time.Duration(p.Timeout) * time.Second
 
 	//
 	// Wait for the members
