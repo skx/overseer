@@ -137,7 +137,7 @@ func (s *Parser) parseLine(input string, cb ParsedTest) error {
 	//
 	// Look to see if this line matches the testing line
 	//
-	re := regexp.MustCompile("^([^ \t]+)\\s+must\\s+run\\s+([a-z]+)")
+	re := regexp.MustCompile("^([^ \t]+)\\s+must\\s+run\\s+([^\\s]+)")
 	out := re.FindStringSubmatch(input)
 
 	//
