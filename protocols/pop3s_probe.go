@@ -1,7 +1,9 @@
 package protocols
 
 import (
+	"crypto/tls"
 	"fmt"
+	//	"net"
 	"regexp"
 	"strconv"
 	"strings"
@@ -14,7 +16,7 @@ import (
 //
 // We store state in the `input` field.
 //
-type POP3Test struct {
+type POP3STest struct {
 	input   string
 	options TestOptions
 }
@@ -22,13 +24,13 @@ type POP3Test struct {
 //
 // Run the test against the specified target.
 //
-func (s *POP3Test) RunTest(target string) error {
+func (s *POP3STest) RunTest(target string) error {
 	var err error
 
 	//
 	// The default port to connect to.
 	//
-	port := 110
+	port := 995
 
 	//
 	// If the user specified a different port update it.
@@ -55,17 +57,37 @@ func (s *POP3Test) RunTest(target string) error {
 	}
 
 	//
+	// Insecure operation allows us to skip validation of
+	// the SSL certificate
+	//
+	insecure := false
+	if strings.Contains(s.input, " insecure") {
+		insecure = true
+	}
+
+	//
+	// Setup the default TLS config
+	//
+	tls_setup := &tls.Config{}
+
+	//
+	// If we're being insecure then remove the verification
+	//
+	if insecure {
+		tls_setup = &tls.Config{
+			InsecureSkipVerify: true,
+		}
+	}
+
+	//
 	// Connect
 	//
-	c, err := pop3.Dial(address, pop3.UseTimeout(s.options.Timeout))
+	c, err := pop3.Dial(address, pop3.UseTLS(tls_setup), pop3.UseTimeout(s.options.Timeout))
 
 	if err != nil {
 		return err
 	}
 
-	//
-	// Disconnect
-	//
 	c.Quit()
 
 	return nil
@@ -76,14 +98,14 @@ func (s *POP3Test) RunTest(target string) error {
 // field; this could be used if there are protocol-specific options
 // to be understood.
 //
-func (s *POP3Test) SetLine(input string) {
+func (s *POP3STest) SetLine(input string) {
 	s.input = input
 }
 
 //
 // Store the options for this test
 //
-func (s *POP3Test) SetOptions(opts TestOptions) {
+func (s *POP3STest) SetOptions(opts TestOptions) {
 	s.options = opts
 }
 
@@ -91,7 +113,7 @@ func (s *POP3Test) SetOptions(opts TestOptions) {
 // Register our protocol-tester.
 //
 func init() {
-	Register("pop3", func() ProtocolTest {
-		return &POP3Test{}
+	Register("pop3s", func() ProtocolTest {
+		return &POP3STest{}
 	})
 }
