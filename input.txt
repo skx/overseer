@@ -8,16 +8,23 @@
 #
 # Test that the HTTP versions redirect to the secure version.
 #
+# We look for redirections via:
+#
+#   1.  The status-code.
+#
+#   2.  The URL of the target in the body (which Apache does automatically).
+#
+#
 http://steve.fi/ must run http  with status 301 with content 'https://steve.fi'
 http://www.steve.fi/ must run http  with status 302 with content 'https://steve.fi'
 
 #
-# We don't like www. round here
+# We don't like www. round here.
 #
 https://www.steve.fi/ must run http with status 302 with content 'https://steve.fi'
 
 #
-# So the final test is that we have decent content.
+# So the final test is that we have decent content on the single "real" site.
 #
 https://steve.fi/ must run http  with status 200 with content 'Steve Kemp'
 
