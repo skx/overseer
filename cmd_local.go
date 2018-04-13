@@ -16,9 +16,10 @@ import (
 )
 
 type localCmd struct {
-	Verbose bool
-	IPv4    bool
-	IPv6    bool
+	Verbose  bool
+	IPv4     bool
+	IPv6     bool
+	Purppura string
 }
 
 //
@@ -39,6 +40,7 @@ func (p *localCmd) SetFlags(f *flag.FlagSet) {
 	f.BoolVar(&p.Verbose, "verbose", false, "Show more output.")
 	f.BoolVar(&p.IPv4, "4", true, "Enable IPv4 tests.")
 	f.BoolVar(&p.IPv6, "6", true, "Enable IPv6 tests.")
+	f.StringVar(&p.Purppura, "purppura", "", "Specify the URL of the purppura end-point.")
 }
 
 //
@@ -62,6 +64,11 @@ func (p *localCmd) run_test(tst parser.Test) error {
 // Entry-point.
 //
 func (p *localCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
+
+	//
+	// Set the global purppura end-point
+	//
+	ConfigOptions.Purppura = p.Purppura
 
 	for _, file := range f.Args() {
 

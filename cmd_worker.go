@@ -17,11 +17,12 @@ import (
 )
 
 type workerCmd struct {
-	Redis   string
-	_r      *redis.Client
-	Verbose bool
-	IPv4    bool
-	IPv6    bool
+	Redis    string
+	_r       *redis.Client
+	Verbose  bool
+	Purppura string
+	IPv4     bool
+	IPv6     bool
 }
 
 //
@@ -43,12 +44,18 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 	f.BoolVar(&p.IPv4, "4", true, "Enable IPv4 tests.")
 	f.BoolVar(&p.IPv6, "6", true, "Enable IPv6 tests.")
 	f.StringVar(&p.Redis, "redis", "localhost:6379", "Specify the address of the redis queue.")
+	f.StringVar(&p.Purppura, "purppura", "", "Specify the URL of the purppura end-point.")
 }
 
 //
 // Entry-point.
 //
 func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
+
+	//
+	// Set the global purppura end-point
+	//
+	ConfigOptions.Purppura = p.Purppura
 
 	//
 	// Connect to the redis-host.
