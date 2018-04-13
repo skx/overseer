@@ -30,6 +30,25 @@ https://steve.fi/ must run http  with status 200 with content 'Steve Kemp'
 
 
 #
+# Of course nobody can reach my website without a DNS-server replying
+# with suitable responses.
+#
+# Here we define a pair of nameservers, using the macro-facility:
+#
+NAMESERVERS are rachel.ns.cloudflare.com, clark.ns.cloudflare.com
+
+#
+# Now we use that macro, meaning that these tests will be applied
+# against each host in the list.
+#
+# Macros are basically just shortcuts for repeating tests against
+# multiple hosts.
+#
+NAMESERVERS must run dns for steve.fi resolving A as '176.9.183.100'
+NAMESERVERS must run dns for steve.fi resolving AAAA as '2a01:4f8:151:6083::100'
+
+
+#
 # Now we should do more testing!
 #
 # Test any OpenSSH probe against localhost, on the non-standard port 2222.
@@ -70,7 +89,10 @@ mail.steve.org.uk must run smtp on 587
 
 #
 # Macros allow you to cut down on duplication if you want to run the
-# same test against a group of hosts
+# same test against a group of hosts.
+#
+# We've already seen that with the nameserver tests previously, but
+# it doesn't hurt to have a refresher.
 #
 REDIS are 127.0.0.1, ::1
 REDIS must run redis
@@ -82,7 +104,10 @@ REDIS must run redis
 #   SSH_HOSTS are host1.example.com, host2.example.com, host3.example.com
 #   SSH_HOSTS must run ssh
 #
-# All of the protocol-tests allow this expansion __EXCEPT__ for the http-test.
+# NOTE:
+#
+#    All of the protocol-tests allow this expansion __EXCEPT__ for
+#    the http-test, because the target of a HTTP-test is an URL, not a host.
 #
 
 
