@@ -89,7 +89,7 @@ func (s *Parser) parseLine(input string, cb ParsedTest) error {
 	// Ensure that we have a callback.
 	//
 	if cb == nil {
-		return errors.New( "nil callback submitted to parseLine")
+		return errors.New("nil callback submitted to parseLine")
 	}
 
 	//
