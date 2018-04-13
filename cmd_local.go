@@ -64,19 +64,18 @@ func (p *localCmd) run_test(tst parser.Test) error {
 	opts.IPv6 = p.IPv6
 	opts.Timeout = time.Duration(p.Timeout) * time.Second
 
-
 	//
 	// Create a notifier.
 	//
 	var notifier notifiers.Notifier
 
-	if ( p.Notifier != "" ) {
+	if p.Notifier != "" {
 		notifier = notifiers.NotifierType(p.Notifier)
 
 		//
 		// Set the options
 		//
-		if ( p.NotifierData != "" ) {
+		if p.NotifierData != "" {
 			var nopt notifiers.Options
 			nopt.Data = p.NotifierData
 			notifier.SetOptions(nopt)
