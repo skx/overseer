@@ -47,7 +47,7 @@ You can look at the [sample tests](input.txt) to get an idea of what is permitte
 ### Running Locally
 
 Assuming you have a "small" network you can then execute your tests
-interactively like so:
+like so:
 
       $ overseer local -verbose test.file.1 test.file.2 .. test.file.N
 
@@ -61,6 +61,8 @@ In real-world situation you'd also define a [purppura](https://github.com/skx/pu
      $ overseer local \
         -purppura=http://localhost:8080/events -verbose \
         test.file.1 test.file.2
+
+(It is assumed you'd add a cronjob to run the tests every few minutes.)
 
 
 ### Running from multiple hosts
@@ -79,6 +81,7 @@ This will parse the tests and add them to the redis queue, now on as many hosts 
 
 The `worker` sub-command watches the redis-queue, and executes tests as they become available.
 
+(It is assumed you'd leave the workers running, under systemd or similar, and run `overseer enqueue ...` via cron to ensure the queue was constantly refilled with tests for the worker(s) to execute.)
 
 
 ## Status
