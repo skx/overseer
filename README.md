@@ -6,28 +6,58 @@
 
 # Overseer
 
-Overseer is a small utility which is designed to replicate a well-known
-remote protocol tester.
+Overseer is a simple golang based remote protocol tester, which allows you to monitor the health of a network, raising/clearing alerts with the [purppura](https://github.com/skx/purppura/) notification system based upon service availability.
 
-In short this application lets you monitor the health of a network,
-raising/clearing alerts with the [purppura](https://github.com/skx/purppura/)
-notification system.
+"Remote Protocol Tester" sounds a little vague, so to be more concrete this application lets you test services are running and has built-in support for testing:
 
-Unlike the system upon which it is based it is single-host only.
+* http-servers
+* rsync-servers
+* smtp-servers
+* ..
+
+Adding new protocols to be tested is simple.
+
+
+## Installation
+
+The following command should get/update overseer upon your system, assuming
+you have a working golang setup:
+
+     $ go get -u github.com/skx/overseer
+
 
 ## Usage
 
-Build the application as per usual golang standards.  Then launch
-via:
+There are two ways you can use overseer:
 
-      $ ./overseer config.file config.file.two config.file.three ... config.file.N
+* Locally.
+   * For small networks.
+* Via a queue
+   * For huge networks.
 
-Each test will be parsed and executed one by one.  The results of the
+In both cases the way that you get started is to write a series of tests,
+these are the tests which describe the hosts & services you wish to monitor.
+
+You can look at the [sample tests](input.txt) to get an idea of what is permitted.
+
+Assuming you have a "small" network you can then execute your tests like so:
+
+      $ overseer local test.file.1 test.file.2 .. test.file.N
+
+Each file will be parsed and executed one by one.  The results of the
 tests will be output to the console and if the end-point of a [purppura](https://github.com/skx/purppura) server is defined it receive the results of the tests too.
 
-For example:
+If you have a large network the expectation is that the tests will take a long time to execute serially, so to speed things up you might want to run the tests
+in parallel.   Overseer supports this via a shared instance of [redis](https://redis.io/).
 
-       $ ./overseer -purppura=http://localhost:8080/events input.txt
+On __one__ host run the following to add your tests to the redis queue:
+
+       $ overseer enqueue -redis=queue.example.com:6379 \
+           test.file.1 test.file.2 .. test.file.N
+
+On as many hosts as you wish you can now run workers which will await tests, and execute them in turn:
+
+       $ overseer worker -redis=queue.example.com:6379
 
 
 ## Status
@@ -68,9 +98,9 @@ This is achieved by resolving the target, `mail.steve.org.uk` in this case, and 
 If your host is not running with dual-stacks you can disable a particular family via:
 
      # IPv6 only
-     overseer -4=false [-6=true]
+     overseer local -4=false [-6=true]
 
      # IPv4 only
-     overseer [-4=true] -6=false
+     overseer local [-4=true] -6=false
 
 The default is to enable both IPv6 and IPv4 testing.

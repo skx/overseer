@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	client "github.com/emersion/go-imap/client"
 )
@@ -19,7 +18,7 @@ import (
 //
 type IMAPSTest struct {
 	input   string
-	timeout time.Duration
+	options TestOptions
 }
 
 //
@@ -68,7 +67,7 @@ func (s *IMAPSTest) RunTest(target string) error {
 	}
 
 	var dial = &net.Dialer{
-		Timeout: s.timeout,
+		Timeout: s.options.Timeout,
 	}
 
 	if insecure {
@@ -97,10 +96,10 @@ func (s *IMAPSTest) SetLine(input string) {
 }
 
 //
-// Store the timeout value for this protocol-test
+// Store the options for this protocol-test
 //
-func (s *IMAPSTest) SetTimeout(timeout time.Duration) {
-	s.timeout = timeout
+func (s *IMAPSTest) SetOptions(opts TestOptions) {
+	s.options = opts
 }
 
 //

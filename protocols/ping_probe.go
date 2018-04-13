@@ -6,7 +6,6 @@ import (
 	"net"
 	"os/exec"
 	"syscall"
-	"time"
 )
 
 //
@@ -15,7 +14,8 @@ import (
 // We store state in the `input` field.
 //
 type PINGTest struct {
-	input string
+	input   string
+	options TestOptions
 }
 
 //
@@ -106,8 +106,8 @@ func (s *PINGTest) RunTest(target string) error {
 func (s *PINGTest) SetLine(input string) {
 	s.input = input
 }
-func (s *PINGTest) SetTimeout(timeout time.Duration) {
-	// NOP
+func (s *PINGTest) SetOptions(opts TestOptions) {
+	s.options = opts
 }
 
 //

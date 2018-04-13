@@ -15,26 +15,24 @@
 We should use sub-commands so that we have four distinct commands:
 
 
-1. Parse jobs and add to redis:
+1. [x] Parse jobs and add to redis:
+    $ overseer enqueue input.txt
 
-    $ overseer parse input.txt
-
-2.  Pull jobs from redis, execute them in turn:
-
+2. [x] Pull jobs from redis, execute them in turn:
     $ overseer worker
 
-3. Run jobs from local-file only:
-
+3. [x] Run jobs from local-file only:
     $ overseer local file.txt
 
-4.  Show queue
-
+4. [ ] Show queue
     $ overseer stats
+    -> $ redis-cli lrange overseer.jobs 0 -1
 
-5.  Show version
-
+5. [x] Show version
     $ overseer version
 
+6. [x] Show parsed file
+    $ overseer dump ..
 
 ## Final
 

@@ -6,6 +6,16 @@ import (
 )
 
 //
+// Options that tests can work with.
+//
+type TestOptions struct {
+	Timeout time.Duration
+	Verbose bool
+	IPv4    bool
+	IPv6    bool
+}
+
+//
 // ProtocolTest interface is the core of our code, it
 // defines the implementation methods which must be
 // implemented to add a new protocol-test.
@@ -34,9 +44,9 @@ type ProtocolTest interface {
 	SetLine(input string)
 
 	//
-	// Set the timeout period for this test
+	// Set the options for this test.
 	//
-	SetTimeout(timeout time.Duration)
+	SetOptions(opts TestOptions)
 }
 
 //

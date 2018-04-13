@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/go-redis/redis"
 )
@@ -21,7 +20,7 @@ import (
 //
 type REDISTest struct {
 	input   string
-	timeout time.Duration
+	options TestOptions
 }
 
 //
@@ -115,8 +114,8 @@ func (s *REDISTest) SetLine(input string) {
 //
 // Store the timeout value for this protocol-test
 //
-func (s *REDISTest) SetTimeout(timeout time.Duration) {
-	s.timeout = timeout
+func (s *REDISTest) SetOptions(opts TestOptions) {
+	s.options = opts
 }
 
 //

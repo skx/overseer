@@ -8,7 +8,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 )
 
 //
@@ -18,7 +17,7 @@ import (
 //
 type RSYNCTest struct {
 	input   string
-	timeout time.Duration
+	options TestOptions
 }
 
 //
@@ -47,7 +46,7 @@ func (s *RSYNCTest) RunTest(target string) error {
 	//
 	// Set an explicit timeout
 	//
-	d := net.Dialer{Timeout: s.timeout}
+	d := net.Dialer{Timeout: s.options.Timeout}
 
 	//
 	// Default to connecting to an IPv4-address
@@ -97,8 +96,8 @@ func (s *RSYNCTest) SetLine(input string) {
 //
 // Store the timeout value for this protocol-test
 //
-func (s *RSYNCTest) SetTimeout(timeout time.Duration) {
-	s.timeout = timeout
+func (s *RSYNCTest) SetOptions(opts TestOptions) {
+	s.options = opts
 }
 
 //

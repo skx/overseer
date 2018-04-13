@@ -8,7 +8,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 )
 
 //
@@ -18,7 +17,7 @@ import (
 //
 type FTPTest struct {
 	input   string
-	timeout time.Duration
+	options TestOptions
 }
 
 //
@@ -47,7 +46,7 @@ func (s *FTPTest) RunTest(target string) error {
 	//
 	// Set an explicit timeout
 	//
-	d := net.Dialer{Timeout: s.timeout}
+	d := net.Dialer{Timeout: s.options.Timeout}
 
 	//
 	// Default to connecting to an IPv4-address
@@ -95,10 +94,10 @@ func (s *FTPTest) SetLine(input string) {
 }
 
 //
-// Store the timeout value for this protocol-test
+// Store the options for this test
 //
-func (s *FTPTest) SetTimeout(timeout time.Duration) {
-	s.timeout = timeout
+func (s *FTPTest) SetOptions(opts TestOptions) {
+	s.options = opts
 }
 
 //
