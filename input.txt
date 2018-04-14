@@ -9,16 +9,19 @@
 #
 #      TARGET must run PROTOCOL [test-specific options]
 #
-# Test specific options are generally of the form:
-#
-#      with NAME VALUE
-#
-# So if you wish to test that a host is running ftp you'd write:
+# So if you wish to test that a host is running ftp you'd write your
+# test like so:
 #
 #      ftp.example.com must run ftp
 #
-# If you wished to change the port, and lots of our tests allow this,
-# then you'd use :
+# Test-specific options are of the form:
+#
+#      with $OPTION_NAME $OPTION_VALUE
+#
+# Most of the protocol-tests allow you to change the default port
+# against which they'd run, via the "port" option.  So if you wished
+# to run an FTP-test against a host running it on a non-standard port
+# you could do so like this:
 #
 #      ftp.example.com must run ftp with port 2211
 #
@@ -31,20 +34,31 @@
 # and success is determined by the HTTP status-code.
 #
 # A HTTP status-code of 200 is regarded as a pass, and anything else
-# as a failure.  You can choose to prefer any other return-code as a
-# success by appending your preferred code:
+# as a failure.  You can choose to regard any other return-code as a
+# success by setting your preferred result:
 #
 #       with status 302
 #
-# If you regard any response as valid then you can specify that as
+# Or you might regard any response as valid, which could be specified by
+# writing:
 #
 #       with status any
 #
-# You can also choose to regard a HTTP-request as a failure if you
-# don't receive some specific value in the response.  So I'd test my
-# website has my name like so:
+# In short `with status any` tests:
 #
-#       with content 'Steve Kemp'
+# * You could resolve the target's hostname.
+# * You could make a HTTP-request.
+# * You received some kind of response
+#
+# If you wanted a more thorough test you might wish to look for
+# some specific text in body of the response - that is possible
+# via the `content` argument.
+#
+# For example I might wish to ensure my website has my name in it:
+#
+#       https://steve.fi/ must run http with content 'Steve Kemp'
+#
+# You can of course combine the status & content options.
 #
 
 
@@ -59,6 +73,8 @@
 #   1.  The status-code.
 #   2.  The URL of the target in the body (which Apache does automatically).
 #
+# This works because our HTTP-probe does NOT follow HTTP-Redirection
+# requests, as doing so would limit the kind of tests we could write.
 #
 http://steve.fi/ must run http with status 301 with content 'https://steve.fi'
 http://www.steve.fi/ must run http with status 302 with content 'https://steve.fi'
@@ -75,38 +91,70 @@ https://steve.fi/ must run http with status 200 with content 'Steve Kemp'
 
 
 #
-# Of course nobody can reach my website without a DNS-server replying
-# with suitable responses.
+# Macros are shortcuts for repeating tests against multiple hosts.
 #
-# Here we define a pair of nameservers, using the macro-facility:
+# Here we define the macro "REDIS" to have two IPs:
+#
+REDIS are 127.0.0.1, ::1
+
+#
+# Macro-names are always written in upper-case, and it is a fatal error
+# to set the value of an existing macro.  Which means this is invalid:
+#
+# HOSTS are 1.2.3.4, 1.2.3.5,...
+# HOSTS are 10.0.0.1, 10.0.0.2
+#
+
+
+#
+# Now we use the macro we defined, meaning that this single test will
+# be applied against both hosts used in the definition.
+#
+REDIS must run redis
+
+
+#
+# Of course nobody could reach my website if there were no DNS entries
+# present for it.  So we should test they exist too!
+#
+# The DNS lookup test requires you to specify several things, beyond the
+# DNS-server to query (which is the target of the test and thus implicit):
+#
+#  * The name to lookup.
+#  * The type of record to lookup.
+#  * The expected result
+#
+# For consistency the DNS test uses the general mechanism already
+# demonstrated to allow you to set those via text like this:
+#
+#    with lookup "example.com"
+#    with type "A"
+#    with result "127.0.0.1"
+#
+
+#
+# First of all we define a pair of nameservers, using our macro-facility:
 #
 NAMESERVERS are rachel.ns.cloudflare.com, clark.ns.cloudflare.com
 
 #
-# Now we use that macro, meaning that these tests will be applied
-# against each host in the list.
+# Now we run some basic tests
 #
-# Macros are basically just shortcuts for repeating tests against
-# multiple hosts.
-#
-# The DNS-test is an odd one, because it doesn't use the general
-# form of "with $NAME $VALUE" for specifying the inputs and expected
-# output.
-#
-# This will be corrected in the future.
-#
-NAMESERVERS must run dns for steve.fi resolving A as '176.9.183.100'
-NAMESERVERS must run dns for steve.fi resolving AAAA as '2a01:4f8:151:6083::100'
+NAMESERVERS must run dns with lookup steve.fi with type A with result '176.9.183.100'
+NAMESERVERS must run dns with lookup steve.fi with type AAAA with result '2a01:4f8:151:6083::100'
+NAMESERVERS must run dns with lookup www.steve.fi with type A with result '176.9.183.100'
+NAMESERVERS must run dns with lookup www.steve.fi with type AAAA with result '2a01:4f8:151:6083::100'
+
 
 #
-# You can confirm that a record shouldn't exist by looking for a result
-# of ''.
+# You can confirm that a record shouldn't exist by looking for an empty
+# result (i.e. "", or '').
 #
-# For example the following host I setup as IPv4 only, so an AAAA record
-# would be a mistake:
+# The following host, alert.steve.fi, is deliberately setup as IPv4 only,
+# so finding an AAAA record in DNS would indicate a mistake:
 #
-NAMESERVERS must run dns for alert.steve.fi resolving A    as '176.9.183.100'
-NAMESERVERS must run dns for alert.steve.fi resolving AAAA as ''
+NAMESERVERS must run dns with lookup alert.steve.fi with type A with result  '176.9.183.100'
+NAMESERVERS must run dns with lookup alert.steve.fi with type AAAA with result ''
 
 
 #
@@ -148,15 +196,6 @@ mail.steve.org.uk must run smtp
 mail.steve.org.uk must run smtp with port 587
 
 
-#
-# Macros allow you to cut down on duplication if you want to run the
-# same test against a group of hosts.
-#
-# We've already seen that with the nameserver tests previously, but
-# it doesn't hurt to have a refresher.
-#
-REDIS are 127.0.0.1, ::1
-REDIS must run redis
 
 #
 # Similarly you might wish to test SSH against a whole bunch of related

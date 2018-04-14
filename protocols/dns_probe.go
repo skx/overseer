@@ -12,7 +12,6 @@ package protocols
 import (
 	"errors"
 	"fmt"
-	"regexp"
 	"sort"
 	"strings"
 
@@ -28,10 +27,6 @@ type DNSTest struct {
 	input   string
 	options TestOptions
 }
-
-//
-// These are helper functions for DNS lookups
-//
 
 //
 // Here we have a map of types, we only cover the few we care about.
@@ -145,46 +140,44 @@ func (s *DNSTest) localQuery(server string, qname string, lookupType string) (*d
 func (s *DNSTest) RunTest(target string) error {
 
 	//
-	// Our line must match
+	// Parse the options and make sure we have enough.
 	//
-	//  for $HOSTNAME resolving $TYPE as '$RESULT'.
-	//
-	report := regexp.MustCompile("for\\s+([^\\s+]+)\\s+resolving\\s+([^\\s]+)\\s+as\\s+'([^']*)'")
-	out := report.FindStringSubmatch(s.input)
+	options := ParseArguments(s.input)
 
-	if len(out) == 4 {
-
-		lookup_name := out[1]
-		lookup_type := out[2]
-		expected := out[3]
-
-		//
-		// Run the lookup
-		//
-		res, err := s.lookup(target, lookup_name, lookup_type)
-		if err != nil {
-			return err
-		}
-
-		//
-		// If the results differ that's an error
-		//
-		// Sort the results and comma-join for comparison
-		//
-		sort.Strings(res)
-		found := strings.Join(res, ",")
-
-		if found == expected {
-			return nil
-		} else {
-			return errors.New(fmt.Sprintf("Expected DNS result to be '%s', but found '%s'", expected, found))
-		}
+	if options["lookup"] == "" {
+		return errors.New("No value to lookup specified.")
+	}
+	if options["type"] == "" {
+		return errors.New("No record-type to lookup.")
 	}
 
 	//
-	// If we reached here the the line didn't match our regular expression
+	// NOTE:
+	// "result" must also be specified, but it is valid to set that
+	// to be empty.
 	//
-	return errors.New("Malformed input for the DNS test")
+
+	//
+	// Run the lookup
+	//
+	res, err := s.lookup(target, options["lookup"], options["type"])
+	if err != nil {
+		return err
+	}
+
+	//
+	// If the results differ that's an error
+	//
+	// Sort the results and comma-join for comparison
+	//
+	sort.Strings(res)
+	found := strings.Join(res, ",")
+
+	if found == options["result"] {
+		return nil
+	} else {
+		return errors.New(fmt.Sprintf("Expected DNS result to be '%s', but found '%s'", options["result"], found))
+	}
 }
 
 //
