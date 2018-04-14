@@ -222,5 +222,13 @@ mail.steve.org.uk must run imaps insecure
 
 
 #
+# We might also test MySQL, but I don't run it:
+#
+# localhost must run mysql with username 'root' with password 'sekrit'
+#
+
+
+#
+#
 # This concludes our testing.
 #
