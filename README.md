@@ -83,7 +83,9 @@ On __one__ host run the following to add your tests to the redis queue:
            [-redis-pass='secret.here'] \
            test.file.1 test.file.2 .. test.file.N
 
-This will parse the tests and add them to the redis queue, now on as many hosts as you wish you can now run an instance of the worker:
+This will parse the tests, add each of them to the redis queue, and then terminate.
+
+One as many hosts as you wish you can now run an instance of the worker:
 
        $ overseer worker -verbose \
           -redis-host=queue.example.com:6379 \
