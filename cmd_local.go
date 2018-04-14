@@ -103,14 +103,14 @@ func (p *localCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{})
 	for _, file := range f.Args() {
 
 		//
-		// Create an object to parse the given file.
+		// Create an object to parse our file.
 		//
-		helper := parser.New(file)
+		helper := parser.New()
 
 		//
 		// Invoke the run_test callback to execute each test.
 		//
-		err := helper.Parse(p.run_test)
+		err := helper.ParseFile(file, p.run_test)
 		if err != nil {
 			fmt.Printf("Error parsing file: %s\n", err.Error())
 		}

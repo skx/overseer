@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/skx/overseer/notifiers"
+	"github.com/skx/overseer/parser"
 	"github.com/skx/overseer/protocols"
 
 	"github.com/go-redis/redis"
@@ -107,14 +108,31 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 	opts.Timeout = time.Duration(p.Timeout) * time.Second
 
 	//
+	// Create a parser for our input
+	//
+	parse := parser.New()
+
+	//
 	// Wait for the members
 	//
 	for true {
 
+		//
+		// Get a job.
+		//
 		test, _ := p._r.LPop("overseer.jobs").Result()
 
+		//
+		// Parse it
+		//
 		if test != "" {
-			run_test_string(test, opts, notifier)
+			job, err := parse.ParseLine(test, nil)
+
+			if err == nil {
+				run_test(job, opts, notifier)
+			} else {
+				fmt.Printf("Error parsing job from queue: %s - %s\n", test, err.Error())
+			}
 		}
 
 	}

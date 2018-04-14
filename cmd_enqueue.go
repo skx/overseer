@@ -78,14 +78,14 @@ func (p *enqueueCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{
 	for _, file := range f.Args() {
 
 		//
-		// Create an object to parse the given file.
+		// Create an object to parse our file.
 		//
-		helper := parser.New(file)
+		helper := parser.New()
 
 		//
 		// For each parsed job call `enqueue_test`.
 		//
-		err := helper.Parse(p.enqueue_test)
+		err := helper.ParseFile(file, p.enqueue_test)
 
 		//
 		// Did we see an error?

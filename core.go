@@ -25,7 +25,7 @@ func run_test_string(tst string, opts protocols.TestOptions, notifier notifiers.
 
 	var obj parser.Test
 
-	re := regexp.MustCompile("^([^ \t]+)\\s+must\\s+run\\s+([a-z]+)")
+	re := regexp.MustCompile("^([^ \t]+)\\s+must\\s+run\\s+([a-z0-9]+)")
 	out := re.FindStringSubmatch(tst)
 
 	//
@@ -63,13 +63,6 @@ func run_test(tst parser.Test, opts protocols.TestOptions, notifier notifiers.No
 	// Look for a suitable protocol handler
 	//
 	tmp := protocols.ProtocolHandler(test_type)
-	if tmp == nil {
-		fmt.Printf("WARNING: Unknown protocol handler '%s'\n", test_type)
-		if notifier != nil {
-			notifier.Notify(tst, errors.New(fmt.Sprintf("Unknown protocol-handler %s", test_type)))
-		}
-		return nil
-	}
 
 	//
 	// Pass the full input-line to our protocol tester

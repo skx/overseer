@@ -7,12 +7,13 @@ import (
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/skx/overseer/protocols"
 )
 
 // Parser holds our parser-state.
 type Parser struct {
-	Filename string
-	MACROS   map[string][]string
+	MACROS map[string][]string
 }
 
 // A single test definition
@@ -26,21 +27,20 @@ type Test struct {
 type ParsedTest func(x Test) error
 
 // New is the constructor.
-func New(filename string) *Parser {
+func New() *Parser {
 	m := new(Parser)
-	m.Filename = filename
 	m.MACROS = make(map[string][]string)
 	return m
 }
 
 // Parse processes the file passed in the constructor,
 // for each line ParseLine is invoked
-func (s *Parser) Parse(cb ParsedTest) error {
+func (s *Parser) ParseFile(filename string, cb ParsedTest) error {
 
 	// Open the given file.
-	file, err := os.Open(s.Filename)
+	file, err := os.Open(filename)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Error opening %s - %s\n", s.Filename, err.Error()))
+		return errors.New(fmt.Sprintf("Error opening %s - %s\n", filename, err.Error()))
 	}
 	defer file.Close()
 
@@ -61,7 +61,7 @@ func (s *Parser) Parse(cb ParsedTest) error {
 		// a comment then process it.
 		//
 		if (line != "") && (!strings.HasPrefix(line, "#")) {
-			err = s.parseLine(line, cb)
+			_, err = s.ParseLine(line, cb)
 			if err != nil {
 				return err
 			}
@@ -83,14 +83,12 @@ func (s *Parser) Parse(cb ParsedTest) error {
 
 // parseLine parses a single line, and returns an error if
 // one was found.
-func (s *Parser) parseLine(input string, cb ParsedTest) error {
+func (s *Parser) ParseLine(input string, cb ParsedTest) (Test, error) {
 
 	//
-	// Ensure that we have a callback.
+	// The result for the caller
 	//
-	if cb == nil {
-		return errors.New("nil callback submitted to parseLine")
-	}
+	var result Test
 
 	//
 	// Our input will contain lines of two forms:
@@ -118,9 +116,7 @@ func (s *Parser) parseLine(input string, cb ParsedTest) error {
 		// If this macro-exists that is a fatal error
 		//
 		if s.MACROS[name] != nil {
-			fmt.Printf("Redefinining a macro is a fatal error!\n")
-			fmt.Printf("A macro named '%s' already exists.\n", name)
-			os.Exit(1)
+			return result, errors.New(fmt.Sprintf("Redeclaring an existing macro is a fatal-error, %s exists already.\n", name))
 		}
 
 		//
@@ -134,7 +130,7 @@ func (s *Parser) parseLine(input string, cb ParsedTest) error {
 		for _, ent := range hosts {
 			s.MACROS[name] = append(s.MACROS[name], strings.TrimSpace(ent))
 		}
-		return nil
+		return result, nil
 	}
 
 	//
@@ -147,7 +143,7 @@ func (s *Parser) parseLine(input string, cb ParsedTest) error {
 	// If it didn't then we have a malformed line
 	//
 	if len(out) != 3 {
-		return errors.New(fmt.Sprintf("WARNING: Unrecognized line - '%s'\n", input))
+		return result, errors.New(fmt.Sprintf("WARNING: Unrecognized line - '%s'\n", input))
 	}
 
 	//
@@ -155,6 +151,11 @@ func (s *Parser) parseLine(input string, cb ParsedTest) error {
 	//
 	test_target := out[1]
 	test_type := out[2]
+
+	handler := protocols.ProtocolHandler(test_type)
+	if handler == nil {
+		return result, errors.New(fmt.Sprintf("Unknown test-type '%s' in input '%s'", test_type, input))
+	}
 
 	//
 	// Is this target a macro?
@@ -199,7 +200,7 @@ func (s *Parser) parseLine(input string, cb ParsedTest) error {
 			//
 			// Call ourselves to run the test.
 			//
-			s.parseLine(new, cb)
+			s.ParseLine(new, cb)
 		}
 
 		//
@@ -208,20 +209,25 @@ func (s *Parser) parseLine(input string, cb ParsedTest) error {
 		//
 		// So we can return here.
 		//
-		return nil
+		return result, nil
 	}
 
 	//
 	// Create a temporary structure to hold our test
 	//
-	var tmp Test
-	tmp.Target = test_target
-	tmp.Type = test_type
-	tmp.Input = input
+	result.Target = test_target
+	result.Type = test_type
+	result.Input = input
 
 	//
 	// Invoke the user-supplied callback on this parsed test.
 	//
-	cb(tmp)
-	return nil
+	//
+	// Ensure that we have a callback.
+	//
+	if cb != nil {
+		cb(result)
+	}
+
+	return result, nil
 }
