@@ -131,6 +131,7 @@ the successful registration and lookup of protocol tests for:
 * IMAP & IMAPS
    * Use `mail.example.com must run imaps with tls insecure` to skip TLS validation.
    * This is required because we connect by IP address rather than hostname.
+* MySQL
 * ping
 * POP3 & POP3S
    * Use `mail.example.com must run pop3s with tls insecure` to skip TLS validation.
