@@ -216,10 +216,17 @@ mail.steve.org.uk must run smtp with port 587
 # IMAPS is a good thing.
 #
 # In this context "insecure" means "don't validate the SSL certificate",
-# this fails because we connect by IP address..
+# this fails because we connect by IP address and the certificate doesn't
+# have the IP listed.
 #
-mail.steve.org.uk must run imaps insecure
+mail.steve.org.uk must run imaps with tls insecure
 
+#
+# Similar tests are available for POP3, and POP3S
+#
+# mail.steve.org.uk must run pop3
+# mail.steve.org.uk must run pop3s with tls insecure
+#
 
 #
 # We might also test MySQL, but I don't run it:
