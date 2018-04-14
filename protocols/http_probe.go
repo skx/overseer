@@ -16,7 +16,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"regexp"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -44,54 +44,46 @@ func (s *HTTPTest) RunTest(target string) error {
 	var ipv6 []string
 
 	//
-	// Find the hostname we should connect to, by parsing
-	// the URL with a regular expression.
+	// Find the hostname we should connect to.
 	//
-	rehost := regexp.MustCompile("^(https?)://([^/]+)")
-	match := rehost.FindStringSubmatch(target)
-	if len(match) != 0 {
+	u, err := url.Parse(target)
+	if err != nil {
+		return nil
+	}
+
+	//
+	// The port we connect to, on that host
+	//
+	port := 80
+	if u.Scheme == "https" {
+		port = 443
+	}
+
+	//
+	// Lookup the IP addresses of the host.
+	//
+	ips, err := net.LookupIP(u.Host)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Failed to resolve %s\n", u.Host))
+	}
+
+	//
+	// Process each of the resolved results
+	//
+	for _, ip := range ips {
 
 		//
-		// Protocol + Host
+		// IPv4 address
 		//
-		proto := match[1]
-		host := match[2]
-
-		//
-		// Lookup the IP addresses of the host.
-		//
-		ips, err := net.LookupIP(host)
-		if err != nil {
-			return errors.New(fmt.Sprintf("WARNING: Failed to resolve %s\n", host))
+		if ip.To4() != nil {
+			ipv4 = append(ipv4, fmt.Sprintf("%s:%d", ip, port))
 		}
 
 		//
-		// Process each of the resolved results
+		// IPv6 address
 		//
-		for _, ip := range ips {
-
-			//
-			// IPv4 address
-			//
-			if ip.To4() != nil {
-				if proto == "http" {
-					ipv4 = append(ipv4, fmt.Sprintf("%s:%d", ip, 80))
-				} else {
-					ipv4 = append(ipv4, fmt.Sprintf("%s:%d", ip, 443))
-				}
-
-			}
-
-			//
-			// IPv6 address
-			//
-			if ip.To16() != nil && ip.To4() == nil {
-				if proto == "http" {
-					ipv6 = append(ipv6, fmt.Sprintf("[%s]:%d", ip, 80))
-				} else {
-					ipv6 = append(ipv6, fmt.Sprintf("[%s]:%d", ip, 443))
-				}
-			}
+		if ip.To16() != nil && ip.To4() == nil {
+			ipv6 = append(ipv6, fmt.Sprintf("[%s]:%d", ip, port))
 		}
 	}
 
@@ -244,38 +236,41 @@ func (s *HTTPTest) RunHTTPTest(target string, address string) error {
 	ok := 200
 
 	//
-	// If the user specified a different status-code update it.
+	// Parse the input line looking for options, as the user-might
+	// prefer a different status-code, or be looking for some content.
 	//
-	re := regexp.MustCompile("with\\s+status\\s+([0-9]+)")
-	out := re.FindStringSubmatch(s.input)
-	if len(out) == 2 {
-		ok, err = strconv.Atoi(out[1])
-		if err != nil {
-			return err
+	options := ParseArguments(s.input)
+
+	//
+	// Did the user want to look for a specific status-code?
+	//
+	if options["status"] != "" {
+		// Status code might be "any"
+		if options["status"] != "any" {
+			ok, err = strconv.Atoi(options["status"])
+			if err != nil {
+				return err
+			}
 		}
 	}
 
 	//
 	// See if the status-code matched our expectation(s).
 	//
-	// If there is a configured status-code of `999` that means the
-	// client doesn't care what the response was.  This is useful because
-	// you can find that sites present a different status-code over
-	// IPv4 and IPv6 making a single test useless.
+	// If they mis-match that means the test failed, unless the user
+	// said "with status any".
 	//
-	if ok != status && (ok != 999) {
+	if ok != status && (options["status"] != "any") {
 		return errors.New(fmt.Sprintf("Status code was %d not %d", status, ok))
 	}
 
 	//
 	// Looking for a body-match?
 	//
-	rebody := regexp.MustCompile("with\\s+content\\s+'([^']+)'")
-	out = rebody.FindStringSubmatch(s.input)
-	if len(out) == 2 {
-		if !strings.Contains(string(body), out[1]) {
+	if options["content"] != "" {
+		if !strings.Contains(string(body), options["content"]) {
 			return errors.New(
-				fmt.Sprintf("Body didn't contain '%s'", out[1]))
+				fmt.Sprintf("Body didn't contain '%s'", options["content"]))
 		}
 
 	}

@@ -7,17 +7,46 @@
 #
 # The general form of our test definitions is:
 #
-#  TARGET must run PROTOCOL [test-specific options]
+#      TARGET must run PROTOCOL [test-specific options]
+#
+# Test specific options are generally of the form:
+#
+#      with NAME VALUE
 #
 # So if you wish to test that a host is running ftp you'd write:
 #
-#  ftp.example.com must run ftp
+#      ftp.example.com must run ftp
+#
+# If you wished to change the port, and lots of our tests allow this,
+# then you'd use :
+#
+#      ftp.example.com must run ftp with port 2211
+#
+####
+
+
+
 #
 # When it comes to running HTTP/HTTPS tests the target must be an URL,
-# and success is determined by the HTTP status-code.  Additional options
-# allow you to specify what you regard as a failure - such as a 301/302
-# status-code, and some text in the response-body.
+# and success is determined by the HTTP status-code.
 #
+# A HTTP status-code of 200 is regarded as a pass, and anything else
+# as a failure.  You can choose to prefer any other return-code as a
+# success by appending your preferred code:
+#
+#       with status 302
+#
+# If you regard any response as valid then you can specify that as
+#
+#       with status any
+#
+# You can also choose to regard a HTTP-request as a failure if you
+# don't receive some specific value in the response.  So I'd test my
+# website has my name like so:
+#
+#       with content 'Steve Kemp'
+#
+
 
 #
 # My website is at https://steve.fi/, there are redirections
@@ -28,7 +57,6 @@
 # We look for redirections via:
 #
 #   1.  The status-code.
-#
 #   2.  The URL of the target in the body (which Apache does automatically).
 #
 #
@@ -61,6 +89,12 @@ NAMESERVERS are rachel.ns.cloudflare.com, clark.ns.cloudflare.com
 # Macros are basically just shortcuts for repeating tests against
 # multiple hosts.
 #
+# The DNS-test is an odd one, because it doesn't use the general
+# form of "with $NAME $VALUE" for specifying the inputs and expected
+# output.
+#
+# This will be corrected in the future.
+#
 NAMESERVERS must run dns for steve.fi resolving A as '176.9.183.100'
 NAMESERVERS must run dns for steve.fi resolving AAAA as '2a01:4f8:151:6083::100'
 
@@ -80,7 +114,7 @@ NAMESERVERS must run dns for alert.steve.fi resolving AAAA as ''
 #
 # Test any OpenSSH probe against localhost, on the non-standard port 2222.
 #
-localhost must run ssh on port 2222
+localhost must run ssh with port 2222
 
 #
 # If you didn't want to use a non-standard port you'd just write:
@@ -100,18 +134,18 @@ localhost must run redis
 #
 # If a non-standard port is used:
 #
-#    localhost must run redis on port 1234
+#    localhost must run redis with port 1234
 #
 # Of course these can be combined:
 #
-#    localhost must run redis on port 1234 with password 'p4ssw0rd'
+#    localhost must run redis with port 1234 with password 'p4ssw0rd'
 #
 
 #
 # Now we can test that we get a response from a remote SMTP server
 #
 mail.steve.org.uk must run smtp
-mail.steve.org.uk must run smtp on 587
+mail.steve.org.uk must run smtp with port 587
 
 
 #

@@ -6,7 +6,6 @@ package protocols
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -44,12 +43,11 @@ func (s *REDISTest) RunTest(target string) error {
 	password := ""
 
 	//
-	// If the user specified a different port update it.
+	// If the user specified a different port update to use it.
 	//
-	report := regexp.MustCompile("on\\s+port\\s+([0-9]+)")
-	out := report.FindStringSubmatch(s.input)
-	if len(out) == 2 {
-		port, err = strconv.Atoi(out[1])
+	out := ParseArguments(s.input)
+	if out["port"] != "" {
+		port, err = strconv.Atoi(out["port"])
 		if err != nil {
 			return err
 		}
@@ -58,10 +56,8 @@ func (s *REDISTest) RunTest(target string) error {
 	//
 	// If the user specified a password use it.
 	//
-	repass := regexp.MustCompile("with\\s+password\\s+'([^']+)'")
-	out = repass.FindStringSubmatch(s.input)
-	if len(out) == 2 {
-		password = out[1]
+	if out["password"] != "" {
+		password = out["password"]
 	}
 
 	//

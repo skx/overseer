@@ -129,11 +129,11 @@ the successful registration and lookup of protocol tests for:
 * HTTP & HTTPS
    * Note that no certificate validation is coded explicitly.
 * IMAP & IMAPS
-   * Use `mail.example.com must run imaps insecure` to skip TLS validation.
+   * Use `mail.example.com must run imaps with tls insecure` to skip TLS validation.
    * This is required because we connect by IP address rather than hostname.
 * ping
 * POP3 & POP3S
-   * Use `mail.example.com must run pop3s insecure` to skip TLS validation.
+   * Use `mail.example.com must run pop3s with tls insecure` to skip TLS validation.
    * This is required because we connect by IP address rather than hostname.
 * redis
 * rsync

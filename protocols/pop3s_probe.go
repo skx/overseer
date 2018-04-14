@@ -3,8 +3,6 @@ package protocols
 import (
 	"crypto/tls"
 	"fmt"
-	//	"net"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -33,15 +31,22 @@ func (s *POP3STest) RunTest(target string) error {
 	port := 995
 
 	//
-	// If the user specified a different port update it.
+	// If the user specified a different port update to use it.
 	//
-	re := regexp.MustCompile("on\\s+port\\s+([0-9]+)")
-	out := re.FindStringSubmatch(s.input)
-	if len(out) == 2 {
-		port, err = strconv.Atoi(out[1])
+	out := ParseArguments(s.input)
+	if out["port"] != "" {
+		port, err = strconv.Atoi(out["port"])
 		if err != nil {
 			return err
 		}
+	}
+
+	//
+	// Should we skip validation of the SSL certificate?
+	//
+	insecure := false
+	if out["tls"] == "insecure" {
+		insecure = true
 	}
 
 	//
@@ -54,15 +59,6 @@ func (s *POP3STest) RunTest(target string) error {
 	//
 	if strings.Contains(target, ":") {
 		address = fmt.Sprintf("[%s]:%d", target, port)
-	}
-
-	//
-	// Insecure operation allows us to skip validation of
-	// the SSL certificate
-	//
-	insecure := false
-	if strings.Contains(s.input, " insecure") {
-		insecure = true
 	}
 
 	//
