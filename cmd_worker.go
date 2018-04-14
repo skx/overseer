@@ -54,7 +54,7 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 
 	// Notifier setup
 	f.StringVar(&p.Notifier, "notifier", "", "Specify the notifier object to use.")
-	f.StringVar(&p.NotifierData, "", "http://localhost:8080/events", "Specify the notifier data to use.")
+	f.StringVar(&p.NotifierData, "", "", "Specify the notifier data to use.")
 }
 
 //
@@ -63,15 +63,18 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 
 	//
-	// Create a notifier.
+	// The notifier we're going to use, if any.
 	//
 	var notifier notifiers.Notifier
 
+	//
+	// If the notifier is set then create it.
+	//
 	if p.Notifier != "" {
 		notifier = notifiers.NotifierType(p.Notifier)
 
 		//
-		// Set the options
+		// Set the notifier options
 		//
 		if p.NotifierData != "" {
 			var nopt notifiers.Options
@@ -99,7 +102,7 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 	}
 
 	//
-	// Options for our tests
+	// Setup the options for the tests.
 	//
 	var opts protocols.TestOptions
 	opts.Verbose = p.Verbose

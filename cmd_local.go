@@ -58,6 +58,9 @@ func (p *localCmd) SetFlags(f *flag.FlagSet) {
 //
 func (p *localCmd) run_test(tst parser.Test) error {
 
+	//
+	// Setup the options for the test.
+	//
 	var opts protocols.TestOptions
 	opts.Verbose = p.Verbose
 	opts.IPv4 = p.IPv4
@@ -65,15 +68,19 @@ func (p *localCmd) run_test(tst parser.Test) error {
 	opts.Timeout = time.Duration(p.Timeout) * time.Second
 
 	//
-	// Create a notifier.
+	// The notifier we're going to use, if any.
 	//
 	var notifier notifiers.Notifier
 
+	//
+	// If the notifier is set then create it.
+	//
 	if p.Notifier != "" {
+
 		notifier = notifiers.NotifierType(p.Notifier)
 
 		//
-		// Set the options
+		// Set the notifier options
 		//
 		if p.NotifierData != "" {
 			var nopt notifiers.Options
@@ -83,7 +90,7 @@ func (p *localCmd) run_test(tst parser.Test) error {
 	}
 
 	//
-	// Now run the test
+	// Now run the test.
 	//
 	return run_test(tst, opts, notifier)
 }
@@ -94,11 +101,7 @@ func (p *localCmd) run_test(tst parser.Test) error {
 func (p *localCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 
 	//
-	// Get the notifier
-	//
-
-	//
-	// Run all the tests
+	// We'll run tests from each file passed as an argument.
 	//
 	for _, file := range f.Args() {
 
