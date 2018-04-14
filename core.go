@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"regexp"
 	"strings"
 
 	"github.com/skx/overseer/notifiers"
@@ -12,43 +11,13 @@ import (
 	"github.com/skx/overseer/protocols"
 )
 
+// run_test is the core of our application.
 //
-// Run the given test, with the options
+// Given a test to be executed this function is responsible for invoking
+// it, and handling the result.
 //
-// This is horrid because it exposes our internal state - it should
-// be moved to the parser-object.
-//
-// For the moment it remains because it is used to parse the string
-// fetched from redis.
-//
-func run_test_string(tst string, opts protocols.TestOptions, notifier notifiers.Notifier) error {
-
-	var obj parser.Test
-
-	re := regexp.MustCompile("^([^ \t]+)\\s+must\\s+run\\s+([a-z0-9]+)")
-	out := re.FindStringSubmatch(tst)
-
-	//
-	// If it didn't then we have a malformed line
-	//
-	if len(out) != 3 {
-		return errors.New(fmt.Sprintf("WARNING: Unrecognized line - '%s'\n", tst))
-	}
-
-	//
-	// Save the type + target away
-	//
-	obj.Target = out[1]
-	obj.Type = out[2]
-	obj.Input = tst
-
-	return (run_test(obj, opts, notifier))
-
-}
-
-//
-// Run the given test, with the options, and send notification with the
-// given notifier.
+// The test result will be passed to the specified notifier instance upon
+// completion.
 //
 func run_test(tst parser.Test, opts protocols.TestOptions, notifier notifiers.Notifier) error {
 
@@ -126,7 +95,7 @@ func run_test(tst parser.Test, opts protocols.TestOptions, notifier notifiers.No
 		// Show what we're doing.
 		//
 		if opts.Verbose {
-			fmt.Printf("Running %s test against %s (%s)\n", test_type, test_target, target)
+			fmt.Printf("Running '%s' test against %s (%s)\n", test_type, test_target, target)
 		}
 
 		//
