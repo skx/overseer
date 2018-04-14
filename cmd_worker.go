@@ -21,6 +21,7 @@ import (
 type workerCmd struct {
 	IPv4          bool
 	IPv6          bool
+	Retry         bool
 	Notifier      string
 	NotifierData  string
 	RedisHost     string
@@ -46,6 +47,7 @@ func (*workerCmd) Usage() string {
 //
 func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 	f.BoolVar(&p.Verbose, "verbose", false, "Show more output.")
+	f.BoolVar(&p.Retry, "retry", true, "Should failing tests be retried a few times before raising a notification.")
 	f.BoolVar(&p.IPv4, "4", true, "Enable IPv4 tests.")
 	f.BoolVar(&p.IPv6, "6", true, "Enable IPv6 tests.")
 	f.IntVar(&p.Timeout, "timeout", 10, "The global timeout for all tests, in seconds.")
@@ -108,6 +110,7 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 	opts.Verbose = p.Verbose
 	opts.IPv4 = p.IPv4
 	opts.IPv6 = p.IPv6
+	opts.Retry = p.Retry
 	opts.Timeout = time.Duration(p.Timeout) * time.Second
 
 	//

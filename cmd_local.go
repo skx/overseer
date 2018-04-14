@@ -19,6 +19,7 @@ import (
 type localCmd struct {
 	IPv4         bool
 	IPv6         bool
+	Retry        bool
 	Notifier     string
 	NotifierData string
 	Timeout      int
@@ -43,6 +44,7 @@ func (p *localCmd) SetFlags(f *flag.FlagSet) {
 	f.BoolVar(&p.Verbose, "verbose", false, "Show more output.")
 	f.BoolVar(&p.IPv4, "4", true, "Enable IPv4 tests.")
 	f.BoolVar(&p.IPv6, "6", true, "Enable IPv6 tests.")
+	f.BoolVar(&p.Retry, "retry", true, "Should failing tests be retried a few times before raising a notification.")
 	f.IntVar(&p.Timeout, "timeout", 10, "The global timeout for all tests, in seconds.")
 
 	// Notifier setup
@@ -65,6 +67,7 @@ func (p *localCmd) run_test(tst parser.Test) error {
 	opts.Verbose = p.Verbose
 	opts.IPv4 = p.IPv4
 	opts.IPv6 = p.IPv6
+	opts.Retry = p.Retry
 	opts.Timeout = time.Duration(p.Timeout) * time.Second
 
 	//

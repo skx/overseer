@@ -6,12 +6,13 @@
 
 # Overseer
 
-Overseer is a simple golang based remote protocol tester, which allows you to monitor the health of a network.
+Overseer is a golang based remote protocol tester, which allows you to monitor the health of your network.
 
-When tests fail, because hosts/services are down, alerts can be generated via a simple plugin-based system.  Currently there is only a single notification plugin distributed with the project, which uses the [purppura](https://github.com/skx/purppura/) notification system.
+When tests fail, because hosts/services are down, alerts can be generated via a simple plugin-based system.  Currently there is only a single plugin distributed with the project, which uses the [purppura](https://github.com/skx/purppura/) notification system.
 
 "Remote Protocol Tester" sounds a little vague, so to be more concrete this application lets you test services are running and has built-in support for testing:
 
+* dns-servers
 * http-servers
 * rsync-servers
 * smtp-servers
@@ -41,7 +42,7 @@ There are two ways you can use overseer:
    * For huge networks.
 
 In both cases the way that you get started is to write a series of tests,
-these are the tests which describe the hosts & services you wish to monitor.
+which describe the hosts & services you wish to monitor.
 
 You can look at the [sample tests](input.txt) to get an idea of what is permitted.
 
@@ -101,6 +102,20 @@ The `worker` sub-command watches the redis-queue, and executes tests as they bec
           -notifier-data=http://localhost:8080/events
 
 (It is assumed you'd leave the workers running, under systemd or similar, and run `overseer enqueue ...` via cron to ensure the queue was constantly refilled with tests for the worker(s) to execute.)
+
+
+## Test Failures
+
+To avoid triggering false alerts due to transient (network) failures
+tests which fail are retried several times before triggering a notification.
+
+This smoothing is designed to avoid raising an alert, which then clears
+shortly afterwards - on the next overseer run - but the downside is that
+flapping services might not necessarily become visible.
+
+If you're absolutely certain that your connectivity is good, and that
+services should never fail _ever_ you can disable this via the command-line
+flag `-retry=false`.
 
 
 ## Status

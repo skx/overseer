@@ -99,30 +99,75 @@ func run_test(tst parser.Test, opts protocols.TestOptions, notifier notifiers.No
 		}
 
 		//
-		// Run the test.
+		// We'll repeat failing tests up to five times by default
 		//
-		result := tmp.RunTest(target)
+		attempt := 0
+		max_attempts := 5
 
-		if result == nil {
-			if opts.Verbose {
-				fmt.Printf("\tTest passed.\n")
-			}
+		//
+		// If retrying is disabled then don't do that
+		//
+		if opts.Retry == false {
+			max_attempts = attempt + 1
+		}
 
-		} else {
-			if opts.Verbose {
-				fmt.Printf("\tTest failed: %s\n", result.Error())
+		//
+		// The result of the test.
+		//
+		var result error
+
+		//
+		// Prepare to repeat the test.
+		//
+		// We only repeat tests that fail, if the test passes then
+		// it will only be executed once.
+		//
+		// This is designed to cope with transient failures, at a
+		// cost that flapping services might be missed.
+		//
+		for attempt < max_attempts {
+			attempt += 1
+
+			//
+			// Run the test
+			//
+			result = tmp.RunTest(target)
+
+			//
+			// If the test passed then we're good.
+			//
+			if result == nil {
+				if opts.Verbose {
+					fmt.Printf("\t[%d/%d] - Test passed.\n", attempt, max_attempts)
+				}
+
+				// break out of loop
+				attempt = max_attempts + 1
+
+			} else {
+
+				//
+				// The test failed.
+				//
+				// It will be repeated before a notifier
+				// is invoked.
+				//
+				if opts.Verbose {
+					fmt.Printf("\t[%d/%d] Test failed: %s\n", attempt, max_attempts, result.Error())
+				}
+
 			}
 		}
 
 		//
-		// Post the result to purple
+		// Post the result to the specified notifier.
 		//
-		// First update the target to the thing we probed,
-		// which might not necessarily be that which was
-		// written.
+		// Before we trigger the notification we need to
+		// update the target to the thing we probed, which might
+		// not necessarily be that which was originally submitted.
 		//
-		//  i.e. "mail.steve.org.uk must run ssh"
-		// might become "1.2.3.4 must run ssh"
+		//  i.e. "mail.steve.org.uk must run ssh" might become
+		// "1.2.3.4 must run ssh" as a result of the DNS lookup.
 		//
 		tst.Target = target
 		if notifier != nil {

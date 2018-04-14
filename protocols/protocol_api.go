@@ -10,6 +10,9 @@ import (
 //
 // The options can change the way the test operates.
 type TestOptions struct {
+	// Should failing tests be retried?
+	Retry bool
+
 	// Timeout for the single test, in seconds
 	Timeout time.Duration
 
