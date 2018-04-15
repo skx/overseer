@@ -58,10 +58,22 @@ func (s *IMAPTest) RunTest(target string) error {
 		Timeout: s.options.Timeout,
 	}
 
-	_, err = client.DialWithDialer(dial, address)
-
+	//
+	// Connect.
+	//
+	conn, err := client.DialWithDialer(dial, address)
 	if err != nil {
 		return err
+	}
+
+	//
+	// If we got username/password then use them
+	//
+	if (out["username"] != "") && (out["password"] != "") {
+		err = con.Login(out["username"], out["password"])
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

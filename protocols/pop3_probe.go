@@ -56,16 +56,25 @@ func (s *POP3Test) RunTest(target string) error {
 	// Connect
 	//
 	c, err := pop3.Dial(address, pop3.UseTimeout(s.options.Timeout))
-
 	if err != nil {
 		return err
 	}
 
 	//
-	// Disconnect
+	// Did we get a username/password?  If so try to authenticate
+	// with them
+	//
+	if (out["username"] != "") && (out["password"] != "") {
+		err = c.Auth(out["username"], out["password"])
+		if err != nil {
+			return err
+		}
+	}
+
+	//
+	// Quit and return
 	//
 	c.Quit()
-
 	return nil
 }
 
