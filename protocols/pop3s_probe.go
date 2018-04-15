@@ -62,9 +62,13 @@ func (s *POP3STest) RunTest(target string) error {
 	}
 
 	//
-	// Setup the default TLS config
+	// Setup the default TLS config.
 	//
-	tls_setup := &tls.Config{}
+	// We need to setup the hostname that the TLS certificate
+	// will verify upon, from our input-line.
+	//
+	data := strings.Fields(s.input)
+	tls_setup := &tls.Config{ServerName: data[0]}
 
 	//
 	// If we're being insecure then remove the verification
@@ -79,11 +83,24 @@ func (s *POP3STest) RunTest(target string) error {
 	// Connect
 	//
 	c, err := pop3.Dial(address, pop3.UseTLS(tls_setup), pop3.UseTimeout(s.options.Timeout))
-
 	if err != nil {
 		return err
 	}
 
+	//
+	// Did we get a username/password?  If so try to authenticate
+	// with them
+	//
+	if (out["username"] != "") && (out["password"] != "") {
+		err = c.Auth(out["username"], out["password"])
+		if err != nil {
+			return err
+		}
+	}
+
+	//
+	// Quit and return
+	//
 	c.Quit()
 
 	return nil

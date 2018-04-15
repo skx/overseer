@@ -63,21 +63,47 @@ func (s *IMAPSTest) RunTest(target string) error {
 		address = fmt.Sprintf("[%s]:%d", target, port)
 	}
 
+	//
+	// Setup a dialer so we can have a suitable timeout
+	//
 	var dial = &net.Dialer{
 		Timeout: s.options.Timeout,
 	}
 
+	//
+	// Setup the default TLS config.
+	//
+	// We need to setup the hostname that the TLS certificate
+	// will verify upon, from our input-line.
+	//
+	data := strings.Fields(s.input)
+	tls_setup := &tls.Config{ServerName: data[0]}
+
+	//
+	// Disable verification if we're being insecure.
+	//
 	if insecure {
-		tls := &tls.Config{
+		tls_setup = &tls.Config{
 			InsecureSkipVerify: true,
 		}
-		_, err = client.DialWithDialerTLS(dial, address, tls)
-	} else {
-		_, err = client.DialWithDialerTLS(dial, address, nil)
 	}
 
+	//
+	// Connect.
+	//
+	con, err := client.DialWithDialerTLS(dial, address, tls_setup)
 	if err != nil {
 		return err
+	}
+
+	//
+	// If we got username/password then use them
+	//
+	if (out["username"] != "") && (out["password"] != "") {
+		err = con.Login(out["username"], out["password"])
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
