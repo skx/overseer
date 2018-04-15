@@ -48,32 +48,24 @@ type ProtocolTest interface {
 	RunTest(tst test.Test, target string, opts TestOptions) error
 }
 
-//
 // This is a map of known-tests.
-//
 var handlers = struct {
 	m map[string]TestCtor
 	sync.RWMutex
 }{m: make(map[string]TestCtor)}
 
-//
-// A constructor-function.
-//
+// TestCtor is the signature of a constructor-function.
 type TestCtor func() ProtocolTest
 
-//
 // Register a test-type with a constructor.
-//
 func Register(id string, newfunc TestCtor) {
 	handlers.Lock()
 	handlers.m[id] = newfunc
 	handlers.Unlock()
 }
 
-//
-// Lookup the given type and create an instance of it,
+// Lookup the given type of test and create an instance of it,
 // if we can.
-//
 func ProtocolHandler(id string) (a ProtocolTest) {
 	handlers.RLock()
 	ctor, ok := handlers.m[id]
