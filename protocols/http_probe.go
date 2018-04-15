@@ -98,9 +98,17 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts TestOptions) error
 		}
 
 		if len(ipv4) > 0 {
-			err := s.RunHTTPTest(target, ipv4[0], tst, opts)
-			if opts.Verbose {
-				fmt.Printf("\tRunning against %s\n", ipv4[0])
+
+			var err error
+
+			for _, e := range ipv4 {
+				err = s.RunHTTPTest(target, e, tst, opts)
+				if opts.Verbose {
+					fmt.Printf("\tRunning against %s\n", e)
+				}
+				if err != nil {
+					return err
+				}
 			}
 			return err
 		} else {
@@ -117,10 +125,17 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts TestOptions) error
 		}
 
 		if len(ipv6) > 0 {
-			if opts.Verbose {
-				fmt.Printf("\tRunning against %s\n", ipv6[0])
+			var err error
+
+			for _, e := range ipv6 {
+				if opts.Verbose {
+					fmt.Printf("\tRunning against %s\n", e)
+				}
+				err = s.RunHTTPTest(target, e, tst, opts)
+				if err != nil {
+					return err
+				}
 			}
-			err := s.RunHTTPTest(target, ipv6[0], tst, opts)
 			return err
 		} else {
 			return errors.New(fmt.Sprintf("Failed to resolve %s to IPv6 address", target))
@@ -139,26 +154,34 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts TestOptions) error
 
 		// ipv4
 		if len(ipv4) > 0 {
-			if opts.Verbose {
-				fmt.Printf("\tRunning against %s\n", ipv4[0])
+			var err error
+
+			for _, e := range ipv4 {
+				if opts.Verbose {
+					fmt.Printf("\tRunning against %s\n", e)
+				}
+				err = s.RunHTTPTest(target, e, tst, opts)
+				if err != nil {
+					return err
+				}
+				executed += 1
 			}
-			err := s.RunHTTPTest(target, ipv4[0], tst, opts)
-			if err != nil {
-				return err
-			}
-			executed += 1
 		}
 
 		// ipv6
 		if len(ipv6) > 0 {
-			if opts.Verbose {
-				fmt.Printf("\tRunning against %s\n", ipv6[0])
+			var err error
+
+			for _, e := range ipv6 {
+				if opts.Verbose {
+					fmt.Printf("\tRunning against %s\n", e)
+				}
+				err = s.RunHTTPTest(target, e, tst, opts)
+				if err != nil {
+					return err
+				}
+				executed += 1
 			}
-			err := s.RunHTTPTest(target, ipv6[0], tst, opts)
-			if err != nil {
-				return err
-			}
-			executed += 1
 		}
 		if executed < 1 {
 			return errors.New(fmt.Sprintf("Failed to perform HTTP test of target %s", target))
