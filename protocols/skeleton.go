@@ -34,7 +34,7 @@ type SKELETONTest struct {
 // 3. An instance of TestOptions, which could be used to modify behaviour.
 //
 // The function should return a suitably descriptive error when the
-// test is failed, otherwise return `nil` to indicate that the test
+// test fails, otherwise it should return `nil` to indicate that the test
 // passed.
 //
 func (s *SKELETONTest) RunTest(tst test.Test, target string, opts TestOptions) error {
