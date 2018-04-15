@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/skx/overseer/protocols"
+	"github.com/skx/overseer/test"
 )
 
 // Parser holds our parser-state.
@@ -16,15 +17,8 @@ type Parser struct {
 	MACROS map[string][]string
 }
 
-// A single test definition
-type Test struct {
-	Target string
-	Type   string
-	Input  string
-}
-
 // A function that can be invoked
-type ParsedTest func(x Test) error
+type ParsedTest func(x test.Test) error
 
 // New is the constructor.
 func New() *Parser {
@@ -83,12 +77,12 @@ func (s *Parser) ParseFile(filename string, cb ParsedTest) error {
 
 // parseLine parses a single line, and returns an error if
 // one was found.
-func (s *Parser) ParseLine(input string, cb ParsedTest) (Test, error) {
+func (s *Parser) ParseLine(input string, cb ParsedTest) (test.Test, error) {
 
 	//
 	// The result for the caller
 	//
-	var result Test
+	var result test.Test
 
 	//
 	// Our input will contain lines of two forms:
@@ -218,6 +212,7 @@ func (s *Parser) ParseLine(input string, cb ParsedTest) (Test, error) {
 	result.Target = test_target
 	result.Type = test_type
 	result.Input = input
+	result.Arguments = s.ParseArguments(input)
 
 	//
 	// Invoke the user-supplied callback on this parsed test.
@@ -230,4 +225,54 @@ func (s *Parser) ParseLine(input string, cb ParsedTest) (Test, error) {
 	}
 
 	return result, nil
+}
+
+// TrimQuotes removes the matching quotes from around a string, if they
+// are present.
+//
+// For example 'steve' becomes steve, but 'steve stays unchanged, as there
+// are not matching single-quotes around the string.
+func (s *Parser) TrimQuotes(in string, c byte) string {
+	if len(in) >= 2 {
+		if in[0] == c && in[len(in)-1] == c {
+			return in[1 : len(in)-1]
+		}
+	}
+	return in
+}
+
+// ParseArguments takes a string such as this:
+//
+//   foo must run http with username 'steve' with password 'bob'
+//
+// And extracts the values of the named options.
+//
+// Any option that is wrapped in matching quotes has them removed.
+//
+func (s *Parser) ParseArguments(input string) map[string]string {
+	res := make(map[string]string)
+
+	//
+	// Look for each option
+	//
+	expr := regexp.MustCompile("^(.*)\\s+with\\s+([^\\s]+)\\s+('.+'|\".+\"|\\S+)")
+	match := expr.FindStringSubmatch(input)
+
+	for len(match) > 1 {
+		prefix := match[1]
+		name := match[2]
+		value := match[3]
+
+		// Strip quotes
+		value = s.TrimQuotes(value, '\'')
+		value = s.TrimQuotes(value, '"')
+
+		// Store the value in our map
+		res[name] = value
+
+		// Continue matching the tail of the string.
+		input = prefix
+		match = expr.FindStringSubmatch(input)
+	}
+	return res
 }

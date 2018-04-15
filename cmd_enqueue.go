@@ -12,6 +12,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/google/subcommands"
 	"github.com/skx/overseer/parser"
+	"github.com/skx/overseer/test"
 )
 
 type enqueueCmd struct {
@@ -43,7 +44,7 @@ func (p *enqueueCmd) SetFlags(f *flag.FlagSet) {
 // This is a callback invoked by the parser when a job
 // has been successfully parsed.
 //
-func (p *enqueueCmd) enqueue_test(tst parser.Test) error {
+func (p *enqueueCmd) enqueue_test(tst test.Test) error {
 	_, err := p._r.RPush("overseer.jobs", tst.Input).Result()
 	return err
 }

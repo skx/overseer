@@ -8,25 +8,22 @@ import (
 	"strings"
 
 	client "github.com/emersion/go-imap/client"
+	"github.com/skx/overseer/test"
 )
 
 //
 // Our structure.
 //
-// We store state in the `input` field.
-//
 type IMAPSTest struct {
-	input   string
-	options TestOptions
 }
 
 //
 // Run the test against the specified target.
 //
-func (s *IMAPSTest) RunTest(target string) error {
-
+func (s *IMAPSTest) RunTest(tst test.Test, target string, opts TestOptions) error {
 	var err error
 
+	fmt.Printf("target:%s test.target:%s\n", target, tst.Target)
 	//
 	// The default port to connect to.
 	//
@@ -35,9 +32,8 @@ func (s *IMAPSTest) RunTest(target string) error {
 	//
 	// If the user specified a different port update to use it.
 	//
-	out := ParseArguments(s.input)
-	if out["port"] != "" {
-		port, err = strconv.Atoi(out["port"])
+	if tst.Arguments["port"] != "" {
+		port, err = strconv.Atoi(tst.Arguments["port"])
 		if err != nil {
 			return err
 		}
@@ -47,7 +43,7 @@ func (s *IMAPSTest) RunTest(target string) error {
 	// Should we skip validation of the SSL certificate?
 	//
 	insecure := false
-	if out["tls"] == "insecure" {
+	if tst.Arguments["tls"] == "insecure" {
 		insecure = true
 	}
 
@@ -67,7 +63,7 @@ func (s *IMAPSTest) RunTest(target string) error {
 	// Setup a dialer so we can have a suitable timeout
 	//
 	var dial = &net.Dialer{
-		Timeout: s.options.Timeout,
+		Timeout: opts.Timeout,
 	}
 
 	//
@@ -76,7 +72,7 @@ func (s *IMAPSTest) RunTest(target string) error {
 	// We need to setup the hostname that the TLS certificate
 	// will verify upon, from our input-line.
 	//
-	data := strings.Fields(s.input)
+	data := strings.Fields(tst.Input)
 	tls_setup := &tls.Config{ServerName: data[0]}
 
 	//
@@ -99,30 +95,14 @@ func (s *IMAPSTest) RunTest(target string) error {
 	//
 	// If we got username/password then use them
 	//
-	if (out["username"] != "") && (out["password"] != "") {
-		err = con.Login(out["username"], out["password"])
+	if (tst.Arguments["username"] != "") && (tst.Arguments["password"] != "") {
+		err = con.Login(tst.Arguments["username"], tst.Arguments["password"])
 		if err != nil {
 			return err
 		}
 	}
 
 	return nil
-}
-
-//
-// Store the complete line from the parser in our private
-// field; this could be used if there are protocol-specific options
-// to be understood.
-//
-func (s *IMAPSTest) SetLine(input string) {
-	s.input = input
-}
-
-//
-// Store the options for this test
-//
-func (s *IMAPSTest) SetOptions(opts TestOptions) {
-	s.options = opts
 }
 
 //

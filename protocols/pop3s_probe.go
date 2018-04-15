@@ -7,23 +7,22 @@ import (
 	"strings"
 
 	"github.com/simia-tech/go-pop3"
+	"github.com/skx/overseer/test"
 )
 
 //
 // Our structure.
 //
-// We store state in the `input` field.
-//
 type POP3STest struct {
-	input   string
-	options TestOptions
 }
 
 //
 // Run the test against the specified target.
 //
-func (s *POP3STest) RunTest(target string) error {
+func (s *POP3STest) RunTest(tst test.Test, target string, opts TestOptions) error {
 	var err error
+
+	fmt.Printf("target:%s test.target:%s\n", target, tst.Target)
 
 	//
 	// The default port to connect to.
@@ -33,9 +32,8 @@ func (s *POP3STest) RunTest(target string) error {
 	//
 	// If the user specified a different port update to use it.
 	//
-	out := ParseArguments(s.input)
-	if out["port"] != "" {
-		port, err = strconv.Atoi(out["port"])
+	if tst.Arguments["port"] != "" {
+		port, err = strconv.Atoi(tst.Arguments["port"])
 		if err != nil {
 			return err
 		}
@@ -45,7 +43,7 @@ func (s *POP3STest) RunTest(target string) error {
 	// Should we skip validation of the SSL certificate?
 	//
 	insecure := false
-	if out["tls"] == "insecure" {
+	if tst.Arguments["tls"] == "insecure" {
 		insecure = true
 	}
 
@@ -67,7 +65,7 @@ func (s *POP3STest) RunTest(target string) error {
 	// We need to setup the hostname that the TLS certificate
 	// will verify upon, from our input-line.
 	//
-	data := strings.Fields(s.input)
+	data := strings.Fields(tst.Input)
 	tls_setup := &tls.Config{ServerName: data[0]}
 
 	//
@@ -82,7 +80,7 @@ func (s *POP3STest) RunTest(target string) error {
 	//
 	// Connect
 	//
-	c, err := pop3.Dial(address, pop3.UseTLS(tls_setup), pop3.UseTimeout(s.options.Timeout))
+	c, err := pop3.Dial(address, pop3.UseTLS(tls_setup), pop3.UseTimeout(opts.Timeout))
 	if err != nil {
 		return err
 	}
@@ -91,8 +89,8 @@ func (s *POP3STest) RunTest(target string) error {
 	// Did we get a username/password?  If so try to authenticate
 	// with them
 	//
-	if (out["username"] != "") && (out["password"] != "") {
-		err = c.Auth(out["username"], out["password"])
+	if (tst.Arguments["username"] != "") && (tst.Arguments["password"] != "") {
+		err = c.Auth(tst.Arguments["username"], tst.Arguments["password"])
 		if err != nil {
 			return err
 		}
@@ -104,22 +102,6 @@ func (s *POP3STest) RunTest(target string) error {
 	c.Quit()
 
 	return nil
-}
-
-//
-// Store the complete line from the parser in our private
-// field; this could be used if there are protocol-specific options
-// to be understood.
-//
-func (s *POP3STest) SetLine(input string) {
-	s.input = input
-}
-
-//
-// Store the options for this test
-//
-func (s *POP3STest) SetOptions(opts TestOptions) {
-	s.options = opts
 }
 
 //

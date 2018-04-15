@@ -19,22 +19,20 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/skx/overseer/test"
 )
 
 //
 // Our structure.
 //
-// We store state in the `input` field.
-//
 type HTTPTest struct {
-	input   string
-	options TestOptions
 }
 
 //
 // Make a HTTP-test against the given URL.
 //
-func (s *HTTPTest) RunTest(target string) error {
+func (s *HTTPTest) RunTest(tst test.Test, target string, opts TestOptions) error {
 
 	//
 	// We want to turn the target URL into an IPv4 and IPv6
@@ -94,14 +92,14 @@ func (s *HTTPTest) RunTest(target string) error {
 	//
 	// IPv4 only?
 	//
-	if (s.options.IPv4 == true) && (s.options.IPv6 == false) {
-		if s.options.Verbose {
+	if (opts.IPv4 == true) && (opts.IPv6 == false) {
+		if opts.Verbose {
 			fmt.Printf("\tIPv4-only testing enabled for HTTP\n")
 		}
 
 		if len(ipv4) > 0 {
-			err := s.RunHTTPTest(target, ipv4[0])
-			if s.options.Verbose {
+			err := s.RunHTTPTest(target, ipv4[0], tst, opts)
+			if opts.Verbose {
 				fmt.Printf("\tRunning against %s\n", ipv4[0])
 			}
 			return err
@@ -113,16 +111,16 @@ func (s *HTTPTest) RunTest(target string) error {
 	//
 	// IPv6 only?
 	//
-	if (s.options.IPv6 == true) && (s.options.IPv4 == false) {
-		if s.options.Verbose {
+	if (opts.IPv6 == true) && (opts.IPv4 == false) {
+		if opts.Verbose {
 			fmt.Printf("\tIPv6-only testing enabled for HTTP\n")
 		}
 
 		if len(ipv6) > 0 {
-			if s.options.Verbose {
+			if opts.Verbose {
 				fmt.Printf("\tRunning against %s\n", ipv6[0])
 			}
-			err := s.RunHTTPTest(target, ipv6[0])
+			err := s.RunHTTPTest(target, ipv6[0], tst, opts)
 			return err
 		} else {
 			return errors.New(fmt.Sprintf("Failed to resolve %s to IPv6 address", target))
@@ -132,8 +130,8 @@ func (s *HTTPTest) RunTest(target string) error {
 	//
 	// Both?
 	//
-	if (s.options.IPv6 == true) && (s.options.IPv4 == true) {
-		if s.options.Verbose {
+	if (opts.IPv6 == true) && (opts.IPv4 == true) {
+		if opts.Verbose {
 			fmt.Printf("\tIPv4 & IPv6 testing enabled for HTTP\n")
 		}
 
@@ -141,10 +139,10 @@ func (s *HTTPTest) RunTest(target string) error {
 
 		// ipv4
 		if len(ipv4) > 0 {
-			if s.options.Verbose {
+			if opts.Verbose {
 				fmt.Printf("\tRunning against %s\n", ipv4[0])
 			}
-			err := s.RunHTTPTest(target, ipv4[0])
+			err := s.RunHTTPTest(target, ipv4[0], tst, opts)
 			if err != nil {
 				return err
 			}
@@ -153,10 +151,10 @@ func (s *HTTPTest) RunTest(target string) error {
 
 		// ipv6
 		if len(ipv6) > 0 {
-			if s.options.Verbose {
+			if opts.Verbose {
 				fmt.Printf("\tRunning against %s\n", ipv6[0])
 			}
-			err := s.RunHTTPTest(target, ipv6[0])
+			err := s.RunHTTPTest(target, ipv6[0], tst, opts)
 			if err != nil {
 				return err
 			}
@@ -167,13 +165,13 @@ func (s *HTTPTest) RunTest(target string) error {
 		}
 	}
 
-	if (s.options.IPv6 == false) && (s.options.IPv4 == false) {
+	if (opts.IPv6 == false) && (opts.IPv4 == false) {
 		return errors.New("IPv4 AND IPv6 are disabled, no HTTP test is possible.")
 	}
 	return nil
 }
 
-func (s *HTTPTest) RunHTTPTest(target string, address string) error {
+func (s *HTTPTest) RunHTTPTest(target string, address string, tst test.Test, opts TestOptions) error {
 
 	//
 	// Setup a dialer which will be dual-stack
@@ -204,7 +202,7 @@ func (s *HTTPTest) RunHTTPTest(target string, address string) error {
 	// the magical transport we've just created.
 	//
 	var netClient = &http.Client{
-		Timeout: s.options.Timeout,
+		Timeout: opts.Timeout,
 
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
@@ -236,18 +234,12 @@ func (s *HTTPTest) RunHTTPTest(target string, address string) error {
 	ok := 200
 
 	//
-	// Parse the input line looking for options, as the user-might
-	// prefer a different status-code, or be looking for some content.
-	//
-	options := ParseArguments(s.input)
-
-	//
 	// Did the user want to look for a specific status-code?
 	//
-	if options["status"] != "" {
+	if tst.Arguments["status"] != "" {
 		// Status code might be "any"
-		if options["status"] != "any" {
-			ok, err = strconv.Atoi(options["status"])
+		if tst.Arguments["status"] != "any" {
+			ok, err = strconv.Atoi(tst.Arguments["status"])
 			if err != nil {
 				return err
 			}
@@ -260,17 +252,17 @@ func (s *HTTPTest) RunHTTPTest(target string, address string) error {
 	// If they mis-match that means the test failed, unless the user
 	// said "with status any".
 	//
-	if ok != status && (options["status"] != "any") {
+	if ok != status && (tst.Arguments["status"] != "any") {
 		return errors.New(fmt.Sprintf("Status code was %d not %d", status, ok))
 	}
 
 	//
 	// Looking for a body-match?
 	//
-	if options["content"] != "" {
-		if !strings.Contains(string(body), options["content"]) {
+	if tst.Arguments["content"] != "" {
+		if !strings.Contains(string(body), tst.Arguments["content"]) {
 			return errors.New(
-				fmt.Sprintf("Body didn't contain '%s'", options["content"]))
+				fmt.Sprintf("Body didn't contain '%s'", tst.Arguments["content"]))
 		}
 
 	}
@@ -279,22 +271,6 @@ func (s *HTTPTest) RunHTTPTest(target string, address string) error {
 	// If we reached here all is OK
 	//
 	return nil
-}
-
-//
-// Store the complete line from the parser in our private
-// field; this could be used if there are protocol-specific
-// options to be understood.
-//
-func (s *HTTPTest) SetLine(input string) {
-	s.input = input
-}
-
-//
-// Store the options for this test
-//
-func (s *HTTPTest) SetOptions(opts TestOptions) {
-	s.options = opts
 }
 
 //

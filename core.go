@@ -7,8 +7,9 @@ import (
 	"strings"
 
 	"github.com/skx/overseer/notifiers"
-	"github.com/skx/overseer/parser"
+
 	"github.com/skx/overseer/protocols"
+	"github.com/skx/overseer/test"
 )
 
 // run_test is the core of our application.
@@ -19,30 +20,18 @@ import (
 // The test result will be passed to the specified notifier instance upon
 // completion.
 //
-func run_test(tst parser.Test, opts protocols.TestOptions, notifier notifiers.Notifier) error {
+func run_test(tst test.Test, opts protocols.TestOptions, notifier notifiers.Notifier) error {
 
 	//
 	// Setup our local state.
 	//
 	test_type := tst.Type
 	test_target := tst.Target
-	input := tst.Input
 
 	//
 	// Look for a suitable protocol handler
 	//
 	tmp := protocols.ProtocolHandler(test_type)
-
-	//
-	// Pass the full input-line to our protocol tester
-	// to allow any extra options/flags to be parsed
-	//
-	tmp.SetLine(input)
-
-	//
-	// Set our options
-	//
-	tmp.SetOptions(opts)
 
 	//
 	// Each test will be executed for each address-family, unless it is
@@ -58,10 +47,7 @@ func run_test(tst parser.Test, opts protocols.TestOptions, notifier notifiers.No
 	} else {
 
 		//
-		// Otherwise resolve the target as much
-		// as we can.  This will mean that an SSH-test, for example,
-		// will be carried out for each address-family which is
-		// present in DNS.
+		// Otherwise resolve the target to IPv4 & IPv6 addresses.
 		//
 		ips, err := net.LookupIP(test_target)
 		if err != nil {
@@ -72,6 +58,11 @@ func run_test(tst parser.Test, opts protocols.TestOptions, notifier notifiers.No
 			fmt.Printf("WARNING: Failed to resolve %s\n", test_target)
 			return nil
 		}
+
+		//
+		// We'll now run the test against each of the results,
+		// ignoring any IP-protocol which is disabled.
+		//
 		for _, ip := range ips {
 			if ip.To4() != nil {
 				if opts.IPv4 {
@@ -131,7 +122,7 @@ func run_test(tst parser.Test, opts protocols.TestOptions, notifier notifiers.No
 			//
 			// Run the test
 			//
-			result = tmp.RunTest(target)
+			result = tmp.RunTest(tst, target, opts)
 
 			//
 			// If the test passed then we're good.
@@ -160,7 +151,7 @@ func run_test(tst parser.Test, opts protocols.TestOptions, notifier notifiers.No
 		}
 
 		//
-		// Post the result to the specified notifier.
+		// Post the result of the test to the notifier.
 		//
 		// Before we trigger the notification we need to
 		// update the target to the thing we probed, which might
@@ -169,9 +160,14 @@ func run_test(tst parser.Test, opts protocols.TestOptions, notifier notifiers.No
 		//  i.e. "mail.steve.org.uk must run ssh" might become
 		// "1.2.3.4 must run ssh" as a result of the DNS lookup.
 		//
-		tst.Target = target
+		// However because we might run the same test against
+		// multiple hosts we need to do this with a copy so that
+		// we don't lose the original target.
+		//
+		copy := tst
+		copy.Target = target
 		if notifier != nil {
-			notifier.Notify(tst, result)
+			notifier.Notify(copy, result)
 		}
 	}
 

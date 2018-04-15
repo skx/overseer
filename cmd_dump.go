@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/subcommands"
 	"github.com/skx/overseer/parser"
+	"github.com/skx/overseer/test"
 )
 
 type dumpCmd struct {
@@ -37,7 +38,7 @@ func (p *dumpCmd) SetFlags(f *flag.FlagSet) {
 // This is a callback invoked by the parser when a job
 // has been successfully parsed.
 //
-func dump_test(tst parser.Test) error {
+func dump_test(tst test.Test) error {
 	fmt.Printf("%s\n", tst.Input)
 	return nil
 }

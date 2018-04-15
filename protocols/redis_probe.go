@@ -10,22 +10,19 @@ import (
 	"strings"
 
 	"github.com/go-redis/redis"
+	"github.com/skx/overseer/test"
 )
 
 //
 // Our structure.
 //
-// We store state in the `input` field.
-//
 type REDISTest struct {
-	input   string
-	options TestOptions
 }
 
 //
 // Make a Redis-test against the given target.
 //
-func (s *REDISTest) RunTest(target string) error {
+func (s *REDISTest) RunTest(tst test.Test, target string, opts TestOptions) error {
 
 	//
 	// Predeclare our error
@@ -45,9 +42,8 @@ func (s *REDISTest) RunTest(target string) error {
 	//
 	// If the user specified a different port update to use it.
 	//
-	out := ParseArguments(s.input)
-	if out["port"] != "" {
-		port, err = strconv.Atoi(out["port"])
+	if tst.Arguments["port"] != "" {
+		port, err = strconv.Atoi(tst.Arguments["port"])
 		if err != nil {
 			return err
 		}
@@ -56,9 +52,7 @@ func (s *REDISTest) RunTest(target string) error {
 	//
 	// If the user specified a password use it.
 	//
-	if out["password"] != "" {
-		password = out["password"]
-	}
+	password = tst.Arguments["password"]
 
 	//
 	// Default to connecting to an IPv4-address
@@ -96,22 +90,6 @@ func (s *REDISTest) RunTest(target string) error {
 	// If we reached here all is OK
 	//
 	return nil
-}
-
-//
-// Store the complete line from the parser in our private
-// field; this could be used if there are protocol-specific
-// options to be understood.
-//
-func (s *REDISTest) SetLine(input string) {
-	s.input = input
-}
-
-//
-// Store the options for this test
-//
-func (s *REDISTest) SetOptions(opts TestOptions) {
-	s.options = opts
 }
 
 //

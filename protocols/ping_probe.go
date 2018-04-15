@@ -6,16 +6,14 @@ import (
 	"net"
 	"os/exec"
 	"syscall"
+
+	"github.com/skx/overseer/test"
 )
 
 //
 // Our structure.
 //
-// We store state in the `input` field.
-//
 type PINGTest struct {
-	input   string
-	options TestOptions
 }
 
 //
@@ -68,8 +66,7 @@ func (s *PINGTest) Ping6(target string) bool {
 //
 // Run the test against the specified target.
 //
-func (s *PINGTest) RunTest(target string) error {
-
+func (s *PINGTest) RunTest(tst test.Test, target string, opts TestOptions) error {
 	ip := net.ParseIP(target)
 
 	//
@@ -96,22 +93,6 @@ func (s *PINGTest) RunTest(target string) error {
 	// Unknown family, or otherwise bogus name.
 	//
 	return errors.New("Neither IPv4 nor IPv6 address!")
-}
-
-//
-// Store the complete line from the parser in our private
-// field; this could be used if there are protocol-specific options
-// to be understood.
-//
-func (s *PINGTest) SetLine(input string) {
-	s.input = input
-}
-
-//
-// Store the options for this test
-//
-func (s *PINGTest) SetOptions(opts TestOptions) {
-	s.options = opts
 }
 
 //

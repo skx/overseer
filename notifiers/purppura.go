@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/skx/overseer/parser"
+	"github.com/skx/overseer/test"
 )
 
 // Our structure.
@@ -17,7 +17,7 @@ type Purppura struct {
 }
 
 // Send a notification
-func (s *Purppura) Notify(test parser.Test, result error) error {
+func (s *Purppura) Notify(test test.Test, result error) error {
 
 	//
 	// If we don't have a server configured then

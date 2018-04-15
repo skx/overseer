@@ -7,22 +7,20 @@ import (
 	"net"
 	"strconv"
 	"strings"
+
+	"github.com/skx/overseer/test"
 )
 
 //
 // Our structure.
 //
-// We store state in the `input` field.
-//
 type RSYNCTest struct {
-	input   string
-	options TestOptions
 }
 
 //
 // Run the test against the specified target.
 //
-func (s *RSYNCTest) RunTest(target string) error {
+func (s *RSYNCTest) RunTest(tst test.Test, target string, opts TestOptions) error {
 	var err error
 
 	//
@@ -33,9 +31,8 @@ func (s *RSYNCTest) RunTest(target string) error {
 	//
 	// If the user specified a different port update to use it.
 	//
-	out := ParseArguments(s.input)
-	if out["port"] != "" {
-		port, err = strconv.Atoi(out["port"])
+	if tst.Arguments["port"] != "" {
+		port, err = strconv.Atoi(tst.Arguments["port"])
 		if err != nil {
 			return err
 		}
@@ -44,7 +41,7 @@ func (s *RSYNCTest) RunTest(target string) error {
 	//
 	// Set an explicit timeout
 	//
-	d := net.Dialer{Timeout: s.options.Timeout}
+	d := net.Dialer{Timeout: opts.Timeout}
 
 	//
 	// Default to connecting to an IPv4-address
@@ -80,22 +77,6 @@ func (s *RSYNCTest) RunTest(target string) error {
 	}
 
 	return nil
-}
-
-//
-// Store the complete line from the parser in our private
-// field; this could be used if there are protocol-specific options
-// to be understood.
-//
-func (s *RSYNCTest) SetLine(input string) {
-	s.input = input
-}
-
-//
-// Store the options for this test
-//
-func (s *RSYNCTest) SetOptions(opts TestOptions) {
-	s.options = opts
 }
 
 //

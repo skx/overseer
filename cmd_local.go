@@ -14,6 +14,7 @@ import (
 	"github.com/skx/overseer/notifiers"
 	"github.com/skx/overseer/parser"
 	"github.com/skx/overseer/protocols"
+	"github.com/skx/overseer/test"
 )
 
 type localCmd struct {
@@ -58,7 +59,7 @@ func (p *localCmd) SetFlags(f *flag.FlagSet) {
 //
 // Run the test, via our helper
 //
-func (p *localCmd) run_test(tst parser.Test) error {
+func (p *localCmd) run_test(tst test.Test) error {
 
 	//
 	// Setup the options for the test.

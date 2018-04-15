@@ -3,7 +3,7 @@ package notifiers
 import (
 	"sync"
 
-	"github.com/skx/overseer/parser"
+	"github.com/skx/overseer/test"
 )
 
 // NotifierOptions contain options that are passed to the selected
@@ -18,7 +18,7 @@ type Options struct {
 // Notifier is the interface that must be fulfilled by our notifiers.
 type Notifier interface {
 	// Raise an alert, via some mechanism
-	Notify(test parser.Test, result error) error
+	Notify(test test.Test, result error) error
 
 	// Set the options for this notifier.
 	SetOptions(opts Options)

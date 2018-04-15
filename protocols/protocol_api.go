@@ -3,6 +3,8 @@ package protocols
 import (
 	"sync"
 	"time"
+
+	"github.com/skx/overseer/test"
 )
 
 // TestOptions are options which are passed to
@@ -30,29 +32,14 @@ type TestOptions struct {
 // defines the implementation methods which must be
 // implemented to add a new protocol-test.
 type ProtocolTest interface {
-	//
-	// Run the test against the given target.
-	//
-	// Return a suitable error if the test fails, or
-	// nil to indicate it passed.
-	//
-	RunTest(target string) error
 
-	// This function is invoked with the complete line
-	// from the parser.  This is useful as some tests might
-	// wish to allow extra options to be specified.
 	//
-	// For example a test might say:
+	// Run the specified test against the given target.
 	//
-	//   http://example.com/ must run http with content 'steve'
+	// Return a suitable error if the test fails, or nil to indicate
+	// it passed.
 	//
-	// There is no general purpose way to specify options, so the
-	// test itself can look for option-flags it recognizes.
-	//
-	SetLine(input string)
-
-	// Set the options for this test.
-	SetOptions(opts TestOptions)
+	RunTest(tst test.Test, target string, opts TestOptions) error
 }
 
 //

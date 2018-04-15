@@ -14,18 +14,17 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/miekg/dns"
+	"github.com/skx/overseer/test"
+	//	"github.com/skx/overseer/protocols"
 )
 
 //
 // Our structure.
 //
-// We store state in the `input` field.
-//
 type DNSTest struct {
-	input   string
-	options TestOptions
 }
 
 //
@@ -48,7 +47,7 @@ var (
 // lookup will perform a DNS query, using the nameservers in /etc/resolv.conf,
 // and return an array of maps of the response
 //
-func (s *DNSTest) lookup(server string, name string, ltype string) ([]string, error) {
+func (s *DNSTest) lookup(server string, name string, ltype string, timeout time.Duration) ([]string, error) {
 
 	var results []string
 
@@ -60,7 +59,7 @@ func (s *DNSTest) lookup(server string, name string, ltype string) ([]string, er
 		Question: make([]dns.Question, 1),
 	}
 	localc = &dns.Client{
-		ReadTimeout: s.options.Timeout,
+		ReadTimeout: timeout,
 	}
 	r, err := s.localQuery(server, dns.Fqdn(name), ltype)
 	if err != nil || r == nil {
@@ -137,17 +136,12 @@ func (s *DNSTest) localQuery(server string, qname string, lookupType string) (*d
 //
 // Make a DNS-test.
 //
-func (s *DNSTest) RunTest(target string) error {
+func (s *DNSTest) RunTest(tst test.Test, target string, opts TestOptions) error {
 
-	//
-	// Parse the options and make sure we have enough.
-	//
-	options := ParseArguments(s.input)
-
-	if options["lookup"] == "" {
+	if tst.Arguments["lookup"] == "" {
 		return errors.New("No value to lookup specified.")
 	}
-	if options["type"] == "" {
+	if tst.Arguments["type"] == "" {
 		return errors.New("No record-type to lookup.")
 	}
 
@@ -160,7 +154,7 @@ func (s *DNSTest) RunTest(target string) error {
 	//
 	// Run the lookup
 	//
-	res, err := s.lookup(target, options["lookup"], options["type"])
+	res, err := s.lookup(target, tst.Arguments["lookup"], tst.Arguments["type"], opts.Timeout)
 	if err != nil {
 		return err
 	}
@@ -173,27 +167,11 @@ func (s *DNSTest) RunTest(target string) error {
 	sort.Strings(res)
 	found := strings.Join(res, ",")
 
-	if found == options["result"] {
+	if found == tst.Arguments["result"] {
 		return nil
 	} else {
-		return errors.New(fmt.Sprintf("Expected DNS result to be '%s', but found '%s'", options["result"], found))
+		return errors.New(fmt.Sprintf("Expected DNS result to be '%s', but found '%s'", tst.Arguments["result"], found))
 	}
-}
-
-//
-// Store the complete line from the parser in our private
-// field; this could be used if there are protocol-specific
-// options to be understood.
-//
-func (s *DNSTest) SetLine(input string) {
-	s.input = input
-}
-
-//
-// Store the options for this test
-//
-func (s *DNSTest) SetOptions(opts TestOptions) {
-	s.options = opts
 }
 
 //

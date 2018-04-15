@@ -7,24 +7,23 @@ import (
 	"strings"
 
 	client "github.com/emersion/go-imap/client"
+	"github.com/skx/overseer/test"
 )
 
 //
 // Our structure.
 //
-// We store state in the `input` field.
-//
 type IMAPTest struct {
-	input   string
-	options TestOptions
 }
 
 //
 // Run the test against the specified target.
 //
-func (s *IMAPTest) RunTest(target string) error {
+func (s *IMAPTest) RunTest(tst test.Test, target string, opts TestOptions) error {
 
 	var err error
+
+	fmt.Printf("target:%s test.target:%s\n", target, tst.Target)
 
 	//
 	// The default port to connect to.
@@ -34,9 +33,8 @@ func (s *IMAPTest) RunTest(target string) error {
 	//
 	// If the user specified a different port update to use it.
 	//
-	out := ParseArguments(s.input)
-	if out["port"] != "" {
-		port, err = strconv.Atoi(out["port"])
+	if tst.Arguments["port"] != "" {
+		port, err = strconv.Atoi(tst.Arguments["port"])
 		if err != nil {
 			return err
 		}
@@ -55,7 +53,7 @@ func (s *IMAPTest) RunTest(target string) error {
 	}
 
 	var dial = &net.Dialer{
-		Timeout: s.options.Timeout,
+		Timeout: opts.Timeout,
 	}
 
 	//
@@ -69,30 +67,14 @@ func (s *IMAPTest) RunTest(target string) error {
 	//
 	// If we got username/password then use them
 	//
-	if (out["username"] != "") && (out["password"] != "") {
-		err = con.Login(out["username"], out["password"])
+	if (tst.Arguments["username"] != "") && (tst.Arguments["password"] != "") {
+		err = con.Login(tst.Arguments["username"], tst.Arguments["password"])
 		if err != nil {
 			return err
 		}
 	}
 
 	return nil
-}
-
-//
-// Store the complete line from the parser in our private
-// field; this could be used if there are protocol-specific options
-// to be understood.
-//
-func (s *IMAPTest) SetLine(input string) {
-	s.input = input
-}
-
-//
-// Store the options for this test
-//
-func (s *IMAPTest) SetOptions(opts TestOptions) {
-	s.options = opts
 }
 
 //
