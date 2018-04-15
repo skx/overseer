@@ -1,12 +1,3 @@
-//
-// This is our DNS protocol-test.
-//
-// It is more complex than the others, because it requires a complex
-// invocation:
-//
-//   ns.example must run dns for hostname.example.com resolving A as '1.2.3.4'
-//
-//
 package protocols
 
 import (
@@ -21,15 +12,11 @@ import (
 	//	"github.com/skx/overseer/protocols"
 )
 
-//
 // Our structure.
-//
 type DNSTest struct {
 }
 
-//
-// Here we have a map of types, we only cover the few we care about.
-//
+// Here we have a map of DNS type-names.
 var StringToType = map[string]uint16{
 	"A":    dns.TypeA,
 	"AAAA": dns.TypeAAAA,
@@ -43,10 +30,8 @@ var (
 	localc *dns.Client
 )
 
-//
-// lookup will perform a DNS query, using the nameservers in /etc/resolv.conf,
-// and return an array of maps of the response
-//
+// lookup will perform a DNS query, using the servername-specified.
+// It returns an array of maps of the response.
 func (s *DNSTest) lookup(server string, name string, ltype string, timeout time.Duration) ([]string, error) {
 
 	var results []string
@@ -96,11 +81,8 @@ func (s *DNSTest) lookup(server string, name string, ltype string, timeout time.
 	return results, nil
 }
 
-//
-// Given a thing to lookup, and a type, do the necessary.
-//
-// e.g. "steve.fi" "txt"
-//
+// Given a name & type to lookup perform the request against the named
+// DNS-server.
 func (s *DNSTest) localQuery(server string, qname string, lookupType string) (*dns.Msg, error) {
 	qtype := StringToType[lookupType]
 	if qtype == 0 {
@@ -133,9 +115,7 @@ func (s *DNSTest) localQuery(server string, qname string, lookupType string) (*d
 	return nil, nil
 }
 
-//
 // Make a DNS-test.
-//
 func (s *DNSTest) RunTest(tst test.Test, target string, opts TestOptions) error {
 
 	if tst.Arguments["lookup"] == "" {
@@ -174,9 +154,7 @@ func (s *DNSTest) RunTest(tst test.Test, target string, opts TestOptions) error 
 	}
 }
 
-//
 // Register our protocol-tester.
-//
 func init() {
 	Register("dns", func() ProtocolTest {
 		return &DNSTest{}
