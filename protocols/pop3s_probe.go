@@ -6,7 +6,10 @@
 //
 // This test is invoked via input like so:
 //
-//    host.example.com must run pop3 [with username 'steve@steve' with password] with tls insecure]
+//    host.example.com must run pop3 [with username 'steve@steve' with password 'secret']
+//
+// Because POP3S uses TLS it will test the validity of the certificate as
+// part of the test, if you wish to disable this add `with tls insecure`.
 //
 package protocols
 

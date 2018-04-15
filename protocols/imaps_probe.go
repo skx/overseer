@@ -6,10 +6,11 @@
 //
 // This test is invoked via input like so:
 //
-//    host.example.com must run imap [with username 'steve@steve' with password 'secret' with tls insecure]
+//    host.example.com must run imap [with username 'steve@steve' with password 'secret']
 //
+// Because IMAPS uses TLS it will test the validity of the certificate as
+// part of the test, if you wish to disable this add `with tls insecure`.
 //
-
 package protocols
 
 import (
