@@ -1,3 +1,5 @@
+// Dump
+//
 // The dump sub-command dumps the (parsed) configuration file(s)
 package main
 

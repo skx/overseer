@@ -1,3 +1,5 @@
+// Worker
+//
 // The worker sub-command executes tests pulled from a central redis queue.
 package main
 

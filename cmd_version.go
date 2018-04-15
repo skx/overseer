@@ -1,3 +1,5 @@
+// Version
+//
 // The version sub-command reports our version and terminates.
 package main
 
