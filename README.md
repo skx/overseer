@@ -16,10 +16,16 @@ When tests fail, because hosts/services are down, alerts can be generated via a 
 * http-servers
 * rsync-servers
 * smtp-servers
-* etc
-* ..
+* Look beneath [protocols/](protocols/) to see the handlers which are supplied by default.
 
 Adding new protocols to be tested is simple.
+
+Compared to the inspirating program, custodian, we have several improvements:
+
+* All optional parameters for protocol tests are 100% consistent.
+     * i.e. Any protocol specific arguments are defined via "`with $option_name $option_value`"
+* Many protocol-tests provide _real_ testing.
+     * e.g. If you wish to test an IMAP/POP3/MySQL service this application doesn't just look for a banner response on the remote port, but actually does a login
 
 
 
@@ -129,13 +135,9 @@ the successful registration and lookup of protocol tests for:
 * HTTP & HTTPS
    * Note that no certificate validation is coded explicitly.
 * IMAP & IMAPS
-   * Use `mail.example.com must run imaps with tls insecure` to skip TLS validation.
-   * This is required because we connect by IP address rather than hostname.
 * MySQL
 * ping
 * POP3 & POP3S
-   * Use `mail.example.com must run pop3s with tls insecure` to skip TLS validation.
-   * This is required because we connect by IP address rather than hostname.
 * redis
 * rsync
 * SMTP
