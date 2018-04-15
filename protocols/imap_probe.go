@@ -61,7 +61,7 @@ func (s *IMAPTest) RunTest(target string) error {
 	//
 	// Connect.
 	//
-	conn, err := client.DialWithDialer(dial, address)
+	con, err := client.DialWithDialer(dial, address)
 	if err != nil {
 		return err
 	}
