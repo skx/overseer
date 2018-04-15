@@ -1,5 +1,4 @@
-// The test package holds the structure of a successfully
-// parsed test.
+// The Test structure a successfully parsed test.
 //
 // Tests are parsed via the parser-module, and have several
 // fields which are documented.
