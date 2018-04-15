@@ -1,3 +1,9 @@
+// The notifiers API allows the results of tests to be submitted
+// "somewhere".
+//
+// The notification mechanism uses a class-factory to instantiate
+// a single specific notifier, at run-time.
+//
 package notifiers
 
 import (
@@ -24,32 +30,25 @@ type Notifier interface {
 	SetOptions(opts Options)
 }
 
-//
-// This is a map of known-tests.
-//
+// This is a map of known notifier types, and their corresponding constructors.
 var handlers = struct {
 	m map[string]Ctor
 	sync.RWMutex
 }{m: make(map[string]Ctor)}
 
-//
-// A constructor-function.
-//
+// This is the signature of a constructor-function which may be registered
+// as a notifier.
 type Ctor func() Notifier
 
-//
-// Register a test-type with a constructor.
-//
+// Register a notifier object with the specified constructor function.
 func Register(id string, newfunc Ctor) {
 	handlers.Lock()
 	handlers.m[id] = newfunc
 	handlers.Unlock()
 }
 
-//
-// Lookup the given type and create an instance of it,
+// Lookup the given notification-type and create an instance of it,
 // if we can.
-//
 func NotifierType(id string) (a Notifier) {
 	handlers.RLock()
 	ctor, ok := handlers.m[id]

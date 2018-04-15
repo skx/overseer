@@ -1,3 +1,9 @@
+// The purppura notification class is responsible for sending
+// the results of any executed tests to an instance of the
+// purppura notification system.
+//
+// The single argument is assumed to be the HTTP URL of the end-point
+// to which submissions should be sent via HTTP POSTs.
 package notifiers
 
 import (
@@ -16,7 +22,7 @@ type Purppura struct {
 	options Options
 }
 
-// Send a notification
+// Send a notification to the Purppura server
 func (s *Purppura) Notify(test test.Test, result error) error {
 
 	//
