@@ -1,6 +1,8 @@
 // The protocols package is where the protocol-testers live.
 //
-// These are instantiated at run-time, via a class-factory pattern.
+// Tests are dynamically instantiated at run-time, via a class-factory
+// pattern, and due to their plugin nature they are simple to implement
+// as they require only implementing a single method.
 //
 // There should now follow documentation on each available protocol-test.
 //

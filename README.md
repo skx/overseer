@@ -6,9 +6,11 @@
 
 # Overseer
 
-Overseer is a golang based remote protocol tester, which allows you to monitor the health of your network.
+Overseer is a [golang](https://golang.org/) based remote protocol tester, which allows you to monitor the state of your network, and the services running upon it.
 
-When tests fail, because hosts/services are down, alerts can be generated via a simple plugin-based system.  Currently there is only a single plugin distributed with the project, which uses the [purppura](https://github.com/skx/purppura/) notification system.
+When tests fail, because hosts or services are down, notifications can be generated via a simple plugin-based system.
+
+> Currently there is only a single plugin distributed with the project, which uses the [purppura](https://github.com/skx/purppura/) notification system.
 
 "Remote Protocol Tester" sounds a little vague, so to be more concrete this application lets you test services are running and has built-in support for testing:
 
@@ -16,16 +18,18 @@ When tests fail, because hosts/services are down, alerts can be generated via a 
 * http-servers
 * rsync-servers
 * smtp-servers
-* Look beneath [protocols/](protocols/) to see the handlers which are supplied by default.
-
-Adding new protocols to be tested is simple.
+* ..
+   * The existing protocols are documented [in the godoc](https://godoc.org/github.com/skx/overseer/protocols), and the implementation of the tests can be found beneath the top-level [protocols/](protocols/) directory.
+   * There is a simple [sample skeleton probe](protocols/skeleton.go) which demonstrates simply how to write a new protocol-test.
 
 Compared to the inspirating program, custodian, we have several improvements:
 
 * All optional parameters for protocol tests are 100% consistent.
-     * i.e. Any protocol specific arguments are defined via "`with $option_name $option_value`"
-* Many protocol-tests provide _real_ testing.
-     * e.g. If you wish to test an IMAP/POP3/MySQL service this application doesn't just look for a banner response on the remote port, but actually does a login
+   * i.e. Any protocol specific arguments are defined via "`with $option_name $option_value`"
+* The parsing of optional arguments is handled outside the protocol-tests.
+   * i.e. Your protocol test only needs to concentrate on doing its job.
+* Protocol tests provide _real_ testing, as much as possible.
+   * e.g. If you wish to test an IMAP/POP3/MySQL service this application doesn't just look for a banner response on the remote port, but actually performs a login.
 
 
 
@@ -43,9 +47,9 @@ you have a working golang setup:
 There are two ways you can use overseer:
 
 * Locally.
-   * For small networks.
+   * For small networks, or a small number of tests.
 * Via a queue
-   * For huge networks.
+   * For huge networks, or a huge number of tests.
 
 In both cases the way that you get started is to write a series of tests,
 which describe the hosts & services you wish to monitor.
