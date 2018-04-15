@@ -9,7 +9,7 @@
 //
 // To make the code flexible the parser is invoked with a callback
 // function - this could be used to run the test, dump it, or store
-// it in a <a href="https://redis.io/">redis</a> queue.
+// it in a redis queue.
 //
 package parser
 
