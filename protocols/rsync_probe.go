@@ -1,3 +1,12 @@
+// Rsync Tester
+//
+// The Rsync tester connects to a remote host and ensures that a response
+// is received that looks like an rsync-server banner.
+//
+// This test is invoked via input like so:
+//
+//    host.example.com must run rsync [with port 873]
+//
 package protocols
 
 import (

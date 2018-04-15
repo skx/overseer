@@ -1,5 +1,5 @@
-// Skeleton-Test<br>
-// -------------<br>
+// Skeleton Test
+//
 // This is a skeleton test, for documentation purposes.
 //
 // Each protocol-tests much conform to the ProtocolTest interface, which

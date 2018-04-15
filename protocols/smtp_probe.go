@@ -1,3 +1,12 @@
+// SMTP Tester
+//
+// The SMTP tester connects to a remote host and ensures that a response
+// is received that looks like an SMTP-server banner.
+//
+// This test is invoked via input like so:
+//
+//    host.example.com must run smtp [with port 25]
+//
 package protocols
 
 import (

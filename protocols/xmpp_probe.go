@@ -1,3 +1,12 @@
+// XMPP Tester
+//
+// The XMPP tester connects to a remote host and ensures that a response
+// is received that looks like an XMPP-server banner.
+//
+// This test is invoked via input like so:
+//
+//    host.example.com must run xmpp [with port 5222]
+//
 package protocols
 
 import (

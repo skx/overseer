@@ -1,6 +1,11 @@
+// Redis Tester
 //
-// This is our redis protocol-test.
+// The Redis tester connects to a remote host and ensures that this succeeds,
+// if a password is specified it will be used in the connection.
 //
+// This test is invoked via input like so:
+//
+//    host.example.com must run redis [with port 6379] [with password 'password']
 //
 package protocols
 

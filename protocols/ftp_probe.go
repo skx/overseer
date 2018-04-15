@@ -1,3 +1,12 @@
+// FTP Tester
+//
+// The FTP tester connects to a remote host and ensures that a response
+// is received that looks like an FTP-server banner.
+//
+// This test is invoked via input like so:
+//
+//    host.example.com must run ftp [with port 21]
+//
 package protocols
 
 import (

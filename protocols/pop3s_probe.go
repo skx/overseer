@@ -1,3 +1,13 @@
+// POP3 Tester
+//
+// The POP3 tester connects to a remote host and ensures that this
+// succeeds.  If you supply a username & password a login will be
+// made, and the test will fail if this login fails.
+//
+// This test is invoked via input like so:
+//
+//    host.example.com must run pop3 [with username 'steve@steve' with password] with tls insecure]
+//
 package protocols
 
 import (

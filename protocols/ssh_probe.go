@@ -1,3 +1,12 @@
+// SSH Tester
+//
+// The SSH tester connects to a remote host and ensures that a response
+// is received that looks like an SSH-server banner.
+//
+// This test is invoked via input like so:
+//
+//    host.example.com must run ssh [with port 22]
+//
 package protocols
 
 import (

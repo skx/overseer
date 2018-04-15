@@ -1,3 +1,13 @@
+// DNS Tester
+//
+// The DNS tester allows you to confirm that the specified DNS server
+// returns the results you expect.  It is invoked with input like this:
+//
+//    ns.example.com must run dns with lookup test.example.com with type A with result '1.2.3.4'
+//
+// This test ensures that the DNS lookup of an A record for `test.example.com`
+// returns the single value 1.2.3.4
+//
 package protocols
 
 import (
