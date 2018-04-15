@@ -1,3 +1,16 @@
+// This is the configuration-file parser for `overseer`.
+//
+// Given either an input file of text, or a single line of text,
+// protocol-tests are parsed and returned as instances of the
+// test.Test class.
+//
+// Regardless of which sub-command of the main overseer application
+// is involved this parser is the sole place that tests are parsed.
+//
+// To make the code flexible the parser is invoked with a callback
+// function - this could be used to run the test, dump it, or store
+// it in a [redis](https://redis.io/) queue.
+//
 package parser
 
 import (
@@ -14,21 +27,25 @@ import (
 
 // Parser holds our parser-state.
 type Parser struct {
+	// Storage for defined macros.
+	//
+	// Macros comprise of a name and a list of hostnames.
 	MACROS map[string][]string
 }
 
-// A function that can be invoked
+// ParsedTest is the function-signature of a callback function
+// that can be invoked when a valid test-case has been parsed.
 type ParsedTest func(x test.Test) error
 
-// New is the constructor.
+// New is the constructor to the parser.
 func New() *Parser {
 	m := new(Parser)
 	m.MACROS = make(map[string][]string)
 	return m
 }
 
-// Parse processes the file passed in the constructor,
-// for each line ParseLine is invoked
+// ParseFile processes the filename specified, invoking the supplied
+// callback for every test-case which has been successfully parsed.
 func (s *Parser) ParseFile(filename string, cb ParsedTest) error {
 
 	// Open the given file.
@@ -75,8 +92,8 @@ func (s *Parser) ParseFile(filename string, cb ParsedTest) error {
 	return nil
 }
 
-// parseLine parses a single line, and returns an error if
-// one was found.
+// ParseLine parses a single line of text, and invokes the supplied callback
+// function if a valid test was found.
 func (s *Parser) ParseLine(input string, cb ParsedTest) (test.Test, error) {
 
 	//
@@ -227,11 +244,11 @@ func (s *Parser) ParseLine(input string, cb ParsedTest) (test.Test, error) {
 	return result, nil
 }
 
-// TrimQuotes removes the matching quotes from around a string, if they
-// are present.
+// TrimQuotes removes matching quotes from around a string, if present.
 //
-// For example 'steve' becomes steve, but 'steve stays unchanged, as there
-// are not matching single-quotes around the string.
+// For example `'steve'` becomes `steve`, but `'steve` stays unchanged,
+// as there are not matching single-quotes around the string.
+//
 func (s *Parser) TrimQuotes(in string, c byte) string {
 	if len(in) >= 2 {
 		if in[0] == c && in[len(in)-1] == c {
