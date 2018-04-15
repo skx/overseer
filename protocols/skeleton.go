@@ -76,7 +76,7 @@ func (s *SKELETONTest) RunTest(tst test.Test, target string, opts TestOptions) e
 	//
 	// Make the TCP connection.
 	//
-	conn, err := d.Dial("tcp", address)
+	_, err = d.Dial("tcp", address)
 	if err != nil {
 		return err
 	}
