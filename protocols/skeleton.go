@@ -2,7 +2,7 @@
 //
 // This is a skeleton test, for documentation purposes.
 //
-// Each protocol-tests much conform to the ProtocolTest interface, which
+// Each protocol-test must conform to the ProtocolTest interface, which
 // means implementing the RunTest method.
 //
 // Assuming you have an object which implements this test you can register
