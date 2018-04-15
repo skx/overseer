@@ -7,7 +7,6 @@
 //
 //      1.2.3.4 must run ftp with port 21
 //
-
 package test
 
 // A single test definition as identified by the parser.
