@@ -5,7 +5,7 @@
 // Each protocol-test must conform to the ProtocolTest interface, which
 // means implementing the RunTest method.
 //
-// Assuming you have an object which implements this test you can register
+// Assuming you have an object which implements this method you can register
 // your handler via the Register function of the protocol_api.go class.
 //
 package protocols
