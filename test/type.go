@@ -1,4 +1,4 @@
-// The Test structure a successfully parsed test.
+// The Test structure represents a single successfully parsed test.
 //
 // Tests are parsed via the parser-module, and have several
 // fields which are documented.
