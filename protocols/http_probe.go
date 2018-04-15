@@ -1,11 +1,32 @@
+// HTTP Tester
 //
-// This is our HTTP/HTTPS protocol-test.
+// The HTTP tester allows you to confirm that a remote HTTP-server is
+// responding correctly.
 //
-// It allows fetching remote URLs and testing the status-code and body
-// response.
+// This test is invoked via input like so:
 //
-// NOTE: This deliberately does not follow redirections, to allow enhanced
-// testing.
+//    http://example.com/ must run http
+//
+// By default a remote HTTP-server is considered working if it responds
+// with a HTTP status-code of 200, but you can change this via:
+//
+//    with status 301
+//
+// Or if you do not care about the specific status-code at all, but you
+// wish to see an alert when a connection-refused/failed/timeout condition
+// occurs you could say:
+//
+//    with status any
+//
+// It is also possible to regard a fetch as a failure if the response body
+// does not contain a particular piece of test.  For example the following
+// would be regarded as a failure if my website did not contain my name
+// in the body of the response:
+//
+//    https://steve.fi/ must run http with content 'Steve Kemp'
+//
+// NOTE: This test deliberately does not follow redirections, to allow
+// enhanced testing.
 //
 package protocols
 

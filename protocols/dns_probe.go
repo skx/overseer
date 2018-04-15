@@ -8,6 +8,8 @@
 // This test ensures that the DNS lookup of an A record for `test.example.com`
 // returns the single value 1.2.3.4
 //
+// Lookups are supported for A, AAAA, MX, NS, and TXT records.
+//
 package protocols
 
 import (
