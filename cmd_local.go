@@ -1,7 +1,4 @@
-//
-// Execute the tests locally, with no queue-usage.
-//
-
+// The local sub-command executes parsed tests locally.
 package main
 
 import (

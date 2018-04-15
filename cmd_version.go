@@ -1,7 +1,4 @@
-//
-// Show our version - This uses a level of indirection for our test-case
-//
-
+// The version sub-command reports our version and terminates.
 package main
 
 import (

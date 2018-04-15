@@ -1,7 +1,4 @@
-//
-// Enqueue jobs to a central redis-queue.
-//
-
+// The enqueue sub-command adds parsed tests to a central redis queue.
 package main
 
 import (

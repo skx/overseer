@@ -1,8 +1,4 @@
-//
-// Parse the named configuration-files, which are assumed to contain
-// test-cases, then execute each in turn.
-//
-
+// Entry-Point to our code.
 package main
 
 import (

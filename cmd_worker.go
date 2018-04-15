@@ -1,7 +1,4 @@
-//
-// Execute the tests locally, by pulling them from the queue.
-//
-
+// The worker sub-command executes tests pulled from a central redis queue.
 package main
 
 import (

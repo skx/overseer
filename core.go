@@ -1,3 +1,5 @@
+// Helper function to run tests and issue notifications
+
 package main
 
 import (
