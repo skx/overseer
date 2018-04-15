@@ -2,7 +2,7 @@
 //
 // These are instantiated at run-time, via a class-factory pattern.
 //
-// There now follows documentation on each available protocol-test
+// There should now follow documentation on each available protocol-test.
 //
 package protocols
 
