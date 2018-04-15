@@ -90,8 +90,7 @@ in parallel.   Overseer supports this via the use of a shared [redis](https://re
 On __one__ host run the following to add your tests to the redis queue:
 
        $ overseer enqueue \
-           -redis-host=queue.example.com:6379 \
-           [-redis-pass='secret.here'] \
+           -redis-host=queue.example.com:6379 [-redis-pass='secret.here'] \
            test.file.1 test.file.2 .. test.file.N
 
 This will parse the tests, add each of them to the redis queue, and then terminate.
@@ -99,15 +98,13 @@ This will parse the tests, add each of them to the redis queue, and then termina
 One as many hosts as you wish you can now run an instance of the worker:
 
        $ overseer worker -verbose \
-          -redis-host=queue.example.com:6379 \
-          [-redis-pass='secret']
+          -redis-host=queue.example.com:6379 [-redis-pass='secret']
 
 The `worker` sub-command watches the redis-queue, and executes tests as they become available.  Again note that you'll need to configure your notification too, as shown previously on the simpler setup.  Something like this should be sufficient:
 
        $ overseer worker \
           -verbose \
-          -redis-host=queue.example.com:6379 \
-          [-redis-pass=secret] \
+          -redis-host=queue.example.com:6379 [-redis-pass=secret] \
           -notifier=purppura \
           -notifier-data=http://localhost:8080/events
 
@@ -116,10 +113,10 @@ The `worker` sub-command watches the redis-queue, and executes tests as they bec
 
 ## Test Failures
 
-To avoid triggering false alerts due to transient (network) failures
+To avoid triggering false alerts due to transient (network/host) failures
 tests which fail are retried several times before triggering a notification.
 
-This smoothing is designed to avoid raising an alert, which then clears
+This _smoothing_ is designed to avoid raising an alert, which then clears
 shortly afterwards - on the next overseer run - but the downside is that
 flapping services might not necessarily become visible.
 
@@ -137,7 +134,6 @@ the successful registration and lookup of protocol tests for:
   * Lookups of A, AAAA, MX, NS, and TXT records.
 * FTP
 * HTTP & HTTPS
-   * Note that no certificate validation is coded explicitly.
 * IMAP & IMAPS
 * MySQL
 * ping
@@ -148,7 +144,12 @@ the successful registration and lookup of protocol tests for:
 * SSH
 * XMPP
 
-Tests for other protocols will be added based upon need & demand.
+If you're interested in how the protocol-tests work, and precisely
+what is supported you should consult the generated [godoc-based documentation](https://godoc.org/github.com/skx/overseer/protocols), and take a look implementation beneath the top-level [protocols/](protocols/) directory.
+
+There is a [sample skeleton probe](protocols/skeleton.go) which demonstrates how you could write your own new protocol-test.
+
+Tests for other protocols will be added based upon need & demand, but pull-requests are welcome.
 
 
 ## Address Families
