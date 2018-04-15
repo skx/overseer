@@ -25,6 +25,11 @@
 //
 //    https://steve.fi/ must run http with content 'Steve Kemp'
 //
+// Finally if you wish to disable failures due to expired, broken, or
+// otherwise bogus SSL certificates you can do so via the tls setting:
+//
+//    https://expired.badssl.com/ must run http with tls insecure
+//
 // NOTE: This test deliberately does not follow redirections, to allow
 // enhanced testing.
 //
@@ -32,6 +37,7 @@ package protocols
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -241,6 +247,12 @@ func (s *HTTPTest) RunHTTPTest(target string, address string, tst test.Test, opt
 		DialContext: dial,
 	}
 
+	//
+	// If we're running insecurely then also ignore SSL errors
+	//
+	if tst.Arguments["tls"] == "insecure" {
+		tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	}
 	//
 	// Create a client with a timeout, disabled redirection, and
 	// the magical transport we've just created.
