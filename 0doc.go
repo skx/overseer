@@ -42,6 +42,6 @@
 // clearing notifications as appropriaate.
 //
 //
-// Breif documentation for the available sub-commands now follows.
+// Brief documentation for the available sub-commands now follows.
 //
 package main

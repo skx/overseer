@@ -89,7 +89,7 @@ func (s *XMPPTest) RunTest(tst test.Test, target string, opts TestOptions) error
 	}
 
 	//
-	// Now close the conneciton.
+	// Now close the connection
 	//
 	err = conn.Close()
 	if err != nil {
