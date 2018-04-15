@@ -1,5 +1,4 @@
-// The notifiers API allows the results of tests to be submitted
-// "somewhere".
+// The notifiers API allows the results of tests to be submitted "somewhere".
 //
 // The notification mechanism uses a class-factory to instantiate
 // a single specific notifier, at run-time.
