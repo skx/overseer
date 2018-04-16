@@ -21,7 +21,7 @@ import (
 
 // Our structure.
 type Purppura struct {
-	options Options
+	data string
 }
 
 // Send a notification to the Purppura server
@@ -31,7 +31,7 @@ func (s *Purppura) Notify(test test.Test, result error) error {
 	// If we don't have a server configured then
 	// return without sending
 	//
-	if s.options.Data == "" {
+	if s.data == "" {
 		return nil
 	}
 
@@ -82,21 +82,16 @@ func (s *Purppura) Notify(test test.Test, result error) error {
 	//
 	// Post to purppura
 	//
-	_, err := http.Post(s.options.Data,
+	_, err := http.Post(s.data,
 		"application/json",
 		bytes.NewBuffer(jsonValue))
 
 	return err
 }
 
-// Save the options we're given away
-func (s *Purppura) SetOptions(opts Options) {
-	s.options = opts
-}
-
 // Register our notifier
 func init() {
-	Register("purppura", func() Notifier {
-		return &Purppura{}
+	Register("purppura", func(data string) Notifier {
+		return &Purppura{data: data}
 	})
 }

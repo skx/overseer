@@ -17,6 +17,7 @@ import (
 // notifier.
 //
 // It is expected they contain an URL, target, credential, or similar.
+//
 type Options struct {
 	// The data passed to the notifier, as a string.
 	Data string
@@ -26,9 +27,6 @@ type Options struct {
 type Notifier interface {
 	// Raise an alert, via some mechanism
 	Notify(test test.Test, result error) error
-
-	// Set the options for this notifier.
-	SetOptions(opts Options)
 }
 
 // This is a map of known notifier types, and their corresponding constructors.
@@ -39,7 +37,7 @@ var handlers = struct {
 
 // This is the signature of a constructor-function which may be registered
 // as a notifier.
-type Ctor func() Notifier
+type Ctor func(data string) Notifier
 
 // Register a notifier object with the specified constructor function.
 func Register(id string, newfunc Ctor) {
@@ -50,12 +48,12 @@ func Register(id string, newfunc Ctor) {
 
 // Lookup the given notification-type and create an instance of it,
 // if we can.
-func NotifierType(id string) (a Notifier) {
+func NotifierType(id string, data string) (a Notifier) {
 	handlers.RLock()
 	ctor, ok := handlers.m[id]
 	handlers.RUnlock()
 	if ok {
-		a = ctor()
+		a = ctor(data)
 	}
 	return
 }

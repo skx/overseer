@@ -110,20 +110,11 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 	// If the notifier is set then create it.
 	//
 	if p.Notifier != "" {
-		notifier = notifiers.NotifierType(p.Notifier)
+		notifier = notifiers.NotifierType(p.Notifier, p.NotifierData)
 
 		if notifier == nil {
 			fmt.Printf("Unknown notifier: %s\n", p.Notifier)
 			os.Exit(1)
-		}
-
-		//
-		// Set the notifier options
-		//
-		if p.NotifierData != "" {
-			var nopt notifiers.Options
-			nopt.Data = p.NotifierData
-			notifier.SetOptions(nopt)
 		}
 	}
 

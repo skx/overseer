@@ -28,7 +28,7 @@ import (
 
 // Our structure.
 type IRCNotifier struct {
-	options Options
+	data string
 }
 
 // Given a configuration URL and a message, then send the message to the
@@ -101,7 +101,7 @@ func (s *IRCNotifier) Notify(test test.Test, result error) error {
 	// If we don't have a server configured then
 	// return without sending
 	//
-	if s.options.Data == "" {
+	if s.data == "" {
 		return nil
 	}
 
@@ -125,17 +125,13 @@ func (s *IRCNotifier) Notify(test test.Test, result error) error {
 	//
 	// And send it.
 	//
-	return (s.SendIRCMessage(s.options.Data, msg))
-}
-
-// Save the options we're given away
-func (s *IRCNotifier) SetOptions(opts Options) {
-	s.options = opts
+	return (s.SendIRCMessage(s.data, msg))
 }
 
 // Register our notifier
 func init() {
-	Register("irc", func() Notifier {
-		return &IRCNotifier{}
+	Register("irc", func(data string) Notifier {
+
+		return &IRCNotifier{data: data}
 	})
 }
