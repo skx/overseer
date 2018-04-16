@@ -5,8 +5,11 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"os"
 
 	"github.com/go-redis/redis"
 	"github.com/google/subcommands"
@@ -35,8 +38,35 @@ func (*enqueueCmd) Usage() string {
 // Flag setup.
 //
 func (p *enqueueCmd) SetFlags(f *flag.FlagSet) {
-	f.StringVar(&p.RedisHost, "redis-host", "localhost:6379", "Specify the address of the redis queue.")
-	f.StringVar(&p.RedisPassword, "redis-pass", "", "Specify the password for the redis queue.")
+
+	//
+	// Create the default options here
+	//
+	// This is done so we can load defaults via a configuration-file
+	// if present.
+	//
+	var defaults enqueueCmd
+	defaults.RedisHost = "localhost:6379"
+	defaults.RedisPassword = ""
+
+	//
+	// If we have a configuration file then load it
+	//
+	if len(os.Getenv("OVERSEER")) > 0 {
+		cfg, err := ioutil.ReadFile(os.Getenv("OVERSEER"))
+		if err == nil {
+			err = json.Unmarshal(cfg, &defaults)
+			if err != nil {
+				fmt.Printf("WARNING: Error loading overseer.json - %s\n",
+					err.Error())
+			}
+		} else {
+			fmt.Printf("WARNING: Failed to read configuration-file - %s\n", err.Error())
+		}
+	}
+
+	f.StringVar(&p.RedisHost, "redis-host", defaults.RedisHost, "Specify the address of the redis queue.")
+	f.StringVar(&p.RedisPassword, "redis-pass", defaults.RedisPassword, "Specify the password for the redis queue.")
 }
 
 //

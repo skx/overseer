@@ -152,6 +152,36 @@ There is a [sample skeleton probe](protocols/skeleton.go) which demonstrates how
 Tests for other protocols will be added based upon need & demand, but pull-requests are welcome.
 
 
+## Configuration File
+
+If you prefer to use a configuration-file over the command-line arguments
+that is supported.  Each of the subcommands can process a JSON-based
+configuration file, if it is present.
+
+The configuration file will override the default arguments, and thus
+cannot easily be set by a command-line flag itself.  Instead you should
+export the environmental variable OVERSEER with the path to a suitable
+file.
+
+For example you might run:
+
+     export OVERSEER=$(pwd)/overseer.json
+
+Where the contents of that file are:
+
+     {
+         "IPV6": true,
+         "IPv4": true,
+         "Notifier": "irc",
+         "NotifierData": "irc://alerts:@chat.example.com:6667/#outages",
+         "RedisHost": "localhost:6379",
+         "RedisPassword": "",
+         "Retry": true,
+         "Timeout": 10,
+         "Verbose": true
+     }
+
+
 ## Address Families
 
 Because we're living in exciting and modern times the `overseer` application
