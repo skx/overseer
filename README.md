@@ -12,13 +12,22 @@ When tests fail because hosts or services are down, notifications can be generat
 
 "Remote Protocol Tester" sounds a little vague, so to be more concrete this application lets you test services are running and has built-in support for testing:
 
-* dns-servers
-* http-servers
-* rsync-servers
-* smtp-servers
-* ..
-   * The existing protocols are documented [in the godoc](https://godoc.org/github.com/skx/overseer/protocols), and the implementation of the tests can be found beneath the top-level [protocols/](protocols/) directory.
-   * There is a simple [sample skeleton probe](protocols/skeleton.go) which demonstrates simply how to write a new protocol-test.
+* DNS-servers
+  * via lookups of A, AAAA, MX, NS, or TXT records.
+* FTP
+* HTTP & HTTPS fetches.
+* IMAP & IMAPS
+* MySQL
+* ping
+* POP3 & POP3S
+* Postgres
+* redis
+* rsync
+* SMTP
+* SSH
+* XMPP
+
+The existing protocol-testers are documented [in the godoc](https://godoc.org/github.com/skx/overseer/protocols), and the implementation of the tests can be found beneath the top-level [protocols/](protocols/) directory.
 
 Compared to the inspirating program, custodian, we have several improvements:
 
@@ -107,6 +116,21 @@ The `worker` sub-command watches the redis-queue, and executes tests as they bec
 
 
 
+## Test Failures
+
+To avoid triggering false alerts due to transient (network/host) failures
+tests which fail are retried several times before triggering a notification.
+
+This _smoothing_ is designed to avoid raising an alert, which then clears
+shortly afterwards - on the next overseer run - but the downside is that
+flapping services might not necessarily become visible.
+
+If you're absolutely certain that your connectivity is good, and that
+services should never fail _ever_ you can disable this via the command-line
+flag `-retry=false`.
+
+
+
 ## Notifiers
 
 Overseer uses a simple plugin-based system to allow different notification
@@ -128,57 +152,16 @@ Sample usage might look like this:
 
     $ overseer local \
        -notifier=irc \
-       -notifier-data=irc://announcer:password@irc.example.com:6667/#outages'
+       -notifier-data=irc://alerts:@chat.example.com:6667/#outages'
          test.file.1 test.file.2
 
 Or:
 
     $ overseer local \
        -notifier=purppura \
-       -notifier-data=https://alert.steve.fi/alerts
+       -notifier-data=https://alert.example.com/alerts
          test.file.1 test.file.2
 
-
-## Test Failures
-
-To avoid triggering false alerts due to transient (network/host) failures
-tests which fail are retried several times before triggering a notification.
-
-This _smoothing_ is designed to avoid raising an alert, which then clears
-shortly afterwards - on the next overseer run - but the downside is that
-flapping services might not necessarily become visible.
-
-If you're absolutely certain that your connectivity is good, and that
-services should never fail _ever_ you can disable this via the command-line
-flag `-retry=false`.
-
-
-## Status
-
-The tests defined in [input.txt](input.txt) each work, demonstrating
-the successful registration and lookup of protocol tests for:
-
-* DNS
-  * Lookups of A, AAAA, MX, NS, and TXT records.
-* FTP
-* HTTP & HTTPS
-* IMAP & IMAPS
-* MySQL
-* ping
-* POP3 & POP3S
-* Postgres
-* redis
-* rsync
-* SMTP
-* SSH
-* XMPP
-
-If you're interested in how the protocol-tests work, and precisely
-what is supported you should consult the generated [godoc-based documentation](https://godoc.org/github.com/skx/overseer/protocols), and take a look implementation beneath the top-level [protocols/](protocols/) directory.
-
-There is a [sample skeleton probe](protocols/skeleton.go) which demonstrates how you could write your own new protocol-test.
-
-Tests for other protocols will be added based upon need & demand, but pull-requests are welcome.
 
 
 ## Configuration File
