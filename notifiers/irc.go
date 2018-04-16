@@ -1,3 +1,5 @@
+// IRC
+//
 // The IRC notification object sends test-failures over IRC
 //
 // Assuming you wish to post notification faiures to the room

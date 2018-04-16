@@ -1,3 +1,5 @@
+// Purppura
+//
 // The purppura notification class is responsible for sending
 // the results of any executed tests to an instance of the
 // purppura notification system.

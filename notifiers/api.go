@@ -3,6 +3,8 @@
 // The notification mechanism uses a class-factory to instantiate
 // a single specific notifier, at run-time.
 //
+// There now follows documentation on available notifiers.
+//
 package notifiers
 
 import (
