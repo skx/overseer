@@ -216,10 +216,25 @@ mail.steve.org.uk must run smtp with port 587
 # IMAPS is a good thing.
 #
 # In this context "insecure" means "don't validate the SSL certificate",
-# this fails because we connect by IP address and the certificate doesn't
-# have the IP listed.
+# in my case the SSL certificate is for "mail.steve.org.uk", but here you'll
+# notice I'm testing a different name (which points to the same host).
 #
-mail.steve.org.uk must run imaps with tls insecure
+# So here I'm disabling the strict validation here:
+#
+ssh.steve.org.uk must run imaps with tls insecure
+
+#
+# Without the disabling we'd see:
+#
+#   Test failed: x509: certificate is valid for
+#     mail.steve.org.uk, webmail.steve.org.uk, not ssh.steve.org.uk
+#
+
+#
+# But if I connect to the correct hostname it is fine to leave TLS alone:
+#
+mail.steve.org.uk must run imaps
+
 
 #
 # Similar tests are available for POP3, and POP3S
@@ -229,10 +244,14 @@ mail.steve.org.uk must run imaps with tls insecure
 #
 
 #
-# We might also test MySQL, but I don't run it:
+# We might also test MySQL/Postgres, but I don't run them:
 #
 # localhost must run mysql with username 'root' with password 'sekrit'
 #
+# localhost must run psql with username 'postgres' with password 'sekrit'
+#
+#
+
 
 
 #
