@@ -8,9 +8,7 @@
 
 Overseer is a [golang](https://golang.org/) based remote protocol tester, which allows you to monitor the state of your network, and the services running upon it.
 
-When tests fail, because hosts or services are down, notifications can be generated via a simple plugin-based system.
-
-> Currently there is only a single plugin distributed with the project, which uses the [purppura](https://github.com/skx/purppura/) notification system.
+When tests fail because hosts or services are down, notifications can be generated via a simple plugin-based system, described [later](#notifiers).
 
 "Remote Protocol Tester" sounds a little vague, so to be more concrete this application lets you test services are running and has built-in support for testing:
 
@@ -68,16 +66,13 @@ Each specified file will then be parsed and the tests executed one by one.
 
 Because `-verbose` has been specified the tests, and their results, will be output to the console.
 
-In real-world situation you'd also define a [purppura](https://github.com/skx/purppura) end-point to submit notifications to:
+In real-world situation you'd also define a notifier too:
 
      $ overseer local \
         -notifier=purppura \
-        -notifier-data=http://localhost:8080/events \
+        -notifier-data=http://alert.example.com/events \
         -verbose \
         test.file.1 test.file.2
-
-I'd be happy to accept notification-modules for other systems, but for the
-moment only `purppura` is available.
 
 (It is assumed you'd add a cronjob to run the tests every few minutes.)
 
@@ -106,9 +101,42 @@ The `worker` sub-command watches the redis-queue, and executes tests as they bec
           -verbose \
           -redis-host=queue.example.com:6379 [-redis-pass=secret] \
           -notifier=purppura \
-          -notifier-data=http://localhost:8080/events
+          -notifier-data=http://alert.example.com/events
 
 (It is assumed you'd leave the workers running, under systemd or similar, and run `overseer enqueue ...` via cron to ensure the queue was constantly refilled with tests for the worker(s) to execute.)
+
+
+
+## Notifiers
+
+Overseer uses a simple plugin-based system to allow different notification
+methods to be configured.  A notifier is enabled by specifying its name, and
+a single parameter used to configure it.
+
+There are two notifiers bundled with the release:
+
+* `irc`
+  * This notifier will announce test failures, and only failures, to an IRC channel.
+  * To configure this plugin you should pass an URI string such as
+     * `irc://USERNAME:PASSWORD@irc.example.com:6667/#CHANNEL`
+* `purppura`
+  * This notifier will forward test-results to a [purppura](https://github.com/skx/purppura/) server
+  * To configure this plugin you should pass the URL of the submission end-point, such as:
+     * https://alert.example.com/alerts
+
+Sample usage might look like this:
+
+    $ overseer local \
+       -notifier=irc \
+       -notifier-data=irc://announcer:password@irc.example.com:6667/#outages'
+         test.file.1 test.file.2
+
+Or:
+
+    $ overseer local \
+       -notifier=purppura \
+       -notifier-data=https://alert.steve.fi/alerts
+         test.file.1 test.file.2
 
 
 ## Test Failures
