@@ -138,6 +138,7 @@ the successful registration and lookup of protocol tests for:
 * MySQL
 * ping
 * POP3 & POP3S
+* Postgres
 * redis
 * rsync
 * SMTP
