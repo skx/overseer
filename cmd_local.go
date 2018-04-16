@@ -121,6 +121,11 @@ func (p *localCmd) run_test(tst test.Test) error {
 
 		notifier = notifiers.NotifierType(p.Notifier)
 
+		if notifier == nil {
+			fmt.Printf("Unknown notifier: %s\n", p.Notifier)
+			os.Exit(1)
+		}
+
 		//
 		// Set the notifier options
 		//

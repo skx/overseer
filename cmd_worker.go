@@ -112,6 +112,11 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 	if p.Notifier != "" {
 		notifier = notifiers.NotifierType(p.Notifier)
 
+		if notifier == nil {
+			fmt.Printf("Unknown notifier: %s\n", p.Notifier)
+			os.Exit(1)
+		}
+
 		//
 		// Set the notifier options
 		//
