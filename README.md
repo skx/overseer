@@ -29,7 +29,7 @@ When tests fail because hosts or services are down notifications can be generate
 
 The existing protocol-testers, and the options they support, are documented [in the godoc](https://godoc.org/github.com/skx/overseer/protocols), and the implementation of the protocol-test can be found beneath the top-level [protocols/](protocols/) directory.
 
-Compared to the inspirating program, custodian, we have several improvements:
+Compared to the inspiring program, custodian, we have several improvements:
 
 * All optional parameters for protocol tests are 100% consistent.
    * i.e. Any protocol specific arguments are defined via "`with $option_name $option_value`"
