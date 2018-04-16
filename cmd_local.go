@@ -15,7 +15,6 @@ import (
 	"github.com/google/subcommands"
 	"github.com/skx/overseer/notifiers"
 	"github.com/skx/overseer/parser"
-	"github.com/skx/overseer/protocols"
 	"github.com/skx/overseer/test"
 )
 
@@ -102,7 +101,7 @@ func (p *localCmd) run_test(tst test.Test) error {
 	//
 	// Setup the options for the test.
 	//
-	var opts protocols.TestOptions
+	var opts test.TestOptions
 	opts.Verbose = p.Verbose
 	opts.IPv4 = p.IPv4
 	opts.IPv6 = p.IPv6

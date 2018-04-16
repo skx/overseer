@@ -14,7 +14,7 @@ import (
 
 	"github.com/skx/overseer/notifiers"
 	"github.com/skx/overseer/parser"
-	"github.com/skx/overseer/protocols"
+	"github.com/skx/overseer/test"
 
 	"github.com/go-redis/redis"
 	"github.com/google/subcommands"
@@ -139,7 +139,7 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 	//
 	// Setup the options for the tests.
 	//
-	var opts protocols.TestOptions
+	var opts test.TestOptions
 	opts.Verbose = p.Verbose
 	opts.IPv4 = p.IPv4
 	opts.IPv6 = p.IPv6

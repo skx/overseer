@@ -9,6 +9,10 @@
 //
 package test
 
+import (
+	"time"
+)
+
 // A single test definition as identified by the parser.
 type Test struct {
 	// The target of the test, in the example above this
@@ -27,4 +31,24 @@ type Test struct {
 	// In the example above the map would contain one key `port`,
 	// with the value `21` (as a string).
 	Arguments map[string]string
+}
+
+// TestOptions are options which are passed to every test-handler.
+//
+// The options might change the way the test operates.
+type TestOptions struct {
+	// Should failing tests be retried?
+	Retry bool
+
+	// Timeout for the single test, in seconds.
+	Timeout time.Duration
+
+	// Should the test consider itself to be running verbosely?
+	Verbose bool
+
+	// Should the test probe IPv4 addresses?
+	IPv4 bool
+
+	// Should the test probe IPv6 addresses?
+	IPv6 bool
 }

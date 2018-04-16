@@ -29,7 +29,7 @@ type FTPTest struct {
 //
 // Run the test against the specified target.
 //
-func (s *FTPTest) RunTest(tst test.Test, target string, opts TestOptions) error {
+func (s *FTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
 	var err error
 
 	//

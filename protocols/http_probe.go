@@ -59,7 +59,7 @@ type HTTPTest struct {
 //
 // Make a HTTP-test against the given URL.
 //
-func (s *HTTPTest) RunTest(tst test.Test, target string, opts TestOptions) error {
+func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
 
 	//
 	// We want to turn the target URL into an IPv4 and IPv6
@@ -221,7 +221,7 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts TestOptions) error
 	return nil
 }
 
-func (s *HTTPTest) RunHTTPTest(target string, address string, tst test.Test, opts TestOptions) error {
+func (s *HTTPTest) RunHTTPTest(target string, address string, tst test.Test, opts test.TestOptions) error {
 
 	//
 	// Setup a dialer which will be dual-stack

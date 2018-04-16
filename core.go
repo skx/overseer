@@ -22,7 +22,7 @@ import (
 // The test result will be passed to the specified notifier instance upon
 // completion.
 //
-func run_test(tst test.Test, opts protocols.TestOptions, notifier notifiers.Notifier) error {
+func run_test(tst test.Test, opts test.TestOptions, notifier notifiers.Notifier) error {
 
 	//
 	// Setup our local state.

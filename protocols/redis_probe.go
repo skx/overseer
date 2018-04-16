@@ -27,7 +27,7 @@ type REDISTest struct {
 //
 // Make a Redis-test against the given target.
 //
-func (s *REDISTest) RunTest(tst test.Test, target string, opts TestOptions) error {
+func (s *REDISTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
 
 	//
 	// Predeclare our error

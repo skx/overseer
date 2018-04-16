@@ -66,7 +66,7 @@ func (s *PINGTest) Ping6(target string) bool {
 //
 // Run the test against the specified target.
 //
-func (s *PINGTest) RunTest(tst test.Test, target string, opts TestOptions) error {
+func (s *PINGTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
 	ip := net.ParseIP(target)
 
 	//

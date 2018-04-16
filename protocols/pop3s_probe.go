@@ -32,7 +32,7 @@ type POP3STest struct {
 //
 // Run the test against the specified target.
 //
-func (s *POP3STest) RunTest(tst test.Test, target string, opts TestOptions) error {
+func (s *POP3STest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
 	var err error
 
 	fmt.Printf("target:%s test.target:%s\n", target, tst.Target)

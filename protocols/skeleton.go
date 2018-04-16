@@ -37,7 +37,7 @@ type SKELETONTest struct {
 // test fails, otherwise it should return `nil` to indicate that the test
 // passed.
 //
-func (s *SKELETONTest) RunTest(tst test.Test, target string, opts TestOptions) error {
+func (s *SKELETONTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
 	var err error
 
 	//

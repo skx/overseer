@@ -29,7 +29,7 @@ type SSHTest struct {
 //
 // Run the test against the specified target.
 //
-func (s *SSHTest) RunTest(tst test.Test, target string, opts TestOptions) error {
+func (s *SSHTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
 	var err error
 
 	//

@@ -128,7 +128,7 @@ func (s *DNSTest) localQuery(server string, qname string, lookupType string) (*d
 }
 
 // Make a DNS-test.
-func (s *DNSTest) RunTest(tst test.Test, target string, opts TestOptions) error {
+func (s *DNSTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
 
 	if tst.Arguments["lookup"] == "" {
 		return errors.New("No value to lookup specified.")
