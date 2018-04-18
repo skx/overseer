@@ -36,7 +36,6 @@ type IMAPSTest struct {
 func (s *IMAPSTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
 	var err error
 
-	fmt.Printf("target:%s test.target:%s\n", target, tst.Target)
 	//
 	// The default port to connect to.
 	//
