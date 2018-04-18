@@ -91,6 +91,13 @@ https://steve.fi/ must run http with status 200 with content 'Steve Kemp'
 
 
 #
+# If your webserver uses HTTP basic-authentication you can submit the
+# appropriate username/password as you would expect:
+#
+#     https://jigsaw.w3.org/HTTP/Digest/ must run http with username 'guest' with password 'guest' with content "Your browser made it"
+#
+
+#
 # Macros are shortcuts for repeating tests against multiple hosts.
 #
 # Here we define the macro "REDIS" to have two IPs:

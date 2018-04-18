@@ -25,6 +25,12 @@
 //
 //    https://steve.fi/ must run http with content 'Steve Kemp'
 //
+// If your URL requires the use of HTTP basic authentication this is
+// supported by adding a username and password parameter to your test,
+// for example:
+//
+//    https://jigsaw.w3.org/HTTP/Basic/ must run http with username 'guest' with password 'guest' with content "Your browser made it"
+//
 // Finally if you wish to disable failures due to expired, broken, or
 // otherwise bogus SSL certificates you can do so via the tls setting:
 //
@@ -155,9 +161,22 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 	}
 
 	//
-	// Now we can make the request and get a response.
+	// Now we can make a request-object
 	//
-	response, err := netClient.Get(target)
+	req, err := http.NewRequest("GET", target, nil)
+
+	//
+	// Are we using basic-auth?
+	//
+	if tst.Arguments["username"] != "" {
+		req.SetBasicAuth(tst.Arguments["username"],
+			tst.Arguments["password"])
+	}
+
+	//
+	// Perform the request
+	//
+	response, err := netClient.Do(req)
 	if err != nil {
 		return err
 	}
