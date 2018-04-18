@@ -1,7 +1,8 @@
 // HTTP Tester
 //
 // The HTTP tester allows you to confirm that a remote HTTP-server is
-// responding correctly.
+// responding correctly.  You may test the response of a HTTP GET or
+// POST request.
 //
 // This test is invoked via input like so:
 //
@@ -31,10 +32,16 @@
 //
 //    https://jigsaw.w3.org/HTTP/Basic/ must run http with username 'guest' with password 'guest' with content "Your browser made it"
 //
-// Finally if you wish to disable failures due to expired, broken, or
+// If you need to disable failures due to expired, broken, or
 // otherwise bogus SSL certificates you can do so via the tls setting:
 //
 //    https://expired.badssl.com/ must run http with tls insecure
+//
+// Finally if you submit a "data" argument, like in this next example
+// the request made will be a HTTP POST:
+//
+//    https://steve.fi/Security/XSS/Tutorial/filter.cgi must run http with data "text=test%20me" with content "test me"
+//
 //
 // NOTE: This test deliberately does not follow redirections, to allow
 // enhanced testing.
@@ -42,6 +49,7 @@
 package protocols
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"errors"
@@ -163,7 +171,26 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 	//
 	// Now we can make a request-object
 	//
-	req, err := http.NewRequest("GET", target, nil)
+	var req *http.Request
+	var err error
+
+	//
+	// If we have no data then make a GET request
+	//
+	if tst.Arguments["data"] == "" {
+		req, err = http.NewRequest("GET", target, nil)
+	} else {
+
+		//
+		// Otherwise make a HTTP POST request, with
+		// the specified data.
+		//
+		req, err = http.NewRequest("POST", target,
+			bytes.NewBuffer([]byte(tst.Arguments["data"])))
+	}
+	if err != nil {
+		return err
+	}
 
 	//
 	// Are we using basic-auth?
