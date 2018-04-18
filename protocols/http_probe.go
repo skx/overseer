@@ -43,7 +43,6 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 
@@ -59,169 +58,33 @@ type HTTPTest struct {
 //
 // Make a HTTP-test against the given URL.
 //
+//
+// For the purposes of clarity this test makes a HTTP-fetch.  The `test.Test`
+// structure contains are raw test, and the `target` variable contains the
+// IP address to make the request to.
+//
+// So:
+//
+//    tst.Target => "https://steve.kemp.fi/
+//
+//    target => "176.9.183.100"
+//
 func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
 
 	//
-	// We want to turn the target URL into an IPv4 and IPv6
-	// address so that we can test each of them.
-	//
-	var ipv4 []string
-	var ipv6 []string
-
-	//
-	// Find the hostname we should connect to.
-	//
-	u, err := url.Parse(target)
-	if err != nil {
-		return nil
-	}
-
-	//
-	// The port we connect to, on that host
+	// Determine the port to connect to, via the protocol
+	// in the URI.
 	//
 	port := 80
-	if u.Scheme == "https" {
+	if strings.HasPrefix(tst.Target, "https:") {
 		port = 443
 	}
 
 	//
-	// Lookup the IP addresses of the host.
+	// Be clear about the IP vs. the hostname.
 	//
-	ips, err := net.LookupIP(u.Host)
-	if err != nil {
-		return errors.New(fmt.Sprintf("Failed to resolve %s\n", u.Host))
-	}
-
-	//
-	// Process each of the resolved results
-	//
-	for _, ip := range ips {
-
-		//
-		// IPv4 address
-		//
-		if ip.To4() != nil {
-			ipv4 = append(ipv4, fmt.Sprintf("%s:%d", ip, port))
-		}
-
-		//
-		// IPv6 address
-		//
-		if ip.To16() != nil && ip.To4() == nil {
-			ipv6 = append(ipv6, fmt.Sprintf("[%s]:%d", ip, port))
-		}
-	}
-
-	//
-	// Now we're going to run the testing
-	//
-
-	//
-	// IPv4 only?
-	//
-	if (opts.IPv4 == true) && (opts.IPv6 == false) {
-		if opts.Verbose {
-			fmt.Printf("\tIPv4-only testing enabled for HTTP\n")
-		}
-
-		if len(ipv4) > 0 {
-
-			var err error
-
-			for _, e := range ipv4 {
-				err = s.RunHTTPTest(target, e, tst, opts)
-				if opts.Verbose {
-					fmt.Printf("\tRunning against %s\n", e)
-				}
-				if err != nil {
-					return err
-				}
-			}
-			return err
-		} else {
-			return errors.New(fmt.Sprintf("Failed to resolve %s to IPv4 address", target))
-		}
-	}
-
-	//
-	// IPv6 only?
-	//
-	if (opts.IPv6 == true) && (opts.IPv4 == false) {
-		if opts.Verbose {
-			fmt.Printf("\tIPv6-only testing enabled for HTTP\n")
-		}
-
-		if len(ipv6) > 0 {
-			var err error
-
-			for _, e := range ipv6 {
-				if opts.Verbose {
-					fmt.Printf("\tRunning against %s\n", e)
-				}
-				err = s.RunHTTPTest(target, e, tst, opts)
-				if err != nil {
-					return err
-				}
-			}
-			return err
-		} else {
-			return errors.New(fmt.Sprintf("Failed to resolve %s to IPv6 address", target))
-		}
-	}
-
-	//
-	// Both?
-	//
-	if (opts.IPv6 == true) && (opts.IPv4 == true) {
-		if opts.Verbose {
-			fmt.Printf("\tIPv4 & IPv6 testing enabled for HTTP\n")
-		}
-
-		executed := 0
-
-		// ipv4
-		if len(ipv4) > 0 {
-			var err error
-
-			for _, e := range ipv4 {
-				if opts.Verbose {
-					fmt.Printf("\tRunning against %s\n", e)
-				}
-				err = s.RunHTTPTest(target, e, tst, opts)
-				if err != nil {
-					return err
-				}
-				executed += 1
-			}
-		}
-
-		// ipv6
-		if len(ipv6) > 0 {
-			var err error
-
-			for _, e := range ipv6 {
-				if opts.Verbose {
-					fmt.Printf("\tRunning against %s\n", e)
-				}
-				err = s.RunHTTPTest(target, e, tst, opts)
-				if err != nil {
-					return err
-				}
-				executed += 1
-			}
-		}
-		if executed < 1 {
-			return errors.New(fmt.Sprintf("Failed to perform HTTP test of target %s", target))
-		}
-	}
-
-	if (opts.IPv6 == false) && (opts.IPv4 == false) {
-		return errors.New("IPv4 AND IPv6 are disabled, no HTTP test is possible.")
-	}
-	return nil
-}
-
-func (s *HTTPTest) RunHTTPTest(target string, address string, tst test.Test, opts test.TestOptions) error {
+	address := target
+	target = tst.Target
 
 	//
 	// Setup a dialer which will be dual-stack
@@ -231,10 +94,34 @@ func (s *HTTPTest) RunHTTPTest(target string, address string, tst test.Test, opt
 	}
 
 	//
-	// Magic happens.
+	// This is where some magic happens, we want to connect and do
+	// a http check on http://example.com/, but we want to do that
+	// via the IP address.
+	//
+	// We could do that manually by connecting to http://1.2.3.4,
+	// and sending the appropriate HTTP Host: header but that risks
+	// a bit of complexity with SSL in particular.
+	//
+	// So instead we fake the address in the dialer object, so that
+	// we don't rewrite anything, don't do anything manually, and
+	// instead just connect to the right IP by magic.
 	//
 	dial := func(ctx context.Context, network, addr string) (net.Conn, error) {
-		addr = address
+		//
+		// Assume an IPv4 address by default.
+		//
+		addr = fmt.Sprintf("%s:%d", address, port)
+
+		//
+		// If we find a ":" we know it is an IPv6 address though
+		//
+		if strings.Contains(address, ":") {
+			addr = fmt.Sprintf("[%s]:%d", address, port)
+		}
+
+		//
+		// Use the replaced/updated address in our connection.
+		//
 		return dialer.DialContext(ctx, network, addr)
 	}
 
@@ -248,11 +135,12 @@ func (s *HTTPTest) RunHTTPTest(target string, address string, tst test.Test, opt
 	}
 
 	//
-	// If we're running insecurely then also ignore SSL errors
+	// If we're running insecurely then ignore SSL errors
 	//
 	if tst.Arguments["tls"] == "insecure" {
 		tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
+
 	//
 	// Create a client with a timeout, disabled redirection, and
 	// the magical transport we've just created.

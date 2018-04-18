@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/url"
 	"strings"
 
 	"github.com/skx/overseer/notifiers"
@@ -42,39 +43,50 @@ func run_test(tst test.Test, opts test.TestOptions, notifier notifiers.Notifier)
 	var targets []string
 
 	//
-	// If this is a http-test then just add our existing target
+	// If the first argument looks like an URI then get the host
+	// out of it.
 	//
-	if strings.HasPrefix(test_target, "http") {
-		targets = append(targets, test_target)
-	} else {
-
-		//
-		// Otherwise resolve the target to IPv4 & IPv6 addresses.
-		//
-		ips, err := net.LookupIP(test_target)
+	if strings.Contains(test_target, "://") {
+		u, err := url.Parse(test_target)
 		if err != nil {
+			return err
+		}
+		test_target = u.Host
+	}
 
-			if notifier != nil {
-				notifier.Notify(tst, errors.New(fmt.Sprintf("Failed to resolve name %s", test_target)))
-			}
-			fmt.Printf("WARNING: Failed to resolve %s\n", test_target)
-			return nil
+	//
+	// Now resolve the target to IPv4 & IPv6 addresses.
+	//
+	ips, err := net.LookupIP(test_target)
+	if err != nil {
+
+		//
+		// If we have a notifier tell it that we failed.
+		//
+		if notifier != nil {
+			notifier.Notify(tst, errors.New(fmt.Sprintf("Failed to resolve name %s", test_target)))
 		}
 
 		//
-		// We'll now run the test against each of the results,
-		// ignoring any IP-protocol which is disabled.
+		// Otherwise we're done.
 		//
-		for _, ip := range ips {
-			if ip.To4() != nil {
-				if opts.IPv4 {
-					targets = append(targets, fmt.Sprintf("%s", ip))
-				}
+		fmt.Printf("WARNING: Failed to resolve %s for %s test!\n", test_target, test_type)
+		return err
+	}
+
+	//
+	// We'll now run the test against each of the resulting IPv4 and
+	// IPv6 addresess - ignoring any IP-protocol which is disabled.
+	//
+	for _, ip := range ips {
+		if ip.To4() != nil {
+			if opts.IPv4 {
+				targets = append(targets, fmt.Sprintf("%s", ip))
 			}
-			if ip.To16() != nil && ip.To4() == nil {
-				if opts.IPv6 {
-					targets = append(targets, fmt.Sprintf("%s", ip))
-				}
+		}
+		if ip.To16() != nil && ip.To4() == nil {
+			if opts.IPv6 {
+				targets = append(targets, fmt.Sprintf("%s", ip))
 			}
 		}
 	}
@@ -98,7 +110,7 @@ func run_test(tst test.Test, opts test.TestOptions, notifier notifiers.Notifier)
 		max_attempts := 5
 
 		//
-		// If retrying is disabled then don't do that
+		// If retrying is disabled then don't retry.
 		//
 		if opts.Retry == false {
 			max_attempts = attempt + 1
