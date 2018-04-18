@@ -143,21 +143,39 @@ There are two notifiers bundled with the release:
   * This notifier will announce test failures, and only failures, to an IRC channel.
   * To configure this plugin you should pass an URI string such as
      * `irc://USERNAME:PASSWORD@irc.example.com:6667/#CHANNEL`
+* `mq`
+  * This publishes the results of the tests to an MQ topic named `overseer`, from which you can react as you see fit.
+  * To configure this plugin you should pass the address & port of your MQ queue, for example:
+     * mq.example.com:1883
 * `purppura`
   * This notifier will forward test-results to a [purppura](https://github.com/skx/purppura/) server
   * To configure this plugin you should pass the URL of the submission end-point, such as:
      * https://alert.example.com/alerts
 
-Sample usage might look like this:
+Sample usage might look like this for the IRC notifier:
 
     $ overseer local \
        -notifier=irc \
        -notifier-data=irc://alerts:@chat.example.com:6667/#outages \
          test.file.1 test.file.2
 
-Or:
+Sample usage might look like this for the MQ notifier:
 
     $ overseer local \
+       -notifier=mq \
+       -notifier-data=mq.example.com:1883 \
+         test.file.1 test.file.2
+
+Sample usage might look like this for the IRC notifier:
+
+    $ overseer local \
+       -notifier=irc \
+       -notifier-data=irc://alerts:@chat.example.com:6667/#outages \
+         test.file.1 test.file.2
+
+Sample usage might look like this for the purppura notifier:
+
+     $ overseer local \
        -notifier=purppura \
        -notifier-data=https://alert.example.com/alerts
          test.file.1 test.file.2
