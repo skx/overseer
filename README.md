@@ -137,7 +137,7 @@ Overseer uses a simple plugin-based system to allow different notification
 methods to be configured.  A notifier is enabled by specifying its name, and
 a single parameter used to configure it.
 
-There are two notifiers bundled with the release:
+The following notifiers are bundled with the release:
 
 * `irc`
   * This notifier will announce test failures, and only failures, to an IRC channel.
