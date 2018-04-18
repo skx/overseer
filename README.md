@@ -16,6 +16,7 @@ When tests fail because hosts or services are down notifications can be generate
   * via lookups of A, AAAA, MX, NS, or TXT records.
 * FTP
 * HTTP & HTTPS fetches.
+  * Requests may be GET or POST, and HTTP basic-authentication is also supported.
 * IMAP & IMAPS
 * MySQL
 * ping
