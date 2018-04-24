@@ -93,7 +93,7 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 
 	// Notifier setup
 	f.StringVar(&p.Notifier, "notifier", defaults.Notifier, "Specify the notifier object to use.")
-	f.StringVar(&p.NotifierData, "", defaults.NotifierData, "Specify the notifier data to use.")
+	f.StringVar(&p.NotifierData, "notifier-data", defaults.NotifierData, "Specify the notifier data to use.")
 }
 
 //
@@ -114,6 +114,13 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 
 		if notifier == nil {
 			fmt.Printf("Unknown notifier: %s\n", p.Notifier)
+			os.Exit(1)
+		}
+
+		// Call the setup function
+		err := notifier.Setup()
+		if err != nil {
+			fmt.Printf("Failed to call Setup() method of notifier %s - %s\n", p.Notifier, err.Error())
 			os.Exit(1)
 		}
 	}

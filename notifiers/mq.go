@@ -21,7 +21,34 @@ import (
 
 // Our structure.
 type MQNotifier struct {
+	// The connection-string we were passed in the constructor
 	data string
+
+	// The MQ handle
+	mq *client.Client
+}
+
+// Connect to our MQ queue.
+func (s *MQNotifier) Setup() error {
+
+	//
+	// Create an MQTT Client.
+	//
+	s.mq = client.New(&client.Options{})
+
+	//
+	// Connect to the MQTT Server.
+	//
+	err := s.mq.Connect(&client.ConnectOptions{
+		Network:  "tcp",
+		Address:  s.data,
+		ClientID: []byte("overseer-client"),
+	})
+	if err != nil {
+		return (err)
+	}
+
+	return nil
 }
 
 // Send a notification to our queue.
@@ -33,28 +60,6 @@ func (s *MQNotifier) Notify(test test.Test, result error) error {
 	//
 	if s.data == "" {
 		return nil
-	}
-
-	//
-	// Create an MQTT Client.
-	//
-	cli := client.New(&client.Options{})
-
-	//
-	// Terminate the client in the future.
-	//
-	defer cli.Terminate()
-
-	//
-	// Connect to the MQTT Server.
-	//
-	err := cli.Connect(&client.ConnectOptions{
-		Network:  "tcp",
-		Address:  s.data,
-		ClientID: []byte("overseer-client"),
-	})
-	if err != nil {
-		return (err)
 	}
 
 	//
@@ -92,7 +97,7 @@ func (s *MQNotifier) Notify(test test.Test, result error) error {
 	//
 	// Publish our message.
 	//
-	err = cli.Publish(&client.PublishOptions{
+	err = s.mq.Publish(&client.PublishOptions{
 		QoS:       mqtt.QoS0,
 		Retain:    true,
 		TopicName: []byte("overseer"),
@@ -102,11 +107,6 @@ func (s *MQNotifier) Notify(test test.Test, result error) error {
 		fmt.Printf("Publish to MQ failed: %s\n", err)
 		return err
 	}
-
-	//
-	// This seems to be necessary ..  Sigh
-	//
-	time.Sleep(500 * time.Millisecond)
 
 	return nil
 }

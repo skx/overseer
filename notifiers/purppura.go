@@ -24,6 +24,11 @@ type Purppura struct {
 	data string
 }
 
+// Setup is a NOP in this notification-class
+func (s *Purppura) Setup() error {
+	return nil
+}
+
 // Send a notification to the Purppura server
 func (s *Purppura) Notify(test test.Test, result error) error {
 

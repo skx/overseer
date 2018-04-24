@@ -29,6 +29,11 @@ type localCmd struct {
 }
 
 //
+// The notifier we're going to use, if any.
+//
+var notifier notifiers.Notifier
+
+//
 // Glue
 //
 func (*localCmd) Name() string     { return "local" }
@@ -109,24 +114,6 @@ func (p *localCmd) run_test(tst test.Test) error {
 	opts.Timeout = time.Duration(p.Timeout) * time.Second
 
 	//
-	// The notifier we're going to use, if any.
-	//
-	var notifier notifiers.Notifier
-
-	//
-	// If the notifier is set then create it.
-	//
-	if p.Notifier != "" {
-
-		notifier = notifiers.NotifierType(p.Notifier, p.NotifierData)
-
-		if notifier == nil {
-			fmt.Printf("Unknown notifier: %s\n", p.Notifier)
-			os.Exit(1)
-		}
-	}
-
-	//
 	// Now run the test.
 	//
 	return run_test(tst, opts, notifier)
@@ -136,6 +123,25 @@ func (p *localCmd) run_test(tst test.Test) error {
 // Entry-point.
 //
 func (p *localCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
+
+	//
+	// If a notifier is configured then create it.
+	//
+	if p.Notifier != "" {
+
+		notifier = notifiers.NotifierType(p.Notifier, p.NotifierData)
+		if notifier == nil {
+			fmt.Printf("Unknown notifier: %s\n", p.Notifier)
+			os.Exit(1)
+		}
+
+		// Call the setup function
+		err := notifier.Setup()
+		if err != nil {
+			fmt.Printf("Failed to call Setup() method of notifier %s - %s\n", p.Notifier, err.Error())
+			os.Exit(1)
+		}
+	}
 
 	//
 	// We'll run tests from each file passed as an argument.

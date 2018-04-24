@@ -16,7 +16,7 @@ import (
 // NotifierOptions contain options that are passed to the selected
 // notifier.
 //
-// It is expected they contain an URL, target, credential, or similar.
+// It is expected they contain an URL, target, credentials, or similar.
 //
 type Options struct {
 	// The data passed to the notifier, as a string.
@@ -25,6 +25,13 @@ type Options struct {
 
 // Notifier is the interface that must be fulfilled by our notifiers.
 type Notifier interface {
+	// Setup allows any notifier-specific setup actions
+	// to take place.  For example a notifier that posts
+	// messages to a slack-channel might connect to the
+	// server here, using that connection in the Notify() method
+	// when it is time to actually trigger a notification.
+	Setup() error
+
 	// Raise an alert, via some mechanism
 	Notify(test test.Test, result error) error
 }
