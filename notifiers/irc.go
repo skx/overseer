@@ -21,6 +21,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/url"
+	"sync"
 
 	"github.com/skx/overseer/test"
 	"github.com/thoj/go-ircevent"
@@ -39,6 +40,15 @@ type IRCNotifier struct {
 
 	// Record the channel name here, for sending the message
 	channel string
+
+	// Avoid threading issues with our passed/failed counts
+	mutex sync.RWMutex
+
+	// Count of how many tests have executed and passed
+	passed int64
+
+	// Count of how many tests have executed and failed
+	failed int64
 }
 
 // Setup connects to the IRC server which was mentioned in the
@@ -104,8 +114,13 @@ func (s *IRCNotifier) Setup() error {
 			//
 			// Send a private-reply.
 			//
+			s.mutex.Lock()
+			var p = s.passed
+			var f = s.failed
+			s.mutex.Unlock()
+
 			s.irccon.Privmsg(event.Nick,
-				"I don't accept private messages :)")
+				fmt.Sprintf("Total tests executed %d, %d passed, %d failed", p+f, p, f))
 		}(event)
 	})
 
@@ -130,6 +145,19 @@ func (s *IRCNotifier) Notify(test test.Test, result error) error {
 	//
 	if s.data == "" {
 		return nil
+	}
+
+	//
+	// Bump our pass/fail counts.
+	//
+	if result == nil {
+		s.mutex.Lock()
+		s.passed += 1
+		s.mutex.Unlock()
+	} else {
+		s.mutex.Lock()
+		s.failed += 1
+		s.mutex.Unlock()
 	}
 
 	//
