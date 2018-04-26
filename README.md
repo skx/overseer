@@ -26,6 +26,7 @@ When tests fail because hosts or services are down notifications can be generate
 * rsync
 * SMTP
 * SSH
+* VNC
 * XMPP
 
 The existing protocol-testers, and the options they support, are documented [in the godoc](https://godoc.org/github.com/skx/overseer/protocols), and the implementation of the protocol-test can be found beneath the top-level [protocols/](protocols/) directory.
