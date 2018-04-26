@@ -166,13 +166,6 @@ Sample usage might look like this for the MQ notifier:
        -notifier-data=mq.example.com:1883 \
          test.file.1 test.file.2
 
-Sample usage might look like this for the IRC notifier:
-
-    $ overseer local \
-       -notifier=irc \
-       -notifier-data=irc://alerts:@chat.example.com:6667/#outages \
-         test.file.1 test.file.2
-
 Sample usage might look like this for the purppura notifier:
 
      $ overseer local \
