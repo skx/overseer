@@ -37,6 +37,16 @@
 //
 //    https://expired.badssl.com/ must run http with tls insecure
 //
+// By default tests will fail if you're probing an SSL-site which has
+// a certificate which will expire within 14 days.  To change the time-period
+// specify it explicitly (the period is DAYS):
+//
+//    https://steve.fi/ must run http with expiration 7
+//
+// To disable the SSL-expiration checking entirely specify "any":
+//
+//    https://steve.fi/ must run http with expiration any
+//
 // Finally if you submit a "data" argument, like in this next example
 // the request made will be a HTTP POST:
 //
@@ -57,8 +67,10 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/skx/overseer/test"
 )
@@ -71,7 +83,15 @@ type HTTPTest struct {
 
 // Return the arguments which this protocol-test understands.
 func (s *HTTPTest) Arguments() []string {
-	known := []string{"tls", "data", "username", "password", "status", "content"}
+	known := []string{
+		"expiration",
+		"content",
+		"data",
+		"password",
+		"status",
+		"tls",
+		"username",
+	}
 	return known
 }
 
@@ -264,9 +284,117 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 	}
 
 	//
+	// If we reached here then our actual test was fine.
+	//
+	// However as a special extension we're going to test the
+	// certificate expiration date for any SSL sites.  We'll
+	// do that now.
+	//
+	if strings.HasPrefix(tst.Target, "https:") {
+
+		//
+		// The default number of days to raise false-failures.
+		//
+		period := 14
+
+		//
+		// Any validity means we just don't care,
+		// so don't even test the result.
+		//
+		if tst.Arguments["expiration"] == "any" {
+			return nil
+		}
+
+		//
+		// Otherwise we'll assume this is an integer
+		//
+		period, err = strconv.Atoi(tst.Arguments["expiration"])
+		if err != nil {
+			return err
+		}
+
+		//
+		// Check the expiration
+		//
+		hours, err := s.SSLExpiration(tst.Target, opts.Verbose)
+
+		if err == nil {
+			if (int(hours / 24)) < period {
+				return errors.New(
+					fmt.Sprintf("SSL certificate will expire in %d hours, or %d days", hours, hours/24))
+			}
+		}
+
+	}
+
+	//
 	// If we reached here all is OK
 	//
 	return nil
+}
+
+func (s *HTTPTest) SSLExpiration(host string, verbose bool) (int64, error) {
+
+	// Expiry time, in hours
+	var hours int64
+	hours = -1
+
+	//
+	// If the string matches https://, then strip it off
+	//
+	re, err := regexp.Compile(`^https:\/\/([^\/]+)`)
+	res := re.FindAllStringSubmatch(host, -1)
+	for _, v := range res {
+		host = v[1]
+	}
+
+	//
+	// If no port is specified default to :443
+	//
+	p := strings.Index(host, ":")
+	if p == -1 {
+		host += ":443"
+	}
+
+	//
+	// Show what we're doing.
+	//
+	if verbose {
+		fmt.Printf("SSLExpiration testing: %s\n", host)
+	}
+
+	conn, err := tls.Dial("tcp", host, nil)
+	if err != nil {
+		return 0, err
+	}
+	defer conn.Close()
+
+	timeNow := time.Now()
+	for _, chain := range conn.ConnectionState().VerifiedChains {
+		for _, cert := range chain {
+
+			// Get the expiration time, in hours.
+			expiresIn := int64(cert.NotAfter.Sub(timeNow).Hours())
+
+			if verbose {
+				fmt.Printf("SSLExpiration - certificate: %s expires in %d hours (%d days)\n", cert.Subject.CommonName, expiresIn, expiresIn/24)
+			}
+
+			// If we've not checked anythign this is the benchmark
+			if hours == -1 {
+				hours = expiresIn
+			} else {
+				// Otherwise replace our result if the
+				// certificate is going to expire more
+				// recently than the current "winner".
+				if expiresIn < hours {
+					hours = expiresIn
+				}
+			}
+		}
+	}
+
+	return hours, nil
 }
 
 //
