@@ -26,6 +26,12 @@ import (
 type RSYNCTest struct {
 }
 
+// Return the arguments which this protocol-test understands.
+func (s *RSYNCTest) Arguments() []string {
+	known := []string{"port"}
+	return known
+}
+
 //
 // Run the test against the specified target.
 //

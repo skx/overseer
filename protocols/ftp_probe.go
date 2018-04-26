@@ -26,6 +26,12 @@ import (
 type FTPTest struct {
 }
 
+// Return the arguments which this protocol-test understands.
+func (s *FTPTest) Arguments() []string {
+	known := []string{"port"}
+	return known
+}
+
 //
 // Run the test against the specified target.
 //

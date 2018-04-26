@@ -26,6 +26,12 @@ import (
 type SSHTest struct {
 }
 
+// Return the arguments which this protocol-test understands.
+func (s *SSHTest) Arguments() []string {
+	known := []string{"port"}
+	return known
+}
+
 //
 // Run the test against the specified target.
 //

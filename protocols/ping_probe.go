@@ -63,6 +63,12 @@ func (s *PINGTest) Ping6(target string) bool {
 	return (ret == 0)
 }
 
+// Return the arguments which this protocol-test understands.
+func (s *PINGTest) Arguments() []string {
+	known := []string{}
+	return known
+}
+
 //
 // Run the test against the specified target.
 //

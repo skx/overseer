@@ -26,6 +26,12 @@ import (
 type IMAPTest struct {
 }
 
+// Return the arguments which this protocol-test understands.
+func (s *IMAPTest) Arguments() []string {
+	known := []string{"port", "username", "password"}
+	return known
+}
+
 //
 // Run the test against the specified target.
 //

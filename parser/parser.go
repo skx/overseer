@@ -163,6 +163,9 @@ func (s *Parser) ParseLine(input string, cb ParsedTest) (test.Test, error) {
 	test_target := out[1]
 	test_type := out[2]
 
+	//
+	// Lookup the handler.
+	//
 	handler := protocols.ProtocolHandler(test_type)
 	if handler == nil {
 		return result, errors.New(fmt.Sprintf("Unknown test-type '%s' in input '%s'", test_type, input))
@@ -230,6 +233,39 @@ func (s *Parser) ParseLine(input string, cb ParsedTest) (test.Test, error) {
 	result.Type = test_type
 	result.Input = input
 	result.Arguments = s.ParseArguments(input)
+
+	//
+	// See which arguments the object supports
+	//
+	expected := handler.Arguments()
+
+	//
+	// If there are arguments which are unknown then this is an error
+	//
+	// For each argument which was supplied..
+	//
+	for a, _ := range result.Arguments {
+
+		found := false
+
+		//
+		// Is that argument present in the arguments the
+		// tester supports?
+		//
+		for _, b := range expected {
+			if a == b {
+				found = true
+			}
+		}
+
+		//
+		// If not then that's an error.
+		//
+		if found == false {
+			return result, errors.New(fmt.Sprintf("Unsupported argument '%s' for test-type '%s' in input '%s'", a, test_type, input))
+		}
+
+	}
 
 	//
 	// Invoke the user-supplied callback on this parsed test.

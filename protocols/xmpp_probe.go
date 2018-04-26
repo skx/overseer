@@ -26,6 +26,12 @@ import (
 type XMPPTest struct {
 }
 
+// Return the arguments which this protocol-test understands.
+func (s *XMPPTest) Arguments() []string {
+	known := []string{"port"}
+	return known
+}
+
 //
 // Run the test against the specified target.
 //

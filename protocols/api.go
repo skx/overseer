@@ -20,6 +20,11 @@ import (
 type ProtocolTest interface {
 
 	//
+	// Return the arguments which this protocol-test understands.
+	//
+	Arguments() []string
+
+	//
 	// Run the specified test against the given target.
 	//
 	// Return a suitable error if the test fails, or nil to indicate

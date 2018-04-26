@@ -31,6 +31,12 @@ import (
 type PSQLTest struct {
 }
 
+// Return the arguments which this protocol-test understands.
+func (s *PSQLTest) Arguments() []string {
+	known := []string{"port", "username", "password", "tsl"}
+	return known
+}
+
 //
 // Run the test against the specified target.
 //

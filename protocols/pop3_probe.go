@@ -25,6 +25,12 @@ import (
 type POP3Test struct {
 }
 
+// Return the arguments which this protocol-test understands.
+func (s *POP3Test) Arguments() []string {
+	known := []string{"port", "username", "password"}
+	return known
+}
+
 //
 // Run the test against the specified target.
 //

@@ -127,6 +127,12 @@ func (s *DNSTest) localQuery(server string, qname string, lookupType string) (*d
 	return nil, nil
 }
 
+// Return the arguments which this protocol-test understands.
+func (s *DNSTest) Arguments() []string {
+	known := []string{"type", "lookup", "result"}
+	return known
+}
+
 // Make a DNS-test.
 func (s *DNSTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
 

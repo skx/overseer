@@ -23,6 +23,12 @@ import (
 type SKELETONTest struct {
 }
 
+// Return the arguments which this protocol-test understands.
+func (s *SKELETONTest) Arguments() []string {
+	known := []string{"port"}
+	return known
+}
+
 // RunTest is the method that is invoked to perform the test.
 //
 // There are three arguments:

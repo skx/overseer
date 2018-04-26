@@ -69,6 +69,12 @@ import (
 type HTTPTest struct {
 }
 
+// Return the arguments which this protocol-test understands.
+func (s *HTTPTest) Arguments() []string {
+	known := []string{"tls", "data", "username", "password", "status", "content"}
+	return known
+}
+
 //
 // Make a HTTP-test against the given URL.
 //

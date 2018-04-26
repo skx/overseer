@@ -331,3 +331,29 @@ func TestReal(t *testing.T) {
 	}
 
 }
+
+// Test some invalid options
+func TestInvalidOptions(t *testing.T) {
+	tests := []string{
+		"http://example.com/ must run http with CONTENT 'moi'",
+		"http://example.com/ must run http with header 'foo: bar'",
+		"http://example.com/ must run http with statsu 300 ",
+	}
+
+	// Create a parser
+	p := New()
+
+	// Parse each line
+	for _, input := range tests {
+
+		_, err := p.ParseLine(input, nil)
+		if err == nil {
+			t.Errorf("We expected an error parsing %s, but found none!", input)
+		}
+
+		if !strings.Contains(err.Error(), "Unsupported argument") {
+			t.Errorf("The error we received was the wrong error: %s", err.Error())
+
+		}
+	}
+}

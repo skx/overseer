@@ -24,6 +24,12 @@ import (
 type REDISTest struct {
 }
 
+// Return the arguments which this protocol-test understands.
+func (s *REDISTest) Arguments() []string {
+	known := []string{"port", "password"}
+	return known
+}
+
 //
 // Make a Redis-test against the given target.
 //

@@ -27,6 +27,12 @@ import (
 type MYSQLTest struct {
 }
 
+// Return the arguments which this protocol-test understands.
+func (s *MYSQLTest) Arguments() []string {
+	known := []string{"port", "username", "password"}
+	return known
+}
+
 //
 // Run the test against the specified target.
 //

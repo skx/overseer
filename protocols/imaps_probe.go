@@ -30,6 +30,12 @@ import (
 type IMAPSTest struct {
 }
 
+// Return the arguments which this protocol-test understands.
+func (s *IMAPSTest) Arguments() []string {
+	known := []string{"port", "username", "password", "tls"}
+	return known
+}
+
 //
 // Run the test against the specified target.
 //
