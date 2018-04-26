@@ -128,6 +128,20 @@ REDIS must run redis
 
 
 #
+# The redis probe, used above, tested that Redis responded on port 6379.
+# Rather than using the redis-specific protocol-test you could have instead
+# used the generic TCP-based test:
+#
+#   REDIS must run tcp on 6379
+#
+# Using the redis-test is better, because it lets you specify an optional
+# password, and really connects.  But as an example using the TCP-connection
+# test allows you to test protocols that don't have specific handlers defined
+# for them in overseer - please report this as a bug!
+#
+
+
+#
 # Of course nobody could reach my website if there were no DNS entries
 # present for it.  So we should test they exist too!
 #
