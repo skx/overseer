@@ -306,11 +306,14 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 		}
 
 		//
-		// Otherwise we'll assume this is an integer
+		// Otherwise we'll assume that any non-empty setting is
+		// an integer.
 		//
-		period, err = strconv.Atoi(tst.Arguments["expiration"])
-		if err != nil {
-			return err
+		if tst.Arguments["expiration"] != "" {
+			period, err = strconv.Atoi(tst.Arguments["expiration"])
+			if err != nil {
+				return err
+			}
 		}
 
 		//
