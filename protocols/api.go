@@ -1,4 +1,4 @@
-// The protocols package is where the protocol-testers live.
+// Package protocols is where the protocol-testers live.
 //
 // Tests are dynamically instantiated at run-time, via a class-factory
 // pattern, and due to their plugin nature they are simple to implement
@@ -52,8 +52,8 @@ func Register(id string, newfunc TestCtor) {
 	handlers.Unlock()
 }
 
-// Lookup the given type of test and create an instance of it,
-// if we can.
+// ProtocolHandler is the factory-method which looks up and returns
+// an object of the given type - if possible.
 func ProtocolHandler(id string) (a ProtocolTest) {
 	handlers.RLock()
 	ctor, ok := handlers.m[id]
