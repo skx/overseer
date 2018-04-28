@@ -6,9 +6,7 @@
 
 # Overseer
 
-Overseer is a [golang](https://golang.org/) based remote protocol tester, which allows you to monitor the state of your network, and the services running upon it.
-
-When tests fail because hosts or services are down notifications can be generated via a simple plugin-based system, described [later](#notifiers).
+Overseer is a [golang](https://golang.org/) based remote protocol tester, which allows you to monitor the state of your network, and the services running upon it.  When tests fail because hosts or services are down notifications can be generated via a simple plugin-based system, described [later](#notifiers).
 
 "Remote Protocol Tester" sounds a little vague, so to be more concrete this application lets you test services are running and has built-in support for testing:
 
@@ -16,7 +14,9 @@ When tests fail because hosts or services are down notifications can be generate
   * via lookups of A, AAAA, MX, NS, or TXT records.
 * FTP
 * HTTP & HTTPS fetches.
-  * Requests may be GET or POST, and HTTP basic-authentication is also supported.
+   * HTTP basic-authentication is supported.
+   * Requests may be GET or POST.
+   * SSL certificate validation and expiration warning is supported.
 * IMAP & IMAPS
 * MySQL
 * ping
@@ -29,7 +29,14 @@ When tests fail because hosts or services are down notifications can be generate
 * VNC
 * XMPP
 
-The existing protocol-testers can be found beneath the top-level [protocols/](protocols/) directory.  Each one documents the options that are supported at the head of the file.
+(The existing protocol-handlers can be found beneath the top-level [protocols/](protocols/) directory in this repository.)
+
+Tests to be carried out are defined in a simple format which has the general
+form:
+
+     $target must run $service [with $option_name $option_value] ..
+
+You can see what the available tests look like in [the example test-file](input.txt).   You'll see that testing is transparently applied to both IPv4 and IPv6 hosts, although each address family can be disabled if you prefer.
 
 Compared to the inspiring program, Custodian, we have several improvements:
 
