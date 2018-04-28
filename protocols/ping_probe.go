@@ -10,15 +10,11 @@ import (
 	"github.com/skx/overseer/test"
 )
 
-//
-// Our structure.
-//
+// PINGTest is our object.
 type PINGTest struct {
 }
 
-//
-// Run a command, and return stdout/stderr/exit-code
-//
+// RunCommand invokes an external binary and returns stdout/stderr/exit-code
 func (s *PINGTest) RunCommand(name string, args ...string) (stdout string, stderr string, exitCode int) {
 	var outbuf, errbuf bytes.Buffer
 	cmd := exec.Command(name, args...)
@@ -63,15 +59,19 @@ func (s *PINGTest) Ping6(target string) bool {
 	return (ret == 0)
 }
 
-// Return the arguments which this protocol-test understands.
+// Arguments returns the names of arguments which this protocol-test
+// understands, along with corresponding regular-expressions to validate
+// their values.
 func (s *PINGTest) Arguments() map[string]string {
 	known := map[string]string{}
 	return known
 }
 
+// RunTest is the part of our API which is invoked to actually execute a
+// test against the given target.
 //
-// Run the test against the specified target.
-//
+// In this case we run a ping-command with the appropriate binary depending
+// on the address-family of the target host.
 func (s *PINGTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
 	ip := net.ParseIP(target)
 
