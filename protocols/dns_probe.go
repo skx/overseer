@@ -29,7 +29,6 @@ import (
 type DNSTest struct {
 }
 
-
 var (
 	localm *dns.Msg
 	localc *dns.Client
@@ -181,11 +180,10 @@ func (s *DNSTest) RunTest(tst test.Test, target string, opts test.TestOptions) e
 	found := strings.Join(res, ",")
 
 	if found != tst.Arguments["result"] {
- 	return fmt.Errorf("Expected DNS result to be '%s', but found '%s'", tst.Arguments["result"], found)
+		return fmt.Errorf("Expected DNS result to be '%s', but found '%s'", tst.Arguments["result"], found)
 	}
 
 	return nil
-
 
 }
 
