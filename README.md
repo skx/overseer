@@ -213,30 +213,3 @@ Where the contents of that file are:
          "Timeout": 10,
          "Verbose": true
      }
-
-
-## Address Families
-
-Because we're living in exciting and modern times the `overseer` application
-will handle both IPv4 and IPv6 connections.
-
-This is achieved by duplicating tests at parse-time.  For example given the following input:
-
-     mail.steve.org.uk must run smtp
-
-What actually happens is that __two__ tests are generated:
-
-     176.9.183.102 must run smtp
-     2a01:4f8:151:6083::102 must run smtp
-
-This is achieved by resolving the target, `mail.steve.org.uk` in this case, and running the test against each result.
-
-If your host is not a dual-stacked host you can disable a particular family via:
-
-     # IPv6 only
-     $ overseer local -4=false
-
-     # IPv4 only
-     $ overseer local -6=false
-
-**NOTE**: The default is to enable both IPv6 and IPv4 testing, and the same options are supported for the `overseer local` and `overseer worker` mode.
