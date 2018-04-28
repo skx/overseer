@@ -22,7 +22,6 @@ import (
 
 	"github.com/miekg/dns"
 	"github.com/skx/overseer/test"
-	//	"github.com/skx/overseer/protocols"
 )
 
 // DNSTest is our object.
