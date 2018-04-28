@@ -19,13 +19,13 @@ import (
 	"github.com/skx/overseer/test"
 )
 
-//
-// Our structure.
-//
+// POP3Test is our object
 type POP3Test struct {
 }
 
-// Return the arguments which this protocol-test understands.
+// Arguments returns the names of arguments which this protocol-test
+// understands, along with corresponding regular-expressions to validate
+// their values.
 func (s *POP3Test) Arguments() map[string]string {
 	known := map[string]string{
 		"port":     "^[0-9]+$",
@@ -36,9 +36,12 @@ func (s *POP3Test) Arguments() map[string]string {
 	return known
 }
 
+// RunTest is the part of our API which is invoked to actually execute a
+// test against the given target.
 //
-// Run the test against the specified target.
-//
+// In this case we make a POP3 connection to the specified host, and if
+// a username + password were specified we then attempt to authenticate
+// to the remote host too.
 func (s *POP3Test) RunTest(tst test.Test, target string, opts test.TestOptions) error {
 	var err error
 
