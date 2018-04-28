@@ -61,3 +61,19 @@ func ProtocolHandler(id string) (a ProtocolTest) {
 	}
 	return
 }
+
+// Handlers returns the names of all the registered protocol-handlers.
+func Handlers() []string {
+	var result []string
+
+	// For each handler save the name
+	handlers.RLock()
+	for index, _ := range handlers.m {
+		result = append(result, index)
+	}
+	handlers.RUnlock()
+
+	// And return the result
+	return result
+
+}
