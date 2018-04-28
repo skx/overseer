@@ -67,7 +67,6 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -274,7 +273,7 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 	// said "with status any".
 	//
 	if ok != status && (tst.Arguments["status"] != "any") {
-		return errors.New(fmt.Sprintf("Status code was %d not %d", status, ok))
+		return fmt.Errorf("Status code was %d not %d", status, ok)
 	}
 
 	//
@@ -282,8 +281,7 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 	//
 	if tst.Arguments["content"] != "" {
 		if !strings.Contains(string(body), tst.Arguments["content"]) {
-			return errors.New(
-				fmt.Sprintf("Body didn't contain '%s'", tst.Arguments["content"]))
+			return fmt.Errorf("Body didn't contain '%s'", tst.Arguments["content"])
 		}
 
 	}
@@ -361,8 +359,7 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 			// Is the age too short?
 			if int64(hours) < int64(period) {
 
-				return errors.New(
-					fmt.Sprintf("SSL certificate will expire in %d hours (%d days)", hours, int(hours/24)))
+				return fmt.Errorf("SSL certificate will expire in %d hours (%d days)", hours, int(hours/24))
 			}
 		}
 

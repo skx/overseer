@@ -15,7 +15,6 @@ package parser
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -51,7 +50,7 @@ func (s *Parser) ParseFile(filename string, cb ParsedTest) error {
 	// Open the given file.
 	file, err := os.Open(filename)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Error opening %s - %s\n", filename, err.Error()))
+		return fmt.Errorf("Error opening %s - %s\n", filename, err.Error())
 	}
 	defer file.Close()
 
@@ -127,7 +126,7 @@ func (s *Parser) ParseLine(input string, cb ParsedTest) (test.Test, error) {
 		// If this macro-exists that is a fatal error
 		//
 		if s.MACROS[name] != nil {
-			return result, errors.New(fmt.Sprintf("Redeclaring an existing macro is a fatal-error, %s exists already.\n", name))
+			return result, fmt.Errorf("Redeclaring an existing macro is a fatal-error, %s exists already.\n", name)
 		}
 
 		//
@@ -154,7 +153,7 @@ func (s *Parser) ParseLine(input string, cb ParsedTest) (test.Test, error) {
 	// If it didn't then we have a malformed line
 	//
 	if len(out) != 3 {
-		return result, errors.New(fmt.Sprintf("WARNING: Unrecognized line - '%s'\n", input))
+		return result, fmt.Errorf("WARNING: Unrecognized line - '%s'\n", input)
 	}
 
 	//
@@ -168,7 +167,7 @@ func (s *Parser) ParseLine(input string, cb ParsedTest) (test.Test, error) {
 	//
 	handler := protocols.ProtocolHandler(test_type)
 	if handler == nil {
-		return result, errors.New(fmt.Sprintf("Unknown test-type '%s' in input '%s'", test_type, input))
+		return result, fmt.Errorf("Unknown test-type '%s' in input '%s'", test_type, input)
 	}
 
 	//
@@ -244,7 +243,7 @@ func (s *Parser) ParseLine(input string, cb ParsedTest) (test.Test, error) {
 	//
 	// For each argument which was supplied..
 	//
-	for arg, val  := range result.Arguments {
+	for arg, val := range result.Arguments {
 
 		//
 		// Is that argument present in the arguments the
@@ -252,7 +251,7 @@ func (s *Parser) ParseLine(input string, cb ParsedTest) (test.Test, error) {
 		//
 		pattern := expected[arg]
 		if pattern == "" {
-			return result, errors.New(fmt.Sprintf("Unsupported argument '%s' for test-type '%s' in input '%s'", arg, test_type, input))
+			return result, fmt.Errorf("Unsupported argument '%s' for test-type '%s' in input '%s'", arg, test_type, input)
 		}
 
 		//
@@ -261,8 +260,8 @@ func (s *Parser) ParseLine(input string, cb ParsedTest) (test.Test, error) {
 		expr := regexp.MustCompile(pattern)
 		match := expr.FindStringSubmatch(val)
 
-		if ( match == nil ) {
-			return result, errors.New(fmt.Sprintf("Unsupported argument '%s' for test-type '%s' in input '%s' - did not match pattern '%s'", arg, test_type, input, pattern))
+		if match == nil {
+			return result, fmt.Errorf("Unsupported argument '%s' for test-type '%s' in input '%s' - did not match pattern '%s'", arg, test_type, input, pattern)
 		}
 
 	}

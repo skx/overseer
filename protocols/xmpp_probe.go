@@ -11,7 +11,6 @@ package protocols
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"net"
 	"strconv"
@@ -105,7 +104,7 @@ func (s *XMPPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 	}
 
 	if !strings.Contains(banner, "<?xml") {
-		return errors.New(fmt.Sprintf("Banner doesn't look like an XMPP-banner '%s'", banner))
+		return fmt.Errorf("Banner doesn't look like an XMPP-banner '%s'", banner)
 	}
 
 	return nil

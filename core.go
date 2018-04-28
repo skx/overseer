@@ -3,7 +3,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"net/url"
@@ -64,7 +63,7 @@ func run_test(tst test.Test, opts test.TestOptions, notifier notifiers.Notifier)
 		// If we have a notifier tell it that we failed.
 		//
 		if notifier != nil {
-			notifier.Notify(tst, errors.New(fmt.Sprintf("Failed to resolve name %s", test_target)))
+			notifier.Notify(tst, fmt.Errorf("Failed to resolve name %s", test_target))
 		}
 
 		//
