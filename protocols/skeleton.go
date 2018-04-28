@@ -24,7 +24,9 @@ import (
 type SKELETONTest struct {
 }
 
-// Return the arguments which this protocol-test understands.
+// Arguments returns the names of arguments which this protocol-test
+// understands, along with corresponding regular-expressions to validate
+// their values.
 func (s *SKELETONTest) Arguments() map[string]string {
 	known := map[string]string{
 		"port": "^[0-9]+$",
