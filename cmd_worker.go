@@ -175,7 +175,7 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 			job, err := parse.ParseLine(test, nil)
 
 			if err == nil {
-				run_test(job, opts, notifier)
+				runTest(job, opts, notifier)
 			} else {
 				fmt.Printf("Error parsing job from queue: %s - %s\n", test, err.Error())
 			}

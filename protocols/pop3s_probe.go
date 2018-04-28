@@ -88,13 +88,13 @@ func (s *POP3STest) RunTest(tst test.Test, target string, opts test.TestOptions)
 	// will verify upon, from our input-line.
 	//
 	data := strings.Fields(tst.Input)
-	tls_setup := &tls.Config{ServerName: data[0]}
+	tlsSetup := &tls.Config{ServerName: data[0]}
 
 	//
 	// If we're being insecure then remove the verification
 	//
 	if insecure {
-		tls_setup = &tls.Config{
+		tlsSetup = &tls.Config{
 			InsecureSkipVerify: true,
 		}
 	}
@@ -102,7 +102,7 @@ func (s *POP3STest) RunTest(tst test.Test, target string, opts test.TestOptions)
 	//
 	// Connect
 	//
-	c, err := pop3.Dial(address, pop3.UseTLS(tls_setup), pop3.UseTimeout(opts.Timeout))
+	c, err := pop3.Dial(address, pop3.UseTLS(tlsSetup), pop3.UseTimeout(opts.Timeout))
 	if err != nil {
 		return err
 	}

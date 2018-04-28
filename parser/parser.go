@@ -159,15 +159,15 @@ func (s *Parser) ParseLine(input string, cb ParsedTest) (test.Test, error) {
 	//
 	// Save the type + target away
 	//
-	test_target := out[1]
-	test_type := out[2]
+	testTarget := out[1]
+	testType := out[2]
 
 	//
 	// Lookup the handler.
 	//
-	handler := protocols.ProtocolHandler(test_type)
+	handler := protocols.ProtocolHandler(testType)
 	if handler == nil {
-		return result, fmt.Errorf("Unknown test-type '%s' in input '%s'", test_type, input)
+		return result, fmt.Errorf("Unknown test-type '%s' in input '%s'", testType, input)
 	}
 
 	//
@@ -176,7 +176,7 @@ func (s *Parser) ParseLine(input string, cb ParsedTest) (test.Test, error) {
 	// If so we expand for each host in the macro-definition and
 	// execute those expanded versions in turn.
 	//
-	hosts := s.MACROS[test_target]
+	hosts := s.MACROS[testTarget]
 	if len(hosts) > 0 {
 
 		//
@@ -228,8 +228,8 @@ func (s *Parser) ParseLine(input string, cb ParsedTest) (test.Test, error) {
 	//
 	// Create a temporary structure to hold our test
 	//
-	result.Target = test_target
-	result.Type = test_type
+	result.Target = testTarget
+	result.Type = testType
 	result.Input = input
 	result.Arguments = s.ParseArguments(input)
 
@@ -251,7 +251,7 @@ func (s *Parser) ParseLine(input string, cb ParsedTest) (test.Test, error) {
 		//
 		pattern := expected[arg]
 		if pattern == "" {
-			return result, fmt.Errorf("Unsupported argument '%s' for test-type '%s' in input '%s'", arg, test_type, input)
+			return result, fmt.Errorf("Unsupported argument '%s' for test-type '%s' in input '%s'", arg, testType, input)
 		}
 
 		//
@@ -261,7 +261,7 @@ func (s *Parser) ParseLine(input string, cb ParsedTest) (test.Test, error) {
 		match := expr.FindStringSubmatch(val)
 
 		if match == nil {
-			return result, fmt.Errorf("Unsupported argument '%s' for test-type '%s' in input '%s' - did not match pattern '%s'", arg, test_type, input, pattern)
+			return result, fmt.Errorf("Unsupported argument '%s' for test-type '%s' in input '%s' - did not match pattern '%s'", arg, testType, input, pattern)
 		}
 
 	}

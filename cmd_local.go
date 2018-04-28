@@ -116,7 +116,7 @@ func (p *localCmd) runTest(tst test.Test) error {
 	//
 	// Now run the test.
 	//
-	return run_test(tst, opts, notifier)
+	return runTest(tst, opts, notifier)
 }
 
 //
