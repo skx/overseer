@@ -76,6 +76,8 @@ func showExamples(filter string) {
 			for opt, reg := range x.Arguments() {
 				fmt.Printf("  %10s|%s\n", opt, reg)
 			}
+
+			fmt.Printf("\n\n");
 		}
 	}
 }
