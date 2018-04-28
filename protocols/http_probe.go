@@ -38,10 +38,15 @@
 //    https://expired.badssl.com/ must run http with tls insecure
 //
 // By default tests will fail if you're probing an SSL-site which has
-// a certificate which will expire within 14 days.  To change the time-period
-// specify it explicitly (the period is DAYS):
+// a certificate which will expire within the next 14 days.  To change
+// the time-period specify it explicitly like so, if not stated the
+// expiration period is assumed to be days:
 //
-//    https://steve.fi/ must run http with expiration 7
+//    # seven days
+//    https://steve.fi/ must run http with expiration 7d
+//
+//    # 12 hours (!)
+//    https://steve.fi/ must run http with expiration 12h
 //
 // To disable the SSL-expiration checking entirely specify "any":
 //
@@ -75,19 +80,19 @@ import (
 	"github.com/skx/overseer/test"
 )
 
-//
-// Our structure.
-//
+// HTTPTest is our object.
 type HTTPTest struct {
 }
 
-// Return the arguments which this protocol-test understands.
+// Arguments returns the names of arguments which this protocol-test
+// understands, along with corresponding regular-expressions to validate
+// their values.
 func (s *HTTPTest) Arguments() map[string]string {
 	known := map[string]string{
 		"content":    ".*",
 		"data":       ".*",
 		"status":     "^(any|[0-9]+)$",
-		"expiration": "^(any|[0-9]+)$",
+		"expiration": "^(any|[0-9]+[hd]?)$",
 		"tls":        "insecure",
 		"username":   ".*",
 		"password":   ".*",
@@ -95,8 +100,8 @@ func (s *HTTPTest) Arguments() map[string]string {
 	return known
 }
 
-//
-// Make a HTTP-test against the given URL.
+// RunTest is the part of our API which is invoked to actually execute a
+// HTTP-test against the given URL.
 //
 //
 // For the purposes of clarity this test makes a HTTP-fetch.  The `test.Test`
@@ -293,27 +298,58 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 	if strings.HasPrefix(tst.Target, "https:") {
 
 		//
-		// The default number of days to raise false-failures.
+		// The default expiration-time 14 days.
 		//
-		period := 14
+		period := 14 * 24
 
 		//
-		// Any validity means we just don't care,
-		// so don't even test the result.
+		// If the validity was set to `any` that means we just
+		// don't care, so we don't even need to test the result.
 		//
 		if tst.Arguments["expiration"] == "any" {
 			return nil
 		}
 
 		//
-		// Otherwise we'll assume that any non-empty setting is
-		// an integer.
+		// The user might have specified a different period
+		// in hours / days.
 		//
-		if tst.Arguments["expiration"] != "" {
-			period, err = strconv.Atoi(tst.Arguments["expiration"])
+		expire := tst.Arguments["expiration"]
+		if expire != "" {
+
+			fmt.Printf("\tPeriod:%s\n", expire)
+
+			//
+			// How much to scale the given figure by
+			//
+			// By default if no units are specified we'll
+			// assume the figure is in days, so no scaling
+			// is required.
+			//
+			mul := 1
+
+			// Days?
+			if strings.HasSuffix(expire, "d") {
+				expire = strings.Replace(expire, "d", "", -1)
+				mul = 24
+			}
+
+			// Hours?
+			if strings.HasSuffix(expire, "h") {
+				expire = strings.Replace(expire, "h", "", -1)
+				mul = 1
+			}
+
+			// Get the period.
+			period, err = strconv.Atoi(expire)
 			if err != nil {
 				return err
 			}
+
+			//
+			// Multiply by our multiplier.
+			//
+			period *= mul
 		}
 
 		//
@@ -322,9 +358,11 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 		hours, err := s.SSLExpiration(tst.Target, opts.Verbose)
 
 		if err == nil {
-			if (int(hours / 24)) < period {
+			// Is the age too short?
+			if int64(hours) < int64(period) {
+
 				return errors.New(
-					fmt.Sprintf("SSL certificate will expire in %d hours, or %d days", hours, hours/24))
+					fmt.Sprintf("SSL certificate will expire in %d hours (%d days)", hours, int(hours/24)))
 			}
 		}
 
@@ -336,6 +374,8 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 	return nil
 }
 
+// SSLExpiration returns the number of hours remaining for a given
+// SSL certificate chain.
 func (s *HTTPTest) SSLExpiration(host string, verbose bool) (int64, error) {
 
 	// Expiry time, in hours
@@ -400,9 +440,7 @@ func (s *HTTPTest) SSLExpiration(host string, verbose bool) (int64, error) {
 	return hours, nil
 }
 
-//
-// Register our protocol-tester.
-//
+// init is used to dynamically register our protocol-tester.
 func init() {
 	Register("http", func() ProtocolTest {
 		return &HTTPTest{}
