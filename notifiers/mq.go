@@ -1,11 +1,13 @@
-// Mosquitto
+// MQ
 //
-// The mosquitto notification object sends test-results to a
-// mosquitto topic named `overseer`.
+// The MQ notification object sends test-results to a topic named `overseer`
+// in a given MQ instance.
 //
 // Set your connection string to:
 //
 //    mq.example.com:1883
+//
+// This has been tested with the following queue - https://mosquitto.org/
 //
 package notifiers
 
@@ -65,24 +67,21 @@ func (s *MQNotifier) Notify(test test.Test, result error) error {
 	//
 	// The message we'll publish will be a JSON hash
 	//
-	// Build it up, via a map.
-	//
-	var msg map[string]string
-	msg = make(map[string]string)
-
-	msg["target"] = test.Target
-	msg["type"] = test.Type
-	msg["input"] = test.Input
-	msg["time"] = fmt.Sprintf("%d", time.Now().Unix())
+	msg := map[string]string{
+		"input":  test.Input,
+		"result": "passed",
+		"target": test.Target,
+		"time":   fmt.Sprintf("%d", time.Now().Unix()),
+		"type":   test.Type,
+	}
 
 	//
-	// The rest result.
+	// Was the result a failure?  If so update to have
+	// the details.
 	//
 	if result != nil {
 		msg["result"] = "failed"
 		msg["error"] = result.Error()
-	} else {
-		msg["result"] = "passed"
 	}
 
 	//
