@@ -24,7 +24,10 @@ type ProtocolTest interface {
 	//
 	Arguments() map[string]string
 
-	// Example
+	// Example should return a string describing how your protocol-test
+	// works and is invoked.
+	//
+	// Optional arguments will automatically be documented.
 	Example() string
 
 	//
