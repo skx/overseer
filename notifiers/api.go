@@ -12,7 +12,7 @@ import (
 	"github.com/skx/overseer/test"
 )
 
-// NotifierOptions contain options that are passed to the selected
+// Options contain options that are passed to the selected
 // notifier.
 //
 // It is expected they contain an URL, target, credentials, or similar.
@@ -41,7 +41,7 @@ var handlers = struct {
 	sync.RWMutex
 }{m: make(map[string]Ctor)}
 
-// This is the signature of a constructor-function which may be registered
+// Ctor is the signature of a constructor-function which may be registered
 // as a notifier.
 type Ctor func(data string) Notifier
 
@@ -52,8 +52,8 @@ func Register(id string, newfunc Ctor) {
 	handlers.Unlock()
 }
 
-// Lookup the given notification-type and create an instance of it,
-// if we can.
+// NotifierType is the factory-method which looks up and returns
+// an object of the given type - if possible.
 func NotifierType(id string, data string) (a Notifier) {
 	handlers.RLock()
 	ctor, ok := handlers.m[id]
