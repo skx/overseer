@@ -100,6 +100,74 @@ func (s *HTTPTest) Arguments() map[string]string {
 	return known
 }
 
+func (s *HTTPTest) Example() string {
+	str := `
+HTTP Tester
+-----------
+
+ The HTTP tester allows you to confirm that a remote HTTP-server is
+ responding correctly.  You may test the response of a HTTP GET or
+ POST request.
+
+ This test is invoked via input like so:
+
+   http://example.com/ must run http
+
+ By default a remote HTTP-server is considered working if it responds
+ with a HTTP status-code of 200, but you can change this via:
+
+   with status 301
+
+ Or if you do not care about the specific status-code at all, but you
+ wish to see an alert when a connection-refused/failed/timeout condition
+ occurs you could say:
+
+   with status any
+
+ It is also possible to regard a fetch as a failure if the response body
+ does not contain a particular piece of test.  For example the following
+ would be regarded as a failure if my website did not contain my name
+ in the body of the response:
+
+   https://steve.fi/ must run http with content 'Steve Kemp'
+
+ If your URL requires the use of HTTP basic authentication this is
+ supported by adding a username and password parameter to your test,
+ for example:
+
+   https://jigsaw.w3.org/HTTP/Basic/ must run http with username 'guest' with password 'guest' with content "Your browser made it"
+
+ If you need to disable failures due to expired, broken, or
+ otherwise bogus SSL certificates you can do so via the tls setting:
+
+   https://expired.badssl.com/ must run http with tls insecure
+
+ By default tests will fail if you're probing an SSL-site which has
+ a certificate which will expire within the next 14 days.  To change
+ the time-period specify it explicitly like so, if not stated the
+ expiration period is assumed to be days:
+
+   # seven days
+   https://steve.fi/ must run http with expiration 7d
+
+   # 12 hours (!)
+   https://steve.fi/ must run http with expiration 12h
+
+ To disable the SSL-expiration checking entirely specify "any":
+
+   https://steve.fi/ must run http with expiration any
+
+ Finally if you submit a "data" argument, like in this next example
+ the request made will be a HTTP POST:
+
+   https://steve.fi/Security/XSS/Tutorial/filter.cgi must run http with data "text=test%20me" with content "test me"
+
+ Do note that the HTTP-probe never follow redirections, to allow enhanced
+ testing.
+`
+	return str
+}
+
 // RunTest is the part of our API which is invoked to actually execute a
 // HTTP-test against the given URL.
 //

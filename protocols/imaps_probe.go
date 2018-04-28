@@ -42,6 +42,26 @@ func (s *IMAPSTest) Arguments() map[string]string {
 	return known
 }
 
+func (s *IMAPSTest) Example() string {
+	str := `
+IMAPS Tester
+-----------
+ The IMAPS tester connects to a remote host and ensures that this succeeds.
+
+ If you supply a username & password a login will be made, and the test will
+ fail if this login does not succeed.
+
+ This test is invoked via input like so:
+
+    host.example.com must run imaps
+
+ Because IMAPS uses TLS this test will ensure the validity of the certificate as
+ part of the test, if you wish to disable this add "with tls insecure".
+`
+
+	return str
+}
+
 // RunTest is the part of our API which is invoked to actually execute a
 // test against the given target.
 //

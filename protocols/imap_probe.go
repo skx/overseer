@@ -37,6 +37,22 @@ func (s *IMAPTest) Arguments() map[string]string {
 	return known
 }
 
+func (s *IMAPTest) Example() string {
+	str := `
+IMAP Tester
+-----------
+ The IMAP tester connects to a remote host and ensures that this succeeds.
+
+ If you supply a username & password a login will be made, and the test will
+ fail if this login does not succeed.
+
+ This test is invoked via input like so:
+
+    host.example.com must run imap
+`
+	return str
+}
+
 // RunTest is the part of our API which is invoked to actually execute a
 // test against the given target.
 //
