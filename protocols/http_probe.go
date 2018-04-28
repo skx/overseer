@@ -383,7 +383,7 @@ func (s *HTTPTest) SSLExpiration(host string, verbose bool) (int64, error) {
 				fmt.Printf("SSLExpiration - certificate: %s expires in %d hours (%d days)\n", cert.Subject.CommonName, expiresIn, expiresIn/24)
 			}
 
-			// If we've not checked anythign this is the benchmark
+			// If we've not checked anything this is the benchmark
 			if hours == -1 {
 				hours = expiresIn
 			} else {
