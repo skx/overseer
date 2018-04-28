@@ -244,25 +244,25 @@ func (s *Parser) ParseLine(input string, cb ParsedTest) (test.Test, error) {
 	//
 	// For each argument which was supplied..
 	//
-	for a, _ := range result.Arguments {
-
-		found := false
+	for arg, val  := range result.Arguments {
 
 		//
 		// Is that argument present in the arguments the
 		// tester supports?
 		//
-		for _, b := range expected {
-			if a == b {
-				found = true
-			}
+		pattern := expected[arg]
+		if pattern == "" {
+			return result, errors.New(fmt.Sprintf("Unsupported argument '%s' for test-type '%s' in input '%s'", arg, test_type, input))
 		}
 
 		//
-		// If not then that's an error.
+		// Otherwise we need to look for a match
 		//
-		if found == false {
-			return result, errors.New(fmt.Sprintf("Unsupported argument '%s' for test-type '%s' in input '%s'", a, test_type, input))
+		expr := regexp.MustCompile(pattern)
+		match := expr.FindStringSubmatch(val)
+
+		if ( match == nil ) {
+			return result, errors.New(fmt.Sprintf("Unsupported argument '%s' for test-type '%s' in input '%s' - did not match pattern '%s'", arg, test_type, input, pattern))
 		}
 
 	}
