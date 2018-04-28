@@ -119,6 +119,16 @@ REDIS are 127.0.0.1, ::1
 # HOSTS are 10.0.0.1, 10.0.0.2
 #
 
+#
+# Although the examples above used IP-addresses using hostnames is fine
+# too:
+#
+# HOSTS are host1.example.com, host2.example.com
+#
+# We'll see that later on when we run a bunch of DNS-tests against a
+# pair of nameservers.
+#
+
 
 #
 # Now we use the macro we defined, meaning that this single test will
@@ -188,7 +198,7 @@ NAMESERVERS must run dns with lookup alert.steve.fi with type AAAA with result '
 #
 # Now we should do more testing!
 #
-# Test any OpenSSH probe against localhost, on the non-standard port 2222.
+# Run our OpenSSH probe against localhost, on the non-standard port 2222.
 #
 localhost must run ssh with port 2222
 
