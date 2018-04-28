@@ -38,17 +38,6 @@ form:
 
 You can see what the available tests look like in [the example test-file](input.txt).   You'll see that testing is transparently applied to both IPv4 and IPv6 hosts, although each address family can be disabled if you prefer.
 
-Compared to the inspiring program, Custodian, we have several improvements:
-
-* All optional parameters for protocol tests are 100% consistent.
-   * i.e. Any protocol specific arguments are defined via "`with $option_name $option_value`"
-* The parsing of optional arguments is handled outside the protocol-tests.
-   * i.e. Your protocol test only needs to concentrate on doing its job.
-* Option values are validated at parse-time, in addition to their names
-   * i.e. Types in input-files will be detected as soon as possible.
-* Protocol tests provide _real_ testing, as much as possible.
-   * e.g. If you wish to test an IMAP/POP3/MySQL service this application doesn't just look for a banner response on the remote port, but actually performs a login.
-
 
 
 ## Installation
@@ -126,7 +115,7 @@ It is assumed you'd leave the workers running, under systemd or similar, and run
 
 
 
-## Test Failures
+## Smoothing Test Failures
 
 To avoid triggering false alerts due to transient (network/host) failures
 tests which fail are retried several times before triggering a notification.
@@ -213,3 +202,26 @@ Where the contents of that file are:
          "Timeout": 10,
          "Verbose": true
      }
+
+
+
+## Future Changes / Development?
+
+This application was directly inspired by previous work upon the [Custodian](https://github.com/BytemarkHosting/custodian) monitoring system.
+
+Compared to custodian overseer has several improvements:
+
+* All optional parameters for protocol tests are 100% consistent.
+  * i.e. Any protocol specific arguments are defined via "`with $option_name $option_value`"
+  * In custodian options were added in an ad-hoc fashion as they became useful/necessary.
+* The parsing of optional arguments is handled outside the protocol-tests.
+   * In overseer the protocol test doesn't need to worry about parsing options, they're directly available.
+* Option values are validated at parse-time, in addition to their names
+   * i.e. Typos in input-files will be detected as soon as possible.
+* Protocol tests provide _real_ testing, as much as possible.
+   * e.g. If you wish to test an IMAP/POP3/MySQL service this application doesn't just look for a banner response on the remote port, but actually performs a login.
+
+Currently overseer is regarded as stable and reliable.  I'd be willing to implement more notifiers and protocol-tests based upon user-demand and submissions.
+
+Steve
+--
