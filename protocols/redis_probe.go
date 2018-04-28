@@ -25,8 +25,11 @@ type REDISTest struct {
 }
 
 // Return the arguments which this protocol-test understands.
-func (s *REDISTest) Arguments() []string {
-	known := []string{"port", "password"}
+func (s *REDISTest) Arguments() map[string]string {
+	known := map[string]string{
+		"port":     "^[0-9]+$",
+		"password": ".*",
+	}
 	return known
 }
 

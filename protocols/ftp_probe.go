@@ -27,8 +27,11 @@ type FTPTest struct {
 }
 
 // Return the arguments which this protocol-test understands.
-func (s *FTPTest) Arguments() []string {
-	known := []string{"port"}
+// Return the arguments which this protocol-test understands.
+func (s *FTPTest) Arguments() map[string]string {
+	known := map[string]string{
+		"port": "^[0-9]+$",
+	}
 	return known
 }
 

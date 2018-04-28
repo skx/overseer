@@ -20,12 +20,15 @@ import (
 type ProtocolTest interface {
 
 	//
-	// Return the arguments which this protocol-test understands.
+	// Arguments return the arguments which this protocol-test, along
+	// with a regular expression which will be used to validate a non-empty
+	// argument.
 	//
-	Arguments() []string
+	Arguments() map[string]string
 
 	//
-	// Run the specified test against the given target.
+	// RunTest actually invokes the protocol-handler to run its
+	// tests.
 	//
 	// Return a suitable error if the test fails, or nil to indicate
 	// it passed.

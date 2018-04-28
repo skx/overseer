@@ -27,8 +27,10 @@ type VNCTest struct {
 }
 
 // Return the arguments which this protocol-test understands.
-func (s *VNCTest) Arguments() []string {
-	known := []string{"port"}
+func (s *VNCTest) Arguments() map[string]string {
+	known := map[string]string{
+		"port": "^[0-9]+$",
+	}
 	return known
 }
 

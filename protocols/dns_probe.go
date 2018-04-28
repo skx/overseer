@@ -128,8 +128,13 @@ func (s *DNSTest) localQuery(server string, qname string, lookupType string) (*d
 }
 
 // Return the arguments which this protocol-test understands.
-func (s *DNSTest) Arguments() []string {
-	known := []string{"type", "lookup", "result"}
+func (s *DNSTest) Arguments() map[string]string {
+
+	known := map[string]string{
+		"type":   "A|AAAA|MX|NS|TXT",
+		"lookup": ".*",
+		"result": ".*",
+	}
 	return known
 }
 

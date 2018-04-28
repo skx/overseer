@@ -26,8 +26,13 @@ type POP3Test struct {
 }
 
 // Return the arguments which this protocol-test understands.
-func (s *POP3Test) Arguments() []string {
-	known := []string{"port", "username", "password"}
+func (s *POP3Test) Arguments() map[string]string {
+	known := map[string]string{
+		"port":     "^[0-9]+$",
+		"tls":      "insecure",
+		"username": ".*",
+		"password": ".*",
+	}
 	return known
 }
 

@@ -32,8 +32,13 @@ type PSQLTest struct {
 }
 
 // Return the arguments which this protocol-test understands.
-func (s *PSQLTest) Arguments() []string {
-	known := []string{"port", "username", "password", "tsl"}
+func (s *PSQLTest) Arguments() map[string]string {
+	known := map[string]string{
+		"port":     "^[0-9]+$",
+		"username": ".*",
+		"password": ".*",
+		"tls":      "^(disable|require|verify-ca|verify-full)$",
+	}
 	return known
 }
 

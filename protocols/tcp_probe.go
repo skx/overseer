@@ -28,8 +28,10 @@ type TCPTest struct {
 }
 
 // Return the arguments which this protocol-test understands.
-func (s *TCPTest) Arguments() []string {
-	known := []string{"port"}
+func (s *TCPTest) Arguments() map[string]string {
+	known := map[string]string{
+		"port": "^[0-9]+$",
+	}
 	return known
 }
 

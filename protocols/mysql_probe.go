@@ -28,8 +28,12 @@ type MYSQLTest struct {
 }
 
 // Return the arguments which this protocol-test understands.
-func (s *MYSQLTest) Arguments() []string {
-	known := []string{"port", "username", "password"}
+func (s *MYSQLTest) Arguments() map[string]string {
+	known := map[string]string{
+		"port":     "^[0-9]+$",
+		"username": ".*",
+		"password": ".*",
+	}
 	return known
 }
 

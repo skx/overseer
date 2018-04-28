@@ -27,8 +27,10 @@ type SMTPTest struct {
 }
 
 // Return the arguments which this protocol-test understands.
-func (s *SMTPTest) Arguments() []string {
-	known := []string{"port"}
+func (s *SMTPTest) Arguments() map[string]string {
+	known := map[string]string{
+		"port": "^[0-9]+$",
+	}
 	return known
 }
 

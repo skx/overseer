@@ -82,15 +82,15 @@ type HTTPTest struct {
 }
 
 // Return the arguments which this protocol-test understands.
-func (s *HTTPTest) Arguments() []string {
-	known := []string{
-		"expiration",
-		"content",
-		"data",
-		"password",
-		"status",
-		"tls",
-		"username",
+func (s *HTTPTest) Arguments() map[string]string {
+	known := map[string]string{
+		"content":    ".*",
+		"data":       ".*",
+		"status":     "^(any|[0-9]+)$",
+		"expiration": "^(any|[0-9]+)$",
+		"tls":        "insecure",
+		"username":   ".*",
+		"password":   ".*",
 	}
 	return known
 }

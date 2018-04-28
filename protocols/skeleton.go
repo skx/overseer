@@ -24,8 +24,10 @@ type SKELETONTest struct {
 }
 
 // Return the arguments which this protocol-test understands.
-func (s *SKELETONTest) Arguments() []string {
-	known := []string{"port"}
+func (s *SKELETONTest) Arguments() map[string]string {
+	known := map[string]string{
+		"port": "^[0-9]+$",
+	}
 	return known
 }
 

@@ -31,8 +31,13 @@ type IMAPSTest struct {
 }
 
 // Return the arguments which this protocol-test understands.
-func (s *IMAPSTest) Arguments() []string {
-	known := []string{"port", "username", "password", "tls"}
+func (s *IMAPSTest) Arguments() map[string]string {
+	known := map[string]string{
+		"port":     "^[0-9]+$",
+		"tls":      "insecure",
+		"username": ".*",
+		"password": ".*",
+	}
 	return known
 }
 

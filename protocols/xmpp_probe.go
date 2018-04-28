@@ -27,8 +27,10 @@ type XMPPTest struct {
 }
 
 // Return the arguments which this protocol-test understands.
-func (s *XMPPTest) Arguments() []string {
-	known := []string{"port"}
+func (s *XMPPTest) Arguments() map[string]string {
+	known := map[string]string{
+		"port": "^[0-9]+$",
+	}
 	return known
 }
 
