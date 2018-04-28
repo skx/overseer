@@ -29,14 +29,16 @@ When tests fail because hosts or services are down notifications can be generate
 * VNC
 * XMPP
 
-The existing protocol-testers, and the options they support, are documented [in the godoc](https://godoc.org/github.com/skx/overseer/protocols), and the implementation of the protocol-test can be found beneath the top-level [protocols/](protocols/) directory.
+The existing protocol-testers can be found beneath the top-level [protocols/](protocols/) directory.  Each one documents the options that are supported at the head of the file.
 
-Compared to the inspiring program, custodian, we have several improvements:
+Compared to the inspiring program, Custodian, we have several improvements:
 
 * All optional parameters for protocol tests are 100% consistent.
    * i.e. Any protocol specific arguments are defined via "`with $option_name $option_value`"
 * The parsing of optional arguments is handled outside the protocol-tests.
    * i.e. Your protocol test only needs to concentrate on doing its job.
+* Option values are validated at parse-time, in addition to their names
+   * i.e. Types in input-files will be detected as soon as possible.
 * Protocol tests provide _real_ testing, as much as possible.
    * e.g. If you wish to test an IMAP/POP3/MySQL service this application doesn't just look for a banner response on the remote port, but actually performs a login.
 
