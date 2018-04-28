@@ -71,8 +71,8 @@ func (s *IRCNotifier) Setup() error {
 	//
 	// Do we have a password?  If so set it.
 	//
-	pass, pass_present := u.User.Password()
-	if pass_present && pass != "" {
+	pass, passPresent := u.User.Password()
+	if passPresent && pass != "" {
 		s.irccon.Password = pass
 	}
 

@@ -101,7 +101,7 @@ func (p *localCmd) SetFlags(f *flag.FlagSet) {
 //
 // Run the test, via our helper
 //
-func (p *localCmd) run_test(tst test.Test) error {
+func (p *localCmd) runTest(tst test.Test) error {
 
 	//
 	// Setup the options for the test.
@@ -156,7 +156,7 @@ func (p *localCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{})
 		//
 		// Invoke the run_test callback to execute each test.
 		//
-		err := helper.ParseFile(file, p.run_test)
+		err := helper.ParseFile(file, p.runTest)
 		if err != nil {
 			fmt.Printf("Error parsing file: %s\n", err.Error())
 		}

@@ -79,9 +79,9 @@ func (s *DNSTest) lookup(server string, name string, ltype string, timeout time.
 			aaaa := ent.(*dns.AAAA).AAAA
 			results = append(results, fmt.Sprintf("%s", aaaa))
 		case *dns.MX:
-			mx_name := ent.(*dns.MX).Mx
-			mx_prio := ent.(*dns.MX).Preference
-			results = append(results, fmt.Sprintf("%d %s", mx_prio, mx_name))
+			mxName := ent.(*dns.MX).Mx
+			mxPrio := ent.(*dns.MX).Preference
+			results = append(results, fmt.Sprintf("%d %s", mxPrio, mxName))
 		case *dns.NS:
 			nameserver := ent.(*dns.NS).Ns
 			results = append(results, nameserver)

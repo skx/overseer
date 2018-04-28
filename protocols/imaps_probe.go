@@ -96,13 +96,13 @@ func (s *IMAPSTest) RunTest(tst test.Test, target string, opts test.TestOptions)
 	// will verify upon, from our input-line.
 	//
 	data := strings.Fields(tst.Input)
-	tls_setup := &tls.Config{ServerName: data[0]}
+	tlsSetup := &tls.Config{ServerName: data[0]}
 
 	//
 	// Disable verification if we're being insecure.
 	//
 	if insecure {
-		tls_setup = &tls.Config{
+		tlsSetup = &tls.Config{
 			InsecureSkipVerify: true,
 		}
 	}
@@ -110,7 +110,7 @@ func (s *IMAPSTest) RunTest(tst test.Test, target string, opts test.TestOptions)
 	//
 	// Connect.
 	//
-	con, err := client.DialWithDialerTLS(dial, address, tls_setup)
+	con, err := client.DialWithDialerTLS(dial, address, tlsSetup)
 	if err != nil {
 		return err
 	}

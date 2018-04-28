@@ -27,13 +27,13 @@ func run_test(tst test.Test, opts test.TestOptions, notifier notifiers.Notifier)
 	//
 	// Setup our local state.
 	//
-	test_type := tst.Type
-	test_target := tst.Target
+	testType := tst.Type
+	testTarget := tst.Target
 
 	//
 	// Look for a suitable protocol handler
 	//
-	tmp := protocols.ProtocolHandler(test_type)
+	tmp := protocols.ProtocolHandler(testType)
 
 	//
 	// Each test will be executed for each address-family, unless it is
@@ -45,31 +45,31 @@ func run_test(tst test.Test, opts test.TestOptions, notifier notifiers.Notifier)
 	// If the first argument looks like an URI then get the host
 	// out of it.
 	//
-	if strings.Contains(test_target, "://") {
-		u, err := url.Parse(test_target)
+	if strings.Contains(testTarget, "://") {
+		u, err := url.Parse(testTarget)
 		if err != nil {
 			return err
 		}
-		test_target = u.Host
+		testTarget = u.Host
 	}
 
 	//
 	// Now resolve the target to IPv4 & IPv6 addresses.
 	//
-	ips, err := net.LookupIP(test_target)
+	ips, err := net.LookupIP(testTarget)
 	if err != nil {
 
 		//
 		// If we have a notifier tell it that we failed.
 		//
 		if notifier != nil {
-			notifier.Notify(tst, fmt.Errorf("Failed to resolve name %s", test_target))
+			notifier.Notify(tst, fmt.Errorf("Failed to resolve name %s", testTarget))
 		}
 
 		//
 		// Otherwise we're done.
 		//
-		fmt.Printf("WARNING: Failed to resolve %s for %s test!\n", test_target, test_type)
+		fmt.Printf("WARNING: Failed to resolve %s for %s test!\n", testTarget, testType)
 		return err
 	}
 
@@ -99,7 +99,7 @@ func run_test(tst test.Test, opts test.TestOptions, notifier notifiers.Notifier)
 		// Show what we're doing.
 		//
 		if opts.Verbose {
-			fmt.Printf("Running '%s' test against %s (%s)\n", test_type, test_target, target)
+			fmt.Printf("Running '%s' test against %s (%s)\n", testType, testTarget, target)
 		}
 
 		//

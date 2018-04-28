@@ -73,7 +73,7 @@ func (p *enqueueCmd) SetFlags(f *flag.FlagSet) {
 // This is a callback invoked by the parser when a job
 // has been successfully parsed.
 //
-func (p *enqueueCmd) enqueue_test(tst test.Test) error {
+func (p *enqueueCmd) enqueueTest(tst test.Test) error {
 	_, err := p._r.RPush("overseer.jobs", tst.Input).Result()
 	return err
 }
@@ -113,9 +113,9 @@ func (p *enqueueCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{
 		helper := parser.New()
 
 		//
-		// For each parsed job call `enqueue_test`.
+		// For each parsed job call `enqueueTest`.
 		//
-		err := helper.ParseFile(file, p.enqueue_test)
+		err := helper.ParseFile(file, p.enqueueTest)
 
 		//
 		// Did we see an error?

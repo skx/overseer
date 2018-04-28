@@ -40,8 +40,8 @@ func (s *Purppura) Notify(test test.Test, result error) error {
 		return nil
 	}
 
-	test_type := test.Type
-	test_target := test.Target
+	testType := test.Type
+	testTarget := test.Target
 	input := test.Input
 
 	//
@@ -49,7 +49,7 @@ func (s *Purppura) Notify(test test.Test, result error) error {
 	// complete input-line and the target we executed against.
 	//
 	hasher := sha1.New()
-	hasher.Write([]byte(test_target))
+	hasher.Write([]byte(testTarget))
 	hasher.Write([]byte(input))
 	hash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 
@@ -67,7 +67,7 @@ func (s *Purppura) Notify(test test.Test, result error) error {
 	if result != nil {
 		values["detail"] =
 			fmt.Sprintf("<p>The <code>%s</code> test against <code>%s</code> failed:</p><p><pre>%s</pre></p>",
-				test_type, test_target, result.Error())
+				testType, testTarget, result.Error())
 		values["raise"] = "now"
 	} else {
 		//
@@ -75,7 +75,7 @@ func (s *Purppura) Notify(test test.Test, result error) error {
 		//
 		values["detail"] =
 			fmt.Sprintf("<p>The <code>%s</code> test against <code>%s</code> passed.</p>",
-				test_type, test_target)
+				testType, testTarget)
 		values["raise"] = "clear"
 	}
 

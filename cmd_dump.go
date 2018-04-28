@@ -37,7 +37,7 @@ func (p *dumpCmd) SetFlags(f *flag.FlagSet) {
 // This is a callback invoked by the parser when a job
 // has been successfully parsed.
 //
-func dump_test(tst test.Test) error {
+func dumpTest(tst test.Test) error {
 	fmt.Printf("%s\n", tst.Input)
 	return nil
 }
@@ -57,7 +57,7 @@ func (p *dumpCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) 
 		//
 		// For each parsed job call `dump_test` to show it
 		//
-		err := helper.ParseFile(file, dump_test)
+		err := helper.ParseFile(file, dumpTest)
 		if err != nil {
 			fmt.Printf("Error parsing file: %s\n", err.Error())
 		}
