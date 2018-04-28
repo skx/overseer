@@ -27,7 +27,7 @@ type enqueueCmd struct {
 // Glue
 //
 func (*enqueueCmd) Name() string     { return "enqueue" }
-func (*enqueueCmd) Synopsis() string { return "Enqueue a parsed configuration file." }
+func (*enqueueCmd) Synopsis() string { return "Enqueue a parsed configuration file" }
 func (*enqueueCmd) Usage() string {
 	return `enqueue :
   Enqueue a parsed configuration file to a redis queue.

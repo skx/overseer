@@ -37,7 +37,7 @@ var notifier notifiers.Notifier
 // Glue
 //
 func (*localCmd) Name() string     { return "local" }
-func (*localCmd) Synopsis() string { return "Execute tests locally." }
+func (*localCmd) Synopsis() string { return "Execute tests locally" }
 func (*localCmd) Usage() string {
 	return `local :
   Execute the tests in the given files locally, without the use of a queue.

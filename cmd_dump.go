@@ -20,10 +20,12 @@ type dumpCmd struct {
 // Glue
 //
 func (*dumpCmd) Name() string     { return "dump" }
-func (*dumpCmd) Synopsis() string { return "Dump a parsed configuration file." }
+func (*dumpCmd) Synopsis() string { return "Dump a parsed configuration file" }
 func (*dumpCmd) Usage() string {
 	return `dump :
-  Dump a parsed configuration file, showing expanded macros.
+  Dump a parsed configuration file.
+
+  This is particularly useful to show the result of macro-expansion.
 `
 }
 
