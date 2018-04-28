@@ -34,6 +34,21 @@ func (s *REDISTest) Arguments() map[string]string {
 	return known
 }
 
+// Example returns sample usage-instructions for self-documentation purposes.
+func (s *REDISTest) Example() string {
+	str := `
+Redis Tester
+------------
+ The Redis tester connects to a remote host and ensures that this succeeds,
+ if a password is specified it will be used in the connection.
+
+ This test is invoked via input like so:
+
+    host.example.com must run redis
+`
+	return str
+}
+
 // RunTest is the part of our API which is invoked to actually execute a
 // test against the given target.
 //

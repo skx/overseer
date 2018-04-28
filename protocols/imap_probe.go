@@ -37,6 +37,7 @@ func (s *IMAPTest) Arguments() map[string]string {
 	return known
 }
 
+// Example returns sample usage-instructions for self-documentation purposes.
 func (s *IMAPTest) Example() string {
 	str := `
 IMAP Tester

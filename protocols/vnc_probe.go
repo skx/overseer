@@ -35,6 +35,21 @@ func (s *VNCTest) Arguments() map[string]string {
 	return known
 }
 
+// Example returns sample usage-instructions for self-documentation purposes.
+func (s *VNCTest) Example() string {
+	str := `
+VNC Tester
+----------
+ The VNC tester connects to a remote host and ensures that a response
+ is received that looks like an VNC banner.
+
+ This test is invoked via input like so:
+
+    host.example.com must run vnc
+`
+	return str
+}
+
 // RunTest is the part of our API which is invoked to actually execute a
 // test against the given target.
 //

@@ -3,10 +3,10 @@
 // The MySQL tester connects to a remote MySQL database  and ensures that this
 // succeeds. This test is invoked via input like so:
 //
-//    host.example.com must run mysql [with username 'root' with password 'secure'] [with port 3306]
+//    host.example.com must run mysql with username 'root' with password 'test'
 //
-// Specifying a username and password is required, because otherwise we
-// cannot connect to the database
+// Specifying a username and password is mandatory, because otherwise we
+// cannot connect to the database.
 //
 
 package protocols
@@ -36,6 +36,22 @@ func (s *MYSQLTest) Arguments() map[string]string {
 		"password": ".*",
 	}
 	return known
+}
+
+// Example returns sample usage-instructions for self-documentation purposes.
+func (s *MYSQLTest) Example() string {
+	str := `
+MySQL Tester
+------------
+ The MySQL tester connects to a remote MySQL database  and ensures that this
+ succeeds. This test is invoked via input like so:
+
+    host.example.com must run mysql [with username 'root' with password 'test'
+
+ Specifying a username and password is mandatory, because otherwise we
+ cannot connect to the database.
+`
+	return str
 }
 
 // RunTest is the part of our API which is invoked to actually execute a

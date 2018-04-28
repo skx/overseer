@@ -43,6 +43,26 @@ func (s *PSQLTest) Arguments() map[string]string {
 	return known
 }
 
+// Example returns sample usage-instructions for self-documentation purposes.
+func (s *PSQLTest) Example() string {
+	str := `
+PSQL Tester
+-----------
+ The PSQL tester connects to a remote database and ensures that this succeeds.
+
+ This test is invoked via input like so:
+
+    host.example.com must run psql with username 'postgres' with password 'mysecretpassword'
+
+ The 'tls' setting may be used to configure how TLS is used, valid values
+ are "disable", "require", "verify-ca", or "verify-full".
+
+ Specifying a username and password is required, because otherwise we
+ cannot connect to the database.
+`
+	return str
+}
+
 // RunTest is the part of our API which is invoked to actually execute a
 // test against the given target.
 //

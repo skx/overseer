@@ -1,14 +1,15 @@
 // TCP Tester
 //
-// The TCP tester connects to a remote host and does nothign else.
+// The TCP tester connects to a remote host and does nothing else.
 //
 // In short it determines whether a TCP-based service is reachable,
 // by excluding errors such as "host not found", or "connection refused".
 //
 // This test is invoked via input like so:
 //
-//    host.example.com must run tcp [with port 873]
+//    host.example.com must run tcp with port 123
 //
+//  The port-setting is mandatory, such that the tests knows what to connect to.
 
 package protocols
 
@@ -34,6 +35,25 @@ func (s *TCPTest) Arguments() map[string]string {
 		"port": "^[0-9]+$",
 	}
 	return known
+}
+
+// Example returns sample usage-instructions for self-documentation purposes.
+func (s *TCPTest) Example() string {
+	str := `
+TCP Tester
+----------
+ The TCP tester connects to a remote host and does nothing else.
+
+ In short it determines whether a TCP-based service is reachable,
+ by excluding errors such as "host not found", or "connection refused".
+
+ This test is invoked via input like so:
+
+    host.example.com must run tcp with port 123
+
+ The port-setting is mandatory, such that the tests knows what to connect to.
+`
+	return str
 }
 
 // RunTest is the part of our API which is invoked to actually execute a

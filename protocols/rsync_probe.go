@@ -35,6 +35,21 @@ func (s *RSYNCTest) Arguments() map[string]string {
 	return known
 }
 
+// Example returns sample usage-instructions for self-documentation purposes.
+func (s *RSYNCTest) Example() string {
+	str := `
+Rsync Tester
+------------
+ The rsync tester connects to a remote host and ensures that a response
+ is received that looks like an rsync-server banner.
+
+ This test is invoked via input like so:
+
+    host.example.com must run rsync
+`
+	return str
+}
+
 // RunTest is the part of our API which is invoked to actually execute a
 // test against the given target.
 //

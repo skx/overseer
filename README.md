@@ -36,7 +36,11 @@ form:
 
      $target must run $service [with $option_name $option_value] ..
 
-You can see what the available tests look like in [the example test-file](input.txt).   You'll see that testing is transparently applied to both IPv4 and IPv6 hosts, although each address family can be disabled if you prefer.
+You can see what the available tests look like in [the example test-file](input.txt), and the protocol-handlers are also self-documenting so you can read example usage via:
+
+     ~$ overseer examples [filter]
+
+All of the protocol-tests transparently support both IPv4 and IPv6 hosts, although you may disable either address family if you prefer.
 
 
 

@@ -100,11 +100,11 @@ func (s *HTTPTest) Arguments() map[string]string {
 	return known
 }
 
+// Example returns sample usage-instructions for self-documentation purposes.
 func (s *HTTPTest) Example() string {
 	str := `
 HTTP Tester
 -----------
-
  The HTTP tester allows you to confirm that a remote HTTP-server is
  responding correctly.  You may test the response of a HTTP GET or
  POST request.

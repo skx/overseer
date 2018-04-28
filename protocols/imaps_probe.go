@@ -42,10 +42,11 @@ func (s *IMAPSTest) Arguments() map[string]string {
 	return known
 }
 
+// Example returns sample usage-instructions for self-documentation purposes.
 func (s *IMAPSTest) Example() string {
 	str := `
 IMAPS Tester
------------
+------------
  The IMAPS tester connects to a remote host and ensures that this succeeds.
 
  If you supply a username & password a login will be made, and the test will

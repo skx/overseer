@@ -35,6 +35,21 @@ func (s *SSHTest) Arguments() map[string]string {
 	return known
 }
 
+// Example returns sample usage-instructions for self-documentation purposes.
+func (s *SSHTest) Example() string {
+	str := `
+SSH Tester
+----------
+ The ssh tester connects to a remote host and ensures that a response
+ is received that looks like an ssh-server banner.
+
+ This test is invoked via input like so:
+
+    host.example.com must run ssh
+`
+	return str
+}
+
 // RunTest is the part of our API which is invoked to actually execute a
 // test against the given target.
 //
