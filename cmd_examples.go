@@ -7,7 +7,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"reflect"
 	"regexp"
 	"sort"
 
@@ -61,24 +60,20 @@ func showExamples(filter string) {
 		// Create an instance of it
 		x := protocols.ProtocolHandler(name)
 
-		// If the `Example` method is present
-		a := reflect.ValueOf(x).MethodByName("Example")
-		if a.IsValid() {
+		// Show the output of that function
+		out := x.Example()
+		fmt.Printf("%s\n", out)
 
-			// Show the output of that function
-			out := a.Call(nil)
-			fmt.Printf("%s\n", out[0])
+		fmt.Printf("Optional Arguments which are supported are now shown:\n\n")
 
-			fmt.Printf("Optional Arguments which are supported are now shown:\n\n")
-
-			fmt.Printf("  %10s|%s\n", "Name", "Valid Value")
-			fmt.Printf("  ----------------------------------\n")
-			for opt, reg := range x.Arguments() {
-				fmt.Printf("  %10s|%s\n", opt, reg)
-			}
-
-			fmt.Printf("\n\n");
+		fmt.Printf("  %10s|%s\n", "Name", "Valid Value")
+		fmt.Printf("  ----------------------------------\n")
+		for opt, reg := range x.Arguments() {
+			fmt.Printf("  %10s|%s\n", opt, reg)
 		}
+
+		fmt.Printf("\n\n")
+
 	}
 }
 
