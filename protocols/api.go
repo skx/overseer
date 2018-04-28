@@ -4,8 +4,6 @@
 // pattern, and due to their plugin nature they are simple to implement
 // as they require only implementing a single method.
 //
-// There should now follow documentation on each available protocol-test.
-//
 package protocols
 
 import (

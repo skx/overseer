@@ -15,6 +15,7 @@
 // Finally if you need a password to join the server add ":password"
 // appropriately.
 //
+
 package notifiers
 
 import (

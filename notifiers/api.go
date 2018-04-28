@@ -1,9 +1,8 @@
-// The notifiers API allows the results of tests to be submitted "somewhere".
+// Package notifiers contains a simple notification API which allows the
+// results of tests to be submitted "somewhere".
 //
 // The notification mechanism uses a class-factory to instantiate
 // a single specific notifier, at run-time.
-//
-// There now follows documentation on available notifiers.
 //
 package notifiers
 

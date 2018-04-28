@@ -6,6 +6,7 @@
 //
 // The single argument is assumed to be the HTTP URL of the end-point
 // to which submissions should be sent via HTTP POSTs.
+
 package notifiers
 
 import (
