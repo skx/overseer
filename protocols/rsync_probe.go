@@ -20,13 +20,13 @@ import (
 	"github.com/skx/overseer/test"
 )
 
-//
-// Our structure.
-//
+// RSYNCTest is our object.
 type RSYNCTest struct {
 }
 
-// Return the arguments which this protocol-test understands.
+// Arguments returns the names of arguments which this protocol-test
+// understands, along with corresponding regular-expressions to validate
+// their values.
 func (s *RSYNCTest) Arguments() map[string]string {
 	known := map[string]string{
 		"port": "^[0-9]+$",
@@ -34,9 +34,11 @@ func (s *RSYNCTest) Arguments() map[string]string {
 	return known
 }
 
+// RunTest is the part of our API which is invoked to actually execute a
+// test against the given target.
 //
-// Run the test against the specified target.
-//
+// In this case we make a TCP connection, defaulting to port 873, and
+// look for a response which appears to be an rsync-server.
 func (s *RSYNCTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
 	var err error
 

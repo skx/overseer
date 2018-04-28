@@ -18,13 +18,13 @@ import (
 	"github.com/skx/overseer/test"
 )
 
-//
-// Our structure.
-//
+// REDISTest is our object
 type REDISTest struct {
 }
 
-// Return the arguments which this protocol-test understands.
+// Arguments returns the names of arguments which this protocol-test
+// understands, along with corresponding regular-expressions to validate
+// their values.
 func (s *REDISTest) Arguments() map[string]string {
 	known := map[string]string{
 		"port":     "^[0-9]+$",
@@ -33,8 +33,10 @@ func (s *REDISTest) Arguments() map[string]string {
 	return known
 }
 
+// RunTest is the part of our API which is invoked to actually execute a
+// test against the given target.
 //
-// Make a Redis-test against the given target.
+// In this case we make a Redis-test against the given target.
 //
 func (s *REDISTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
 

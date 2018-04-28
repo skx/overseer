@@ -24,7 +24,7 @@ import (
 	//	"github.com/skx/overseer/protocols"
 )
 
-// Our structure.
+// DNSTest is our object.
 type DNSTest struct {
 }
 
@@ -127,7 +127,9 @@ func (s *DNSTest) localQuery(server string, qname string, lookupType string) (*d
 	return nil, nil
 }
 
-// Return the arguments which this protocol-test understands.
+// Arguments returns the names of arguments which this protocol-test
+// understands, along with corresponding regular-expressions to validate
+// their values.
 func (s *DNSTest) Arguments() map[string]string {
 
 	known := map[string]string{
