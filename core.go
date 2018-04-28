@@ -106,13 +106,13 @@ func runTest(tst test.Test, opts test.TestOptions, notifier notifiers.Notifier) 
 		// We'll repeat failing tests up to five times by default
 		//
 		attempt := 0
-		max_attempts := 5
+		maxAttempts := 5
 
 		//
 		// If retrying is disabled then don't retry.
 		//
 		if opts.Retry == false {
-			max_attempts = attempt + 1
+			maxAttempts = attempt + 1
 		}
 
 		//
@@ -129,7 +129,7 @@ func runTest(tst test.Test, opts test.TestOptions, notifier notifiers.Notifier) 
 		// This is designed to cope with transient failures, at a
 		// cost that flapping services might be missed.
 		//
-		for attempt < max_attempts {
+		for attempt < maxAttempts {
 			attempt += 1
 
 			//
@@ -142,11 +142,11 @@ func runTest(tst test.Test, opts test.TestOptions, notifier notifiers.Notifier) 
 			//
 			if result == nil {
 				if opts.Verbose {
-					fmt.Printf("\t[%d/%d] - Test passed.\n", attempt, max_attempts)
+					fmt.Printf("\t[%d/%d] - Test passed.\n", attempt, maxAttempts)
 				}
 
 				// break out of loop
-				attempt = max_attempts + 1
+				attempt = maxAttempts + 1
 
 			} else {
 
@@ -157,7 +157,7 @@ func runTest(tst test.Test, opts test.TestOptions, notifier notifiers.Notifier) 
 				// is invoked.
 				//
 				if opts.Verbose {
-					fmt.Printf("\t[%d/%d] Test failed: %s\n", attempt, max_attempts, result.Error())
+					fmt.Printf("\t[%d/%d] Test failed: %s\n", attempt, maxAttempts, result.Error())
 				}
 
 			}
