@@ -9,6 +9,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/skx/overseer/test"
 )
 
 // Test that parsing a missing file returns an error
@@ -32,9 +34,6 @@ func TestFile(t *testing.T) {
 http://example.com/ must run http
 # This is fine
 http://example.com/ must run http with content 'moi'
-
-# The content-type here will not match
-http://example.com/ must run http with content "moi"
 `
 	//
 	err = ioutil.WriteFile(file.Name(), []byte(lines), 0644)
@@ -380,5 +379,49 @@ func TestInvalidOptions(t *testing.T) {
 			t.Errorf("The error we received was the wrong error: %s", err.Error())
 
 		}
+	}
+}
+
+// Test invoking a callback.
+func TestCallback(t *testing.T) {
+	file, err := ioutil.TempFile(os.TempDir(), "prefix")
+	defer os.Remove(file.Name())
+
+	// Content to write to a file
+	lines := `
+http://example.com/ must run http
+# This is fine
+http://example.com/ must run http with content 'moi'
+`
+	// Write it out
+	err = ioutil.WriteFile(file.Name(), []byte(lines), 0644)
+	if err != nil {
+		t.Errorf("Error writing our test-case")
+	}
+
+	//
+	// Count of how many times we were calledback
+	//
+	i := 0
+
+	// callback
+
+	//
+	// Now parse the file - using the callback
+	//
+	p := New()
+	err = p.ParseFile(file.Name(), func(tst test.Test) error {
+		i = i + 1
+		return nil
+	})
+
+	//
+	// We'll test that worked.
+	//
+	if err != nil {
+		t.Errorf("Error parsing our valid file")
+	}
+	if i != 2 {
+		t.Errorf("Callback invoked the wrong number of times: %d", i)
 	}
 }
