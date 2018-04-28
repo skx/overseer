@@ -37,10 +37,10 @@ type workerCmd struct {
 // Glue
 //
 func (*workerCmd) Name() string     { return "worker" }
-func (*workerCmd) Synopsis() string { return "Execute tests via the queue." }
+func (*workerCmd) Synopsis() string { return "Fetch jobs from the central queue and execute them" }
 func (*workerCmd) Usage() string {
 	return `worker :
-  Execute tests from the redis queue, until terminated.
+  Execute tests pulled from the central redis queue, until terminated.
 `
 }
 
