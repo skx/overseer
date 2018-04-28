@@ -1,3 +1,15 @@
+// Ping Tester
+//
+// The ping tester invokes the system 'ping' and 'ping6' binaries to carry
+// out a ping-test against a remote host.
+//
+// If the system-binary reports a failure, via its exit-code, then this test
+// fails.
+//
+// This test is invoked via input like so:
+//
+//    host.example.com must run ping
+
 package protocols
 
 import (
@@ -65,6 +77,24 @@ func (s *PINGTest) Ping6(target string) bool {
 func (s *PINGTest) Arguments() map[string]string {
 	known := map[string]string{}
 	return known
+}
+
+// Example returns sample usage-instructions for self-documentation purposes.
+func (s *PINGTest) Example() string {
+	str := `
+Ping Tester
+-----------
+ The ping tester invokes the system 'ping' and 'ping6' binaries to carry
+ out a ping-test against a remote host.
+
+ If the system-binary reports a failure, via its exit-code, then this test
+ fails.
+
+ This test is invoked via input like so:
+
+    host.example.com must run ping
+`
+	return str
 }
 
 // RunTest is the part of our API which is invoked to actually execute a

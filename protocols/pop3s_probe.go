@@ -1,6 +1,6 @@
-// POP3 Tester
+// POP3S Tester
 //
-// The POP3 tester connects to a remote host and ensures that this
+// The POP3S tester connects to a remote host and ensures that this
 // succeeds.  If you supply a username & password a login will be
 // made, and the test will fail if this login fails.
 //
@@ -39,6 +39,25 @@ func (s *POP3STest) Arguments() map[string]string {
 		"password": ".*",
 	}
 	return known
+}
+
+// Example returns sample usage-instructions for self-documentation purposes.
+func (s *POP3STest) Example() string {
+	str := `
+POP3S Tester
+------------
+ The POP3S tester connects to a remote host and ensures that this
+ succeeds.  If you supply a username & password a login will be
+ made, and the test will fail if this login fails.
+
+ This test is invoked via input like so:
+
+    host.example.com must run pop3
+
+ Because POP3S uses TLS it will test the validity of the certificate as
+ part of the test, if you wish to disable this add 'with tls insecure'.
+`
+	return str
 }
 
 // RunTest is the part of our API which is invoked to actually execute a

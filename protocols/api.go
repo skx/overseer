@@ -24,6 +24,10 @@ type ProtocolTest interface {
 	//
 	Arguments() map[string]string
 
+	// Example
+	Example() string
+
+	//
 	//
 	// RunTest actually invokes the protocol-handler to run its
 	// tests.

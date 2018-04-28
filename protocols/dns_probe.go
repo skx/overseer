@@ -141,6 +141,28 @@ func (s *DNSTest) Arguments() map[string]string {
 	return known
 }
 
+// Example returns sample usage-instructions for self-documentation purposes.
+func (s *DNSTest) Example() string {
+	str := `
+DNS Tester
+----------
+ The DNS tester allows you to confirm that the specified DNS server
+ returns the results you expect.  It is invoked with input like this:
+
+    ns.example.com must run dns with lookup test.example.com with type A with result '1.2.3.4'
+
+ This test ensures that the DNS lookup of an A record for 'test.example.com'
+ returns the single value 1.2.3.4
+
+ Lookups are supported for A, AAAA, MX, NS, and TXT records.  If you expect
+ there to be zero returning records, perhaps because you're ensuring that a
+ service is IPv4-only you can specify that you require an empty result:
+
+    rache.ns.cloudflare.com must run dns with lookup alert.steve.fi with type AAAA with result ''
+`
+	return str
+}
+
 // RunTest is the part of our API which is invoked to actually execute a
 // test against the given target.
 //

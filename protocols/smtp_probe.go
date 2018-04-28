@@ -35,6 +35,21 @@ func (s *SMTPTest) Arguments() map[string]string {
 	return known
 }
 
+// Example returns sample usage-instructions for self-documentation purposes.
+func (s *SMTPTest) Example() string {
+	str := `
+SMTP Tester
+-----------
+ The SMTP tester connects to a remote host and ensures that a response
+ is received that looks like an SMTP-server banner.
+
+ This test is invoked via input like so:
+
+    host.example.com must run smtp
+`
+	return str
+}
+
 // RunTest is the part of our API which is invoked to actually execute a
 // test against the given target.
 //
