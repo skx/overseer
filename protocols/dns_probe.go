@@ -29,14 +29,6 @@ import (
 type DNSTest struct {
 }
 
-// Here we have a map of DNS type-names.
-var StringToType = map[string]uint16{
-	"A":    dns.TypeA,
-	"AAAA": dns.TypeAAAA,
-	"MX":   dns.TypeMX,
-	"NS":   dns.TypeNS,
-	"TXT":  dns.TypeTXT,
-}
 
 var (
 	localm *dns.Msg
@@ -97,6 +89,16 @@ func (s *DNSTest) lookup(server string, name string, ltype string, timeout time.
 // Given a name & type to lookup perform the request against the named
 // DNS-server.
 func (s *DNSTest) localQuery(server string, qname string, lookupType string) (*dns.Msg, error) {
+
+	// Here we have a map of DNS type-names.
+	var StringToType = map[string]uint16{
+		"A":    dns.TypeA,
+		"AAAA": dns.TypeAAAA,
+		"MX":   dns.TypeMX,
+		"NS":   dns.TypeNS,
+		"TXT":  dns.TypeTXT,
+	}
+
 	qtype := StringToType[lookupType]
 	if qtype == 0 {
 		return nil, fmt.Errorf("Unsupported record to lookup '%s'", lookupType)
@@ -141,7 +143,12 @@ func (s *DNSTest) Arguments() map[string]string {
 	return known
 }
 
-// Make a DNS-test.
+// RunTest is the part of our API which is invoked to actually execute a
+// test against the given target.
+//
+// In this case we make a DNS-lookup against the named host, and compare
+// the result with what the user specified.
+// look for a response which appears to be an FTP-server.
 func (s *DNSTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
 
 	if tst.Arguments["lookup"] == "" {
@@ -173,11 +180,13 @@ func (s *DNSTest) RunTest(tst test.Test, target string, opts test.TestOptions) e
 	sort.Strings(res)
 	found := strings.Join(res, ",")
 
-	if found == tst.Arguments["result"] {
-		return nil
-	} else {
-		return fmt.Errorf("Expected DNS result to be '%s', but found '%s'", tst.Arguments["result"], found)
+	if found != tst.Arguments["result"] {
+ 	return fmt.Errorf("Expected DNS result to be '%s', but found '%s'", tst.Arguments["result"], found)
 	}
+
+	return nil
+
+
 }
 
 // Register our protocol-tester.
