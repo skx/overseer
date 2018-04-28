@@ -7,6 +7,7 @@
 //
 //    host.example.com must run xmpp [with port 5222]
 //
+
 package protocols
 
 import (

@@ -7,6 +7,7 @@
 //
 //    host.example.com must run redis [with port 6379] [with password 'password']
 //
+
 package protocols
 
 import (

@@ -8,6 +8,7 @@
 // Specifying a username and password is required, because otherwise we
 // cannot connect to the database
 //
+
 package protocols
 
 import (
@@ -21,13 +22,13 @@ import (
 	"github.com/skx/overseer/test"
 )
 
-//
-// Our structure.
-//
+// MYSQLTest is our object
 type MYSQLTest struct {
 }
 
-// Return the arguments which this protocol-test understands.
+// Arguments returns the names of arguments which this protocol-test
+// understands, along with corresponding regular-expressions to validate
+// their values.
 func (s *MYSQLTest) Arguments() map[string]string {
 	known := map[string]string{
 		"port":     "^[0-9]+$",
@@ -37,9 +38,11 @@ func (s *MYSQLTest) Arguments() map[string]string {
 	return known
 }
 
+// RunTest is the part of our API which is invoked to actually execute a
+// test against the given target.
 //
-// Run the test against the specified target.
-//
+// In this case we make a TCP connection to the host and attempt to login
+// with the specified username & password.
 func (s *MYSQLTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
 	var err error
 

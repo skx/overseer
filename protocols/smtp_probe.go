@@ -7,6 +7,7 @@
 //
 //    host.example.com must run smtp [with port 25]
 //
+
 package protocols
 
 import (

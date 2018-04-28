@@ -10,6 +10,7 @@
 //
 // Lookups are supported for A, AAAA, MX, NS, and TXT records.
 //
+
 package protocols
 
 import (

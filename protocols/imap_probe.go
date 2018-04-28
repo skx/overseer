@@ -8,6 +8,7 @@
 //
 //    host.example.com must run imap [with username 'steve@steve' with password 'secret']
 //
+
 package protocols
 
 import (

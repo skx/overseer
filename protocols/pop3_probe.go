@@ -8,6 +8,7 @@
 //
 //    host.example.com must run pop3 [with username 'steve@steve' with password ]
 //
+
 package protocols
 
 import (

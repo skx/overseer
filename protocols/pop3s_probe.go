@@ -11,6 +11,7 @@
 // Because POP3S uses TLS it will test the validity of the certificate as
 // part of the test, if you wish to disable this add `with tls insecure`.
 //
+
 package protocols
 
 import (

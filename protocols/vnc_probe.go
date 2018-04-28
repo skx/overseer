@@ -7,6 +7,7 @@
 //
 //    host.example.com must run vnc [with port 5900]
 //
+
 package protocols
 
 import (

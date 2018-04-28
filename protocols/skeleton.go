@@ -8,6 +8,7 @@
 // Assuming you have an object which implements this method you can register
 // your handler via the Register function of the protocol_api.go class.
 //
+
 package protocols
 
 import (

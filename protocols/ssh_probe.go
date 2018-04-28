@@ -7,6 +7,7 @@
 //
 //    host.example.com must run ssh [with port 22]
 //
+
 package protocols
 
 import (

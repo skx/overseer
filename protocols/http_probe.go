@@ -61,6 +61,7 @@
 // NOTE: This test deliberately does not follow redirections, to allow
 // enhanced testing.
 //
+
 package protocols
 
 import (
