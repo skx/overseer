@@ -199,6 +199,31 @@ func TestNoArguments(t *testing.T) {
 	}
 }
 
+// Test parsing an argument that fails validation
+func TestInvalidArgument(t *testing.T) {
+
+	tests := []string{
+		"http://example.com/ must run http with status moi",
+		"http://example.com/ must run http with expiration 12s",
+	}
+
+	// Create a parser
+	p := New()
+
+	// Parse each line
+	for _, input := range tests {
+
+		_, err := p.ParseLine(input, nil)
+		if err == nil {
+			t.Errorf("Expected an error parsing input, received none.  Input was %s", input)
+		}
+		if !strings.Contains(err.Error(), "did not match pattern") {
+			t.Errorf("Received unexpected error: %s\n", err.Error())
+		}
+
+	}
+}
+
 // Test parsing some common HTTP options
 func TestHTTPOptions(t *testing.T) {
 
