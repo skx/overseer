@@ -22,7 +22,7 @@ import (
 	"github.com/yosssi/gmq/mqtt/client"
 )
 
-// Our structure.
+// MQNotifier is our object
 type MQNotifier struct {
 	// The connection-string we were passed in the constructor
 	data string
@@ -31,7 +31,8 @@ type MQNotifier struct {
 	mq *client.Client
 }
 
-// Connect to our MQ queue.
+// Setup connects to the MQ server which was mentioned in the
+// data passed to the constructor.
 func (s *MQNotifier) Setup() error {
 
 	//
@@ -54,7 +55,10 @@ func (s *MQNotifier) Setup() error {
 	return nil
 }
 
-// Send a notification to our queue.
+// Notify is the API-method which is invoked to send a notification
+// somewhere.
+//
+// In our case we send a notification to the MQ server.
 func (s *MQNotifier) Notify(test test.Test, result error) error {
 
 	//
@@ -111,7 +115,7 @@ func (s *MQNotifier) Notify(test test.Test, result error) error {
 	return nil
 }
 
-// Register our notifier
+// init is invoked to register our notifier at run-time.
 func init() {
 	Register("mq", func(data string) Notifier {
 		return &MQNotifier{data: data}

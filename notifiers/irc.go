@@ -28,7 +28,7 @@ import (
 	"github.com/thoj/go-ircevent"
 )
 
-// Our structure.
+// IRCNotifier is our object.
 type IRCNotifier struct {
 	// data is the URI describing the IRC server to connect to
 	data string
@@ -136,7 +136,10 @@ func (s *IRCNotifier) Setup() error {
 	return nil
 }
 
-// Send a notification to the IRC server.
+// Notify is the API-method which is invoked to send a notification
+// somewhere.
+//
+// In our case we send a notification to the IRC server.
 func (s *IRCNotifier) Notify(test test.Test, result error) error {
 
 	//
@@ -185,7 +188,7 @@ func (s *IRCNotifier) Notify(test test.Test, result error) error {
 	return nil
 }
 
-// Register our notifier
+// init is invoked to register our notifier at run-time.
 func init() {
 	Register("irc", func(data string) Notifier {
 

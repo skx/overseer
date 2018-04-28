@@ -20,7 +20,7 @@ import (
 	"github.com/skx/overseer/test"
 )
 
-// Our structure.
+// Purppura is our object
 type Purppura struct {
 	data string
 }
@@ -30,7 +30,10 @@ func (s *Purppura) Setup() error {
 	return nil
 }
 
-// Send a notification to the Purppura server
+// Notify is the API-method which is invoked to send a notification
+// somewhere.
+//
+// In our case we send a notification to the IRC server.
 func (s *Purppura) Notify(test test.Test, result error) error {
 
 	//
@@ -95,7 +98,7 @@ func (s *Purppura) Notify(test test.Test, result error) error {
 	return err
 }
 
-// Register our notifier
+// init is invoked to register our notifier at run-time.
 func init() {
 	Register("purppura", func(data string) Notifier {
 		return &Purppura{data: data}
