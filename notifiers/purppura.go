@@ -25,7 +25,8 @@ type Purppura struct {
 	data string
 }
 
-// Setup is a NOP in this notification-class
+// Setup is a NOP in this notification-class - because alerts are posted
+// via HTTP on-demand, there is no persistent connection open.
 func (s *Purppura) Setup() error {
 	return nil
 }
@@ -58,29 +59,23 @@ func (s *Purppura) Notify(test test.Test, result error) error {
 	hash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 
 	//
-	// All alerts will have an ID + Subject field.
+	// Populate the default fields.
 	//
 	values := map[string]string{
+		"detail": fmt.Sprintf("<p>The <code>%s</code> test against <code>%s</code> passed.</p>", testType, testTarget),
 		"id":      hash,
+		"raise": "clear",
 		"subject": input,
 	}
 
 	//
-	// If the test failed we'll set the detail + trigger a raise
+	// If the test failed we'll update the detail and trigger a raise
 	//
 	if result != nil {
 		values["detail"] =
 			fmt.Sprintf("<p>The <code>%s</code> test against <code>%s</code> failed:</p><p><pre>%s</pre></p>",
-				testType, testTarget, result.Error())
+			testType, testTarget, result.Error())
 		values["raise"] = "now"
-	} else {
-		//
-		// Otherwise the test passed and so all is OK
-		//
-		values["detail"] =
-			fmt.Sprintf("<p>The <code>%s</code> test against <code>%s</code> passed.</p>",
-				testType, testTarget)
-		values["raise"] = "clear"
 	}
 
 	//

@@ -1,7 +1,3 @@
-//
-//  Basic testing of our DB primitives
-//
-
 package parser
 
 import (

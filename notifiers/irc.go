@@ -1,6 +1,6 @@
 // IRC
 //
-// The IRC notification object sends test-failures over IRC
+// The IRC notification object announces test-failures to an IRC channel.
 //
 // Assuming you wish to post notification faiures to the room
 // "#sysadmin", on the server "irc.example.com", as user
@@ -20,6 +20,7 @@ package notifiers
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net/url"
 	"sync"
@@ -182,7 +183,8 @@ func (s *IRCNotifier) Notify(test test.Test, result error) error {
 	if s.joined {
 		s.irccon.Privmsg(s.channel, msg)
 	} else {
-		fmt.Printf("Sending message before IRC server joined!")
+		fmt.Printf("Sending message before IRC server joined!\n")
+		return errors.New("Sending message before IRC server joined!")
 	}
 
 	return nil
@@ -191,7 +193,6 @@ func (s *IRCNotifier) Notify(test test.Test, result error) error {
 // init is invoked to register our notifier at run-time.
 func init() {
 	Register("irc", func(data string) Notifier {
-
 		return &IRCNotifier{data: data, joined: false}
 	})
 }

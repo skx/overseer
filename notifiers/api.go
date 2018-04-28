@@ -1,5 +1,5 @@
 // Package notifiers contains a simple notification API which allows the
-// results of tests to be submitted "somewhere".
+// results of a test to be submitted "somewhere".
 //
 // The notification mechanism uses a class-factory to instantiate
 // a single specific notifier, at run-time.

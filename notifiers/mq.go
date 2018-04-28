@@ -99,7 +99,7 @@ func (s *MQNotifier) Notify(test test.Test, result error) error {
 	}
 
 	//
-	// Publish our message.
+	// Publish the message.
 	//
 	err = s.mq.Publish(&client.PublishOptions{
 		QoS:       mqtt.QoS0,
