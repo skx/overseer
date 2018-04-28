@@ -1,4 +1,4 @@
-// Package Test contains details about a single parsed test which should be
+// Package test contains details about a single parsed test which should be
 // executed against a remote host.
 //
 // Tests are parsed via the parser-module, and have the general form:

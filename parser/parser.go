@@ -1,4 +1,4 @@
-// This is the configuration-file parser for `overseer`.
+// Package parser contain the configuration-file parser for `overseer`.
 //
 // Given either an input file of text, or a single line of text,
 // protocol-tests are parsed and returned as instances of the
