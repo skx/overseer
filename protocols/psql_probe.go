@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"strconv"
 
-	_ "github.com/lib/pq"
+	_ "github.com/lib/pq"   	// Don't need to import this
 	"github.com/skx/overseer/test"
 )
 
