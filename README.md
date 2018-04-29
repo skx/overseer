@@ -163,7 +163,7 @@ Each result is posted as a JSON object, with the following fields being used:
 | `result`   | Either `passed` or `failed`.                                    |
 | `error`    | If the test failed this will explain why.                       |
 | `time`     | The time the result was posted, in seconds past the epoch.      |
-| `target`   | The target of the test, either and IPv4 address or an IPv6 one. |
+| `target`   | The target of the test, either an IPv4 address or an IPv6 one.  |
 | `type`     | The type of test (ssh, ftp, etc).                               |
 
 Beneath the [bridges/](bridges/) directory you'll find some sample code
