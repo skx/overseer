@@ -37,10 +37,8 @@ func ConnectMQ(addr string) error {
 	return nil
 }
 
-// Notify is the API-method which is invoked to send a notification
-// somewhere.
-//
-// In our case we send a notification to the MQ server.
+// MQNotify is the method which is invoked to send a notification
+// via the existing MQ connection.
 func MQNotify(test test.Test, result error) error {
 
 	//
