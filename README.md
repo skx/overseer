@@ -95,9 +95,8 @@ would be reported to it:
 ### Running from multiple hosts
 
 If you have a large network the expectation is that the tests will take a long time to execute serially, so to speed things up you might want to run the tests
-in parallel.
-
-Overseer supports distributed/parallel operation via the use of a shared [redis](https://redis.io/) queue.
+in parallel.  Overseer supports distributed/parallel operation via the use of
+a shared [redis](https://redis.io/) queue.
 
 On __one__ host run the following to add your tests to the redis queue:
 
@@ -105,14 +104,14 @@ On __one__ host run the following to add your tests to the redis queue:
            -redis-host=queue.example.com:6379 [-redis-pass='secret.here'] \
            test.file.1 test.file.2 .. test.file.N
 
-This will parse the tests contained in the given files, and add each of those tests to a (shared) redis queue.
+This will parse the tests contained in the specified input files, and add each of them to the (shared) redis queue.  Once the jobs have been inserted into the queue the process will terminate.
 
-Now that the tests have been inserted into the queue you can launch a worker, on as many hosts as you wish, to retrieve and execute them:
+To drain the queue you can now start a worker, which will fetch the tests to be executed from the queue, and process them:
 
        $ overseer worker -verbose \
           -redis-host=queue.example.com:6379 [-redis-pass='secret']
 
-The `worker` sub-command watches the redis-queue, and executes tests as they become available.  You should also remember to configure your MQ-host:
+To run jobs in parallel simply launch more instances of the worker, on the same host, or on different hosts.  Remember that you'll need to specify the MQ host upon which to publish the results:
 
        $ overseer worker \
           -verbose \
