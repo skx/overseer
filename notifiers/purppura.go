@@ -62,9 +62,9 @@ func (s *Purppura) Notify(test test.Test, result error) error {
 	// Populate the default fields.
 	//
 	values := map[string]string{
-		"detail": fmt.Sprintf("<p>The <code>%s</code> test against <code>%s</code> passed.</p>", testType, testTarget),
+		"detail":  fmt.Sprintf("<p>The <code>%s</code> test against <code>%s</code> passed.</p>", testType, testTarget),
 		"id":      hash,
-		"raise": "clear",
+		"raise":   "clear",
 		"subject": input,
 	}
 
@@ -74,7 +74,7 @@ func (s *Purppura) Notify(test test.Test, result error) error {
 	if result != nil {
 		values["detail"] =
 			fmt.Sprintf("<p>The <code>%s</code> test against <code>%s</code> failed:</p><p><pre>%s</pre></p>",
-			testType, testTarget, result.Error())
+				testType, testTarget, result.Error())
 		values["raise"] = "now"
 	}
 
