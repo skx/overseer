@@ -51,14 +51,14 @@ type Test struct {
 
 // Sanitize returns a copy of the input string, but with any password
 // removed
-func (self *Test) Sanitize() string {
+func (obj *Test) Sanitize() string {
 
 	// The basic test
-	res := fmt.Sprintf("%s must run %s", self.Target, self.Type)
+	res := fmt.Sprintf("%s must run %s", obj.Target, obj.Type)
 
 	// Arguments, sorted
 	var keys []string
-	for k := range self.Arguments {
+	for k := range obj.Arguments {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
@@ -73,7 +73,7 @@ func (self *Test) Sanitize() string {
 		} else {
 
 			// Otherwise leave alone.
-			tmp = fmt.Sprintf(" with %s '%s'", k, self.Arguments[k])
+			tmp = fmt.Sprintf(" with %s '%s'", k, obj.Arguments[k])
 		}
 		res += tmp
 	}

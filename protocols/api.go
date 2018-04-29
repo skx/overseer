@@ -75,7 +75,7 @@ func Handlers() []string {
 
 	// For each handler save the name
 	handlers.RLock()
-	for index, _ := range handlers.m {
+	for index := range handlers.m {
 		result = append(result, index)
 	}
 	handlers.RUnlock()
