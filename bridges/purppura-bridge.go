@@ -109,7 +109,7 @@ func main() {
 	//
 	err = mq.Subscribe(&client.SubscribeOptions{
 		SubReqs: []*client.SubReq{
-			&client.SubReq{
+			{
 				TopicFilter: []byte("overseer"),
 				QoS:         mqtt.QoS0,
 
