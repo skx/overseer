@@ -18,6 +18,8 @@
 package test
 
 import (
+	"fmt"
+	"sort"
 	"time"
 )
 
@@ -45,6 +47,38 @@ type Test struct {
 	// with the value `2121` (as a string).
 	//
 	Arguments map[string]string
+}
+
+// Sanitize returns a copy of the input string, but with any password
+// removed
+func (self *Test) Sanitize() string {
+
+	// The basic test
+	res := fmt.Sprintf("%s must run %s", self.Target, self.Type)
+
+	// Arguments, sorted
+	var keys []string
+	for k := range self.Arguments {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	// Now append the arguments and their values.
+	for _, k := range keys {
+		tmp := ""
+
+		// Censor passwords
+		if k == "password" {
+			tmp = " with password 'CENSORED'"
+		} else {
+
+			// Otherwise leave alone.
+			tmp = fmt.Sprintf(" with %s '%s'", k, self.Arguments[k])
+		}
+		res += tmp
+	}
+
+	return res
 }
 
 // TestOptions are options which are passed to every test-handler.

@@ -179,6 +179,17 @@ func runTest(tst test.Test, opts test.TestOptions, notifier notifiers.Notifier) 
 		//
 		copy := tst
 		copy.Target = target
+
+		//
+		// We also want to filter out any password which was found
+		// on the input-line.
+		//
+		copy.Input = tst.Sanitize()
+
+		//
+		// Now we can trigger the notification with our updated
+		// copy of the test.
+		//
 		if notifier != nil {
 			notifier.Notify(copy, result)
 		}
