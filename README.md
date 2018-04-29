@@ -144,26 +144,35 @@ The result of each of the tests is published as a simple JSON message to MQ.
 If you're using the mosquitto-queue (recommended) you can use the included  `mosquitto_sub` command to watch the `overseer` channel in real-time like so:
 
     $ mosquitto_sub -h 127.0.0.1 -p 1883 -t overseer
-    {"input":"http://www.steve.fi/ must run http with content 'https://steve.fi' with status '302'","result":"passed","target":"176.9.183.100","time":"1525017261","type":"http"}
-    {"input":"localhost must run ssh with port '2222'","result":"passed","target":"127.0.0.1","time":"1525017262","type":"ssh"}
+    {"input":"http://www.steve.fi/ must run http with content 'https://steve.fi' with status '302'",
+     "result":"passed",
+     "target":"176.9.183.100",
+     "time":"1525017261",
+     "type":"http"}
+    {"input":"localhost must run ssh with port '2222'",
+     "result":"passed",
+     "target":"127.0.0.1",
+     "time":"1525017262",
+     "type":"ssh"}
 
 Each result is posted as a JSON object, with the following fields being used:
 
-| Field Name | Field Value                                               |
-| ---------- | --------------------------------------------------------- |
-| `input`    | The input, taken from the configuration-file              |
-| `result`   | One of `passed` or `failed`                                |
-| `error`    | If the test failed this will explain why.                 |
-| `time`     | The time the result was posted, in seconds past the epoch |
-| `target`   | The target of the test`                                   |
-| `type`     | The type of test (ssh, ftp, etc).                         |
+| Field Name | Field Value                                                     |
+| ---------- | --------------------------------------------------------------- |
+| `input`    | The input as read from the configuration-file.                  |
+| `result`   | Either `passed` or `failed`.                                    |
+| `error`    | If the test failed this will explain why.                       |
+| `time`     | The time the result was posted, in seconds past the epoch.      |
+| `target`   | The target of the test, either and IPv4 address or an IPv6 one. |
+| `type`     | The type of test (ssh, ftp, etc).                               |
 
 Beneath the [bridges/](bridges/) directory you'll find some sample code
-which connects to the MQ host, reads the test-results, and acts upon them:
+which can connect to an MQ host, read the test-results as they arrive, and
+act upon them:
 
 * `irc-bridge.go`
   * This posts test-failures to an IRC channel.
-  * (Tests which pass are not reported, to avoid undue noise.)
+  * Tests which pass are not reported, to avoid undue noise on your channel.
 * `purppura-bridge.go`
   * This forwards each test-result to a [purppura host](https://github.com/skx/purppura/)
 
