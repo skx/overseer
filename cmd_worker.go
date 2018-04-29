@@ -12,7 +12,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/skx/overseer/notifiers"
 	"github.com/skx/overseer/parser"
 	"github.com/skx/overseer/test"
 
@@ -24,8 +23,7 @@ type workerCmd struct {
 	IPv4          bool
 	IPv6          bool
 	Retry         bool
-	Notifier      string
-	NotifierData  string
+	MQ            string
 	RedisHost     string
 	RedisPassword string
 	Timeout       int
@@ -58,8 +56,7 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 	var defaults workerCmd
 	defaults.IPv4 = true
 	defaults.IPv6 = true
-	defaults.Notifier = ""
-	defaults.NotifierData = ""
+	defaults.MQ = ""
 	defaults.Retry = true
 	defaults.Timeout = 10
 	defaults.Verbose = false
@@ -90,10 +87,7 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 	f.IntVar(&p.Timeout, "timeout", defaults.Timeout, "The global timeout for all tests, in seconds.")
 	f.StringVar(&p.RedisHost, "redis-host", defaults.RedisHost, "Specify the address of the redis queue.")
 	f.StringVar(&p.RedisPassword, "redis-pass", defaults.RedisPassword, "Specify the password for the redis queue.")
-
-	// Notifier setup
-	f.StringVar(&p.Notifier, "notifier", defaults.Notifier, "Specify the notifier object to use.")
-	f.StringVar(&p.NotifierData, "notifier-data", defaults.NotifierData, "Specify the notifier data to use.")
+	f.StringVar(&p.MQ, "mq", defaults.MQ, "Specify the MQ address to connect to.")
 }
 
 //
@@ -102,25 +96,13 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 
 	//
-	// The notifier we're going to use, if any.
+	// If the MQ address is configured the connect.
 	//
-	var notifier notifiers.Notifier
+	if p.MQ != "" {
+		err := ConnectMQ(p.MQ)
 
-	//
-	// If the notifier is set then create it.
-	//
-	if p.Notifier != "" {
-		notifier = notifiers.NotifierType(p.Notifier, p.NotifierData)
-
-		if notifier == nil {
-			fmt.Printf("Unknown notifier: %s\n", p.Notifier)
-			os.Exit(1)
-		}
-
-		// Call the setup function
-		err := notifier.Setup()
 		if err != nil {
-			fmt.Printf("Failed to call Setup() method of notifier %s - %s\n", p.Notifier, err.Error())
+			fmt.Printf("Failed to connect to MQ: %s\n", err.Error())
 			os.Exit(1)
 		}
 	}
@@ -175,7 +157,7 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 			job, err := parse.ParseLine(test, nil)
 
 			if err == nil {
-				runTest(job, opts, notifier)
+				runTest(job, opts)
 			} else {
 				fmt.Printf("Error parsing job from queue: %s - %s\n", test, err.Error())
 			}

@@ -8,8 +8,6 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/skx/overseer/notifiers"
-
 	"github.com/skx/overseer/protocols"
 	"github.com/skx/overseer/test"
 )
@@ -22,7 +20,7 @@ import (
 // The test result will be passed to the specified notifier instance upon
 // completion.
 //
-func runTest(tst test.Test, opts test.TestOptions, notifier notifiers.Notifier) error {
+func runTest(tst test.Test, opts test.TestOptions) error {
 
 	//
 	// Setup our local state.
@@ -62,8 +60,8 @@ func runTest(tst test.Test, opts test.TestOptions, notifier notifiers.Notifier) 
 		//
 		// If we have a notifier tell it that we failed.
 		//
-		if notifier != nil {
-			notifier.Notify(tst, fmt.Errorf("Failed to resolve name %s", testTarget))
+		if mq != nil {
+			MQNotify(tst, fmt.Errorf("Failed to resolve name %s", testTarget))
 		}
 
 		//
@@ -190,8 +188,8 @@ func runTest(tst test.Test, opts test.TestOptions, notifier notifiers.Notifier) 
 		// Now we can trigger the notification with our updated
 		// copy of the test.
 		//
-		if notifier != nil {
-			notifier.Notify(copy, result)
+		if mq != nil {
+			MQNotify(copy, result)
 		}
 	}
 

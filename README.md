@@ -6,7 +6,7 @@
 
 # Overseer
 
-Overseer is a [golang](https://golang.org/) based remote protocol tester, which allows you to monitor the state of your network, and the services running upon it.  When tests fail because hosts or services are down notifications can be generated via a simple plugin-based system, described [later](#notifiers).
+Overseer is a [golang](https://golang.org/) based remote protocol tester, which allows you to monitor the state of your network, and the services running upon it.  The results of each test are posted to an MQ-host, where they can be processed by external systems.  (Sample processors are included, but the intention is that by using a message-queue the alerting mechanism is decoupled from the core of the project; allowing you to integrate with your preferred in-house choice.)
 
 "Remote Protocol Tester" sounds a little vague, so to be more concrete this application lets you test services are running and has built-in support for testing:
 
@@ -44,13 +44,18 @@ All of the protocol-tests transparently support both IPv4 and IPv6 hosts, althou
 
 
 
-## Installation
+## Installation & Dependencies
 
 The following command should get/update `overseer` upon your system, assuming
 you have a working golang setup:
 
      $ go get -u github.com/skx/overseer
 
+Rather than being tied to a specific notification system overseer submits the
+result of each test to a message-queue.  (i.e. An instance of [mosquitto](http://mosquitto.org/) or similar.)
+
+This allows you to quickly and easily hook up your own local notification
+system, without the need to modify the overseer application itself.
 
 
 ## Usage
@@ -76,11 +81,11 @@ Each specified file will then be parsed and the tests executed one by one.
 
 Because `-verbose` has been specified the tests, and their results, will be output to the console.
 
-In real-world situation you'd also define a [notifier](#notifiers) too, in this case we're announcing to an IRC-server:
+In real-world situation you'd also define an MQ-host too, such that the results
+would be reported to it:
 
      $ overseer local \
-        -notifier=irc \
-        -notifier-data=irc://alerts:@chat.example.com:6667/#outages \
+        -mq=localhost:1883 \
         -verbose \
         test.file.1 test.file.2
 
@@ -107,13 +112,12 @@ Now that the tests have been inserted into the queue you can launch a worker, on
        $ overseer worker -verbose \
           -redis-host=queue.example.com:6379 [-redis-pass='secret']
 
-The `worker` sub-command watches the redis-queue, and executes tests as they become available.  You should remember to configure [a notifier](#notifiers) for your worker, so that the results are not lost:
+The `worker` sub-command watches the redis-queue, and executes tests as they become available.  You should also remember to configure your MQ-host:
 
        $ overseer worker \
           -verbose \
           -redis-host=queue.example.com:6379 [-redis-pass=secret] \
-          -notifier=purppura \
-          -notifier-data=http://alert.example.com/events
+          -mq=localhost:1883
 
 It is assumed you'd leave the workers running, under systemd or similar, and run a regular `overseer enqueue ...` via cron to ensure the queue is constantly refilled with tests for the worker(s) to execute.
 
@@ -134,48 +138,35 @@ flag `-retry=false`.
 
 
 
-## Notifiers
+## Notification
 
-Overseer uses a simple plugin-based system to allow different notification
-methods to be configured.  A notifier is enabled by specifying its name, and
-a single parameter used to configure it.
+The result of each of the tests is published as a simple JSON message to MQ.
 
-The following notifiers are bundled with the release:
+If you're using the mosquitto-queue (recommended) you can use the included  `mosquitto_sub` command to watch the `overseer` channel in real-time like so:
 
-* `irc`
-  * This notifier will announce test failures, and only failures, to an IRC channel.
-  * To configure this plugin you should pass an URI string such as
-     * `irc://USERNAME:PASSWORD@irc.example.com:6667/#CHANNEL`
-* `mq`
-  * This publishes the results of the tests to an MQ topic named `overseer`, from which you can react as you see fit.
-  * To configure this plugin you should pass the address & port of your MQ queue, for example:
-     * mq.example.com:1883
-* `purppura`
-  * This notifier will forward test-results to a [purppura](https://github.com/skx/purppura/) server
-  * To configure this plugin you should pass the URL of the submission end-point, such as:
-     * https://alert.example.com/alerts
+    $ mosquitto_sub -h 127.0.0.1 -p 1883 -t overseer
+    {"input":"http://www.steve.fi/ must run http with content 'https://steve.fi' with status '302'","result":"passed","target":"176.9.183.100","time":"1525017261","type":"http"}
+    {"input":"localhost must run ssh with port '2222'","result":"passed","target":"127.0.0.1","time":"1525017262","type":"ssh"}
 
-Sample usage might look like this for the IRC notifier:
+Each result is posted as a JSON object, with the following fields being used:
 
-    $ overseer local \
-       -notifier=irc \
-       -notifier-data=irc://alerts:@chat.example.com:6667/#outages \
-         test.file.1 test.file.2
+| Field Name | Field Value                                               |
+| ---------- | --------------------------------------------------------- |
+| `input`    | The input, taken from the configuration-file              |
+| `result`   | One of `passed` or `failed`                                |
+| `error`    | If the test failed this will explain why.                 |
+| `time`     | The time the result was posted, in seconds past the epoch |
+| `target`   | The target of the test`                                   |
+| `type`     | The type of test (ssh, ftp, etc).                         |
 
-Sample usage might look like this for the MQ notifier:
+Beneath the [bridges/](bridges/) directory you'll find some sample code
+which connects to the MQ host, reads the test-results, and acts upon them:
 
-    $ overseer local \
-       -notifier=mq \
-       -notifier-data=mq.example.com:1883 \
-         test.file.1 test.file.2
-
-Sample usage might look like this for the purppura notifier:
-
-     $ overseer local \
-       -notifier=purppura \
-       -notifier-data=https://alert.example.com/alerts
-         test.file.1 test.file.2
-
+* `irc-bridge.go`
+  * This posts test-failures to an IRC channel.
+  * (Tests which pass are not reported, to avoid undue noise.)
+* `purppura-bridge.go`
+  * This forwards each test-result to a [purppura host](https://github.com/skx/purppura/)
 
 
 ## Configuration File
@@ -198,8 +189,7 @@ Where the contents of that file are:
      {
          "IPV6": true,
          "IPv4": true,
-         "Notifier": "irc",
-         "NotifierData": "irc://alerts:@chat.example.com:6667/#outages",
+         "MQ": "localhost:1883",
          "RedisHost": "localhost:6379",
          "RedisPassword": "",
          "Retry": true,

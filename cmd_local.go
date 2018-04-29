@@ -13,25 +13,18 @@ import (
 	"time"
 
 	"github.com/google/subcommands"
-	"github.com/skx/overseer/notifiers"
 	"github.com/skx/overseer/parser"
 	"github.com/skx/overseer/test"
 )
 
 type localCmd struct {
-	IPv4         bool
-	IPv6         bool
-	Notifier     string
-	NotifierData string
-	Retry        bool
-	Timeout      int
-	Verbose      bool
+	IPv4    bool
+	IPv6    bool
+	MQ      string
+	Retry   bool
+	Timeout int
+	Verbose bool
 }
-
-//
-// The notifier we're going to use, if any.
-//
-var notifier notifiers.Notifier
 
 //
 // Glue
@@ -58,8 +51,7 @@ func (p *localCmd) SetFlags(f *flag.FlagSet) {
 	var defaults localCmd
 	defaults.IPv4 = true
 	defaults.IPv6 = true
-	defaults.Notifier = ""
-	defaults.NotifierData = ""
+	defaults.MQ = ""
 	defaults.Retry = true
 	defaults.Timeout = 10
 	defaults.Verbose = false
@@ -89,10 +81,7 @@ func (p *localCmd) SetFlags(f *flag.FlagSet) {
 	f.BoolVar(&p.IPv6, "6", defaults.IPv6, "Enable IPv6 tests.")
 	f.BoolVar(&p.Retry, "retry", defaults.Retry, "Should failing tests be retried a few times before raising a notification.")
 	f.IntVar(&p.Timeout, "timeout", defaults.Timeout, "The global timeout for all tests, in seconds.")
-
-	// Notifier setup
-	f.StringVar(&p.Notifier, "notifier", defaults.Notifier, "Specify the notifier object to use.")
-	f.StringVar(&p.NotifierData, "notifier-data", defaults.NotifierData, "Specify the notifier data to use.")
+	f.StringVar(&p.MQ, "mq", defaults.MQ, "Specify the MQ address to connect to.")
 }
 
 //
@@ -116,7 +105,7 @@ func (p *localCmd) runTest(tst test.Test) error {
 	//
 	// Now run the test.
 	//
-	return runTest(tst, opts, notifier)
+	return runTest(tst, opts)
 }
 
 //
@@ -125,20 +114,13 @@ func (p *localCmd) runTest(tst test.Test) error {
 func (p *localCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 
 	//
-	// If a notifier is configured then create it.
+	// If the MQ address is configured the connect.
 	//
-	if p.Notifier != "" {
+	if p.MQ != "" {
+		err := ConnectMQ(p.MQ)
 
-		notifier = notifiers.NotifierType(p.Notifier, p.NotifierData)
-		if notifier == nil {
-			fmt.Printf("Unknown notifier: %s\n", p.Notifier)
-			os.Exit(1)
-		}
-
-		// Call the setup function
-		err := notifier.Setup()
 		if err != nil {
-			fmt.Printf("Failed to call Setup() method of notifier %s - %s\n", p.Notifier, err.Error())
+			fmt.Printf("Failed to connect to MQ: %s\n", err.Error())
 			os.Exit(1)
 		}
 	}
