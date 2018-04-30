@@ -1,18 +1,34 @@
+//
+// This is the IRC bridge
+//
+// The program should be built via:
+//
+//     go build irc-bridge.go
+//
+// Once built launch it like so:
+//
+//     $ ./irc-bridge -irc='irc://username:password@localhost:6667/#test'
+//
+// This will connect to the IRC server on localhost, with username "username"
+// password "password", and post messages to "#test".
+//
+// Steve
+// --
+//
+
 package main
 
 import (
-	"encoding/json"
-
 	"crypto/tls"
+	"encoding/json"
+	"flag"
 	"fmt"
 	"net/url"
+	"os"
+	"os/signal"
 	"sync"
 
 	"github.com/thoj/go-ircevent"
-
-	"os"
-	"os/signal"
-
 	"github.com/yosssi/gmq/mqtt"
 	"github.com/yosssi/gmq/mqtt/client"
 )
@@ -38,7 +54,10 @@ var failed int64
 // The MQ handle
 var mq *client.Client
 
-// Given a JSON string decode and post to purppura
+//
+// Given a JSON string decode it and post to IRC if it describes
+// a test-failure.
+//
 func process(msg []byte) {
 	data := map[string]string{}
 
@@ -81,6 +100,7 @@ func process(msg []byte) {
 	irccon.Privmsg(channel, txt)
 }
 
+// setupIRC connects to the IRC server described by the specified URL.
 func setupIRC(data string) {
 
 	//
@@ -104,6 +124,9 @@ func setupIRC(data string) {
 		irccon.Password = pass
 	}
 
+	//
+	// We don't need debugging information.
+	//
 	irccon.Debug = false
 
 	//
@@ -131,7 +154,7 @@ func setupIRC(data string) {
 	// Because our connection is persistent we can use
 	// it to process private messages.
 	//
-	// In this case we'll just say "No".
+	// In this case we will output statistics when private-messaged.
 	//
 	irccon.AddCallback("PRIVMSG", func(event *irc.Event) {
 		go func(event *irc.Event) {
@@ -148,7 +171,12 @@ func setupIRC(data string) {
 			mutex.Unlock()
 
 			irccon.Privmsg(event.Nick,
-				fmt.Sprintf("Total tests executed %d, %d passed, %d failed", p+f, p, f))
+				fmt.Sprintf("Total tests executed %d\n", p+f, p, f))
+			irccon.Privmsg(event.Nick,
+				fmt.Sprintf("Failed tests %d\n", f))
+			irccon.Privmsg(event.Nick,
+				fmt.Sprintf("Succeeded tests %d\n", p))
+
 		}(event)
 	})
 
@@ -160,23 +188,42 @@ func setupIRC(data string) {
 		panic(err)
 	}
 
+	//
+	// Wait until we've connected before returning.
+	//
 	for joined == false {
-
 	}
-
 }
 
+//
+// Entry Point
+//
 func main() {
 
+	//
+	// Parse our flags
+	//
+	mqAddress := flag.String("mq", "127.0.0.1:1883", "The address & port of your MQ-server")
+	irc := flag.String("irc", "", "A URL describing your IRC server")
+	flag.Parse()
+
+	//
+	// Sanity-check.
+	//
+	if *irc == "" {
+		fmt.Printf("Usage: irc-bridge -mq=1.2.3.4:1883 -irc=irc://user:pass@irc.example.com:6667/#channel\n")
+		os.Exit(1)
+	}
+
+	//
 	// Set up channel on which to send signal notifications.
+	//
 	sigc := make(chan os.Signal, 1)
 	signal.Notify(sigc, os.Interrupt, os.Kill)
 
-	addr := "127.0.0.1:1883"
-
-	fmt.Printf("Connecting to IRC ..\n")
-	setupIRC("irc://moi:@localhost:6667/#test")
-	fmt.Printf("Connected to IRC ..\n")
+	fmt.Printf("Connecting to IRC server via %s ..\n", *irc)
+	setupIRC(*irc)
+	fmt.Printf("Connected.  Press Ctrl-c to terminate.\n")
 
 	//
 	// Create an MQTT Client.
@@ -188,11 +235,11 @@ func main() {
 	//
 	err := mq.Connect(&client.ConnectOptions{
 		Network:  "tcp",
-		Address:  addr,
+		Address:  *mqAddress,
 		ClientID: []byte("overseer-watcher"),
 	})
 	if err != nil {
-		fmt.Printf("Error connecting: %s\n", err.Error())
+		fmt.Printf("Error connecting to MQ: %s\n", err.Error())
 		os.Exit(1)
 	}
 
