@@ -1,3 +1,21 @@
+//
+// This is the Purppura bridge
+//
+// The program should be built via:
+//
+//     go build purppura-bridge.go
+//
+// Once built launch it like so:
+//
+//     $ ./purppura-bridge -mq="mq.example.com:1883" -url="http://purppura.example.com/events"
+//
+// This will connect to the MQ server specified and post to Purppura with
+// the given URL.
+//
+// Steve
+// --
+//
+
 package main
 
 import (
@@ -5,10 +23,9 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"encoding/json"
-
-	"net/http"
-
+	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 
@@ -19,7 +36,10 @@ import (
 // The MQ handle
 var mq *client.Client
 
-// Given a JSON string decode and post to purppura
+// The URL of the purppura server
+var pURL *string
+
+// Given a JSON string decode it and post to the Purppura URL.
 func process(msg []byte) {
 	data := map[string]string{}
 
@@ -68,7 +88,7 @@ func process(msg []byte) {
 	//
 	// Post to purppura
 	//
-	_, err := http.Post("http://localhost:8080/events",
+	_, err := http.Post(*pURL,
 		"application/json",
 		bytes.NewBuffer(jsonValue))
 
@@ -78,13 +98,30 @@ func process(msg []byte) {
 
 }
 
+//
+// Entry Point
+//
 func main() {
+
+	//
+	// Parse our flags
+	//
+	mqAddress := flag.String("mq", "127.0.0.1:1883", "The address & port of your MQ-server")
+	pURL = flag.String("purppura", "", "The purppura-server URL")
+	flag.Parse()
+
+	//
+	// Sanity-check
+	//
+	if *pURL == "" {
+		fmt.Printf("Usage: purppura-bridge -mq=1.2.3.4:1883 -purpurra=https://alert.steve.fi/events\n")
+		os.Exit(1)
+
+	}
 
 	// Set up channel on which to send signal notifications.
 	sigc := make(chan os.Signal, 1)
 	signal.Notify(sigc, os.Interrupt, os.Kill)
-
-	addr := "127.0.0.1:1883"
 
 	//
 	// Create an MQTT Client.
@@ -96,7 +133,7 @@ func main() {
 	//
 	err := mq.Connect(&client.ConnectOptions{
 		Network:  "tcp",
-		Address:  addr,
+		Address:  *mqAddress,
 		ClientID: []byte("overseer-watcher"),
 	})
 	if err != nil {
