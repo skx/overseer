@@ -171,7 +171,7 @@ func setupIRC(data string) {
 			mutex.Unlock()
 
 			irccon.Privmsg(event.Nick,
-				fmt.Sprintf("Total tests executed %d\n", p+f, p, f))
+				fmt.Sprintf("Total tests executed %d\n", p+f))
 			irccon.Privmsg(event.Nick,
 				fmt.Sprintf("Failed tests %d\n", f))
 			irccon.Privmsg(event.Nick,
