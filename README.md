@@ -36,7 +36,7 @@ form:
 
      $target must run $service [with $option_name $option_value] ..
 
-You can see what the available tests look like in [the example test-file](input.txt), and the protocol-handlers are also self-documenting so you can read example usage via:
+You can see what the available tests look like in [the example test-file](input.txt), and the protocol-handlers are also self-documenting which means you can view sample usage via:
 
      ~$ overseer examples [filter]
 
@@ -46,13 +46,14 @@ All of the protocol-tests transparently support both IPv4 and IPv6 hosts, althou
 
 ## Installation & Dependencies
 
-The following command should get/update `overseer` upon your system, assuming
-you have a working golang setup:
+The following command should fetch/update `overseer`, and install it upon
+your system, assuming you have a working golang setup:
 
      $ go get -u github.com/skx/overseer
+     $ go install github.com/skx/overseer
 
 Rather than being tied to a specific notification system overseer submits the
-result of each test to a message-queue.  (i.e. An instance of [mosquitto](http://mosquitto.org/) or similar.)
+result of each test to a message-queue.  (i.e. An instance of [mosquitto](http://mosquitto.org/).)
 
 This allows you to quickly and easily hook up your own local notification
 system, without the need to modify the overseer application itself.
@@ -67,19 +68,19 @@ There are two ways you can use overseer:
 * Via a queue
    * For huge networks, or a huge number of tests.
 
-In both cases the way that you get started is to write a series of tests, which describe the hosts & services you wish to monitor.  You can look at the [sample tests](input.txt) to get an idea of what is permitted.
+In both cases the way that you get started is to write a series of tests, which describe the hosts & services you wish to monitor, then you'll need to execute the tests (to actually test hosts/services).
 
 
 ### Running Locally
 
 Assuming you have a "small" network you can then execute your tests
-directly like this:
+directly like so:
 
       $ overseer local -verbose test.file.1 test.file.2 .. test.file.N
 
 Each specified file will then be parsed and the tests executed one by one.
 
-Because `-verbose` has been specified the tests, and their results, will be output to the console.
+Because `-verbose` has been specified the tests, and their results, will be displayed upon the console as they are executed.
 
 In real-world situation you'd also define an MQ-host too, such that the results
 would be reported to it:
@@ -94,9 +95,9 @@ would be reported to it:
 
 ### Running from multiple hosts
 
-If you have a large network the expectation is that the tests will take a long time to execute serially, so to speed things up you might want to run the tests
-in parallel.  Overseer supports distributed/parallel operation via the use of
-a shared [redis](https://redis.io/) queue.
+If you have a large network the expectation is that the tests will take a long time to execute serially, so to speed things up you would probably prefer to run the tests in parallel.
+
+Overseer supports distributed/parallel operation via the use of a shared [redis](https://redis.io/) queue.
 
 On __one__ host run the following to add your tests to the redis queue:
 
@@ -104,7 +105,7 @@ On __one__ host run the following to add your tests to the redis queue:
            -redis-host=queue.example.com:6379 [-redis-pass='secret.here'] \
            test.file.1 test.file.2 .. test.file.N
 
-This will parse the tests contained in the specified input files, and add each of them to the (shared) redis queue.  Once the jobs have been inserted into the queue the process will terminate.
+This will parse the tests contained in the specified files, adding each of them to the (shared) redis queue.  Once all of the jobs have been inserted into the queue the process will terminate.
 
 To drain the queue you can now start a worker, which will fetch the tests to be executed from the queue, and process them:
 
@@ -118,7 +119,7 @@ To run jobs in parallel simply launch more instances of the worker, on the same 
           -redis-host=queue.example.com:6379 [-redis-pass=secret] \
           -mq=localhost:1883
 
-It is assumed you'd leave the workers running, under systemd or similar, and run a regular `overseer enqueue ...` via cron to ensure the queue is constantly refilled with tests for the worker(s) to execute.
+It is assumed you'd leave the workers running, under a process supervisor such as systemd, and run a regular `overseer enqueue ...` via cron to ensure the queue is constantly refilled with tests for the worker(s) to execute.
 
 
 
