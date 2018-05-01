@@ -10,13 +10,21 @@
 //    host.example.com must run tcp with port 123
 //
 //  The port-setting is mandatory, such that the tests knows what to connect to.
+//
+// Optionally you may specify a regular expression to match against a
+// banner the remote host sends on connection:
+//
+//    host.example.com must run tcp with port 655 with banner '0 \S+ 17'
+//
 
 package protocols
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"net"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -32,7 +40,8 @@ type TCPTest struct {
 // their values.
 func (s *TCPTest) Arguments() map[string]string {
 	known := map[string]string{
-		"port": "^[0-9]+$",
+		"port":   "^[0-9]+$",
+		"banner": ".*",
 	}
 	return known
 }
@@ -52,6 +61,11 @@ TCP Tester
     host.example.com must run tcp with port 123
 
  The port-setting is mandatory, such that the tests knows what to connect to.
+
+ Optionally you may specify a regular expression to match against a
+ banner the remote host sends on connection:
+
+    host.example.com must run tcp with port 655 with banner '0 \S+ 17'
 `
 	return str
 }
@@ -111,10 +125,34 @@ func (s *TCPTest) RunTest(tst test.Test, target string, opts test.TestOptions) e
 		return err
 	}
 
+	defer conn.Close()
+
 	//
-	// And close it: without having read or written to it
+	// If we're going to do a banner match then we should read a line
+	// from the host
 	//
-	conn.Close()
+	if tst.Arguments["banner"] != "" {
+
+		// Compile the regular expression
+		re, error := regexp.Compile("(?ms)" + tst.Arguments["banner"])
+		if error != nil {
+			return error
+		}
+
+		// Read a single line of input
+		banner, err := bufio.NewReader(conn).ReadString('\n')
+		if err != nil {
+			return err
+		}
+
+		//
+		// If the regexp doesn't match that's an error.
+		//
+		match := re.FindAllStringSubmatch(string(banner), -1)
+		if len(match) < 1 {
+			return fmt.Errorf("Remote banner '%s' didn't match the regular expression '%s'", banner, tst.Arguments["banner"])
+		}
+	}
 
 	return nil
 }
