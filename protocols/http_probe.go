@@ -26,6 +26,15 @@
 //
 //    https://steve.fi/ must run http with content 'Steve Kemp'
 //
+// The 'content' setting looks for a literal match in the response-body,
+// if you're looking for something more flexible you can instead test that
+// the response-body matches a given regular-expression:
+//
+//   https://steve.fi/ must run http with pattern 'Steve\s+Kemp'
+//
+// (The regular expression will be assumed to be multi-line, and
+// will also allow newlines to be matched with ".".)
+//
 // If your URL requires the use of HTTP basic authentication this is
 // supported by adding a username and password parameter to your test,
 // for example:
@@ -91,11 +100,12 @@ func (s *HTTPTest) Arguments() map[string]string {
 	known := map[string]string{
 		"content":    ".*",
 		"data":       ".*",
-		"status":     "^(any|[0-9]+)$",
 		"expiration": "^(any|[0-9]+[hd]?)$",
+		"password":   ".*",
+		"pattern":    ".*",
+		"status":     "^(any|[0-9]+)$",
 		"tls":        "insecure",
 		"username":   ".*",
-		"password":   ".*",
 	}
 	return known
 }
@@ -130,6 +140,15 @@ HTTP Tester
  in the body of the response:
 
    https://steve.fi/ must run http with content 'Steve Kemp'
+
+ The 'content' setting looks for a literal match in the response-body,
+ if you're looking for something more flexible you can instead test that
+ the response-body matches a given regular-expression:
+
+   https://steve.fi/ must run http with pattern 'Steve\s+Kemp'
+
+ (The regular expression will be assumed to be multi-line, and
+ will also allow newlines to be matched with ".".)
 
  If your URL requires the use of HTTP basic authentication this is
  supported by adding a username and password parameter to your test,
@@ -346,13 +365,29 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 	}
 
 	//
-	// Looking for a body-match?
+	// Is the user looking for a literal body-match?
 	//
 	if tst.Arguments["content"] != "" {
 		if !strings.Contains(string(body), tst.Arguments["content"]) {
 			return fmt.Errorf("Body didn't contain '%s'", tst.Arguments["content"])
 		}
+	}
 
+	//
+	// Is the user expecting a regular expression to match the content?
+	//
+	if tst.Arguments["pattern"] != "" {
+		re, error := regexp.Compile("(?ms)" + tst.Arguments["pattern"])
+		if error != nil {
+			return error
+		}
+
+		// Skip unless this handler matches the filter.
+		match := re.FindAllStringSubmatch(string(body), -1)
+		fmt.Printf("%s - %v\n", body, match)
+		if len(match) < 1 {
+			return fmt.Errorf("Body didn't match the regular expression '%s'", tst.Arguments["pattern"])
+		}
 	}
 
 	//
