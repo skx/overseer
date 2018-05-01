@@ -60,13 +60,21 @@
 #
 # You can of course combine the status & content options.
 #
-# Finally if you need to make a HTTP POST request, rather than a GET,
-# you can do that by specifying the data to post like so:
+# If you need to make a HTTP POST request, rather than a GET, you can
+# do that by specifying the data to POST like so:
 #
 #        https://steve.fi/Security/XSS/Tutorial/filter.cgi must run http with data "text=test%20me" with content "test me"
 #
 # The CGI script in that example just echos arguments back, so it is
 # a simple tset that the POSTed data was received.
+#
+# The HTTP-protocol tester sets a custom user-agent to allow filtering
+# on the server-side - which might be required to remove noise if tests
+# are repeated often.
+#
+# You can see this in action via:
+#
+#          http://httpbin.org/user-agent must run http with content 'overseer/'
 #
 
 #
@@ -95,6 +103,7 @@ https://www.steve.fi/ must run http with status 302 with content 'https://steve.
 # So the final test is that we have decent content on the single "real" site.
 #
 https://steve.fi/ must run http with status 200 with content 'Steve Kemp'
+
 
 
 #
