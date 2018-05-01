@@ -354,7 +354,7 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 	if tst.Arguments["user-agent"] != "" {
 		req.Header.Set("User-Agent", tst.Arguments["user-agent"])
 	} else {
-		req.Header.Set("User-Agent", fmt.Sprintf("overseer/%s", version))
+		req.Header.Set("User-Agent", "overseer/probe")
 	}
 
 	//
