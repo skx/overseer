@@ -12,6 +12,10 @@ import (
 	"github.com/skx/overseer/test"
 )
 
+var (
+	version = "master"
+)
+
 // ProtocolTest interface is the core of our code, it
 // defines the implementation methods which must be
 // implemented to add a new protocol-test.

@@ -66,6 +66,14 @@
 //
 //    https://steve.fi/Security/XSS/Tutorial/filter.cgi must run http with data "text=test%20me" with content "test me"
 //
+// But note that you can override the HTTP-verb via:
+//
+//    https://example.com/ must run http with method HEAD
+//
+// Combining these you can submit data with a PUT method:
+//
+//    https://steve.fi/Security/XSS/Tutorial/filter.cgi must run http with method PUT with data "text=test%20me" with content "test me"
+//
 //
 // NOTE: This test deliberately does not follow redirections, to allow
 // enhanced testing.
@@ -98,9 +106,11 @@ type HTTPTest struct {
 // their values.
 func (s *HTTPTest) Arguments() map[string]string {
 	known := map[string]string{
+		"user-agent": ".*",
 		"content":    ".*",
 		"data":       ".*",
 		"expiration": "^(any|[0-9]+[hd]?)$",
+		"method":     "^(GET|HEAD|POST|PUT|PATCH|DELETE)$",
 		"password":   ".*",
 		"pattern":    ".*",
 		"status":     "^(any|[0-9]+)$",
@@ -180,6 +190,14 @@ HTTP Tester
  the request made will be a HTTP POST:
 
    https://steve.fi/Security/XSS/Tutorial/filter.cgi must run http with data "text=test%20me" with content "test me"
+
+ But note that you can override the HTTP-verb via:
+
+    https://example.com/ must run http with method HEAD
+
+ Combining these you can submit data with a PUT method:
+
+    https://steve.fi/Security/XSS/Tutorial/filter.cgi must run http with method PUT with data "text=test%20me" with content "test me"
 
  Do note that the HTTP-probe never follow redirections, to allow enhanced
  testing.
@@ -293,17 +311,29 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 	var err error
 
 	//
+	// The default method is "GET"
+	//
+	method := "GET"
+
+	//
+	// That can be changed
+	//
+	if tst.Arguments["method"] != "" {
+		method = tst.Arguments["method"]
+	}
+
+	//
 	// If we have no data then make a GET request
 	//
 	if tst.Arguments["data"] == "" {
-		req, err = http.NewRequest("GET", target, nil)
+		req, err = http.NewRequest(method, target, nil)
 	} else {
 
 		//
 		// Otherwise make a HTTP POST request, with
 		// the specified data.
 		//
-		req, err = http.NewRequest("POST", target,
+		req, err = http.NewRequest(method, target,
 			bytes.NewBuffer([]byte(tst.Arguments["data"])))
 	}
 	if err != nil {
@@ -321,7 +351,11 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 	//
 	// Set a suitable user-agent
 	//
-	req.Header.Set("User-Agent", "overseer/probe")
+	if tst.Arguments["user-agent"] != "" {
+		req.Header.Set("User-Agent", tst.Arguments["user-agent"])
+	} else {
+		req.Header.Set("User-Agent", fmt.Sprintf("overseer/%s", version))
+	}
 
 	//
 	// Perform the request
