@@ -155,8 +155,10 @@ If you're using the mosquitto-queue (recommended) you can use the included  `mos
      "target":"127.0.0.1",
      "time":"1525017262",
      "type":"ssh"}
+    ..
 
-Each result is posted as a JSON object, with the following fields being used:
+Each test result is submitted as a JSON object, with the following fields being
+used:
 
 | Field Name | Field Value                                                     |
 | ---------- | --------------------------------------------------------------- |
@@ -177,16 +179,19 @@ act upon them:
 * `purppura-bridge.go`
   * This forwards each test-result to a [purppura host](https://github.com/skx/purppura/)
 
+**NOTE**: The `input` field will be updated to mask any password options which have been submitted with the tests.
+
+
 
 ## Configuration File
 
 If you prefer to use a configuration-file over the command-line arguments
-that is supported.  Each of the subcommands can process a JSON-based
-configuration file, if it is present.
+that is supported.  Each of the subcommands can process an optional JSON-based
+configuration file.
 
 The configuration file will override the default arguments, and thus
 cannot easily be set by a command-line flag itself.  Instead you should
-export the environmental variable OVERSEER with the path to a suitable
+export the environmental variable `OVERSEER` with the path to a suitable
 file.
 
 For example you might run:
