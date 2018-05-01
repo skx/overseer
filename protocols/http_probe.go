@@ -389,7 +389,6 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 
 		// Skip unless this handler matches the filter.
 		match := re.FindAllStringSubmatch(string(body), -1)
-		fmt.Printf("%s - %v\n", body, match)
 		if len(match) < 1 {
 			return fmt.Errorf("Body didn't match the regular expression '%s'", tst.Arguments["pattern"])
 		}
