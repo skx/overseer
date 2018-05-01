@@ -319,6 +319,11 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 	}
 
 	//
+	// Set a suitable user-agent
+	//
+	req.Header.Set("User-Agent", "overseer/probe")
+
+	//
 	// Perform the request
 	//
 	response, err := netClient.Do(req)
