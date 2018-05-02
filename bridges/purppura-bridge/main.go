@@ -1,4 +1,4 @@
-//
+       //
 // This is the Purppura bridge, which reads test-results from MQ, and submits
 // them to purppura, such that a human can be notified of test failures.
 //
@@ -110,8 +110,8 @@ func SendHeartbeat() {
 	// The alert we'll send to the purppura server
 	//
 	values := map[string]string{
-		"detail":  "The purppura bridge isn't running!",
-		"subject": "The purppura-bridge hasn't sent a heartbeat recently, which means that overseer test-results won't raise alerts.",
+		"detail":  "The purppura-bridge hasn't sent a heartbeat recently, which means that overseer test-results won't raise alerts.",
+		"subject": "The purppura bridge isn't running!",
 		"id":      "purppura-bridge",
 		"raise":   "+5m",
 	}
