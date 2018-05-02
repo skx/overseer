@@ -1,7 +1,8 @@
 //
-// This is the Purppura bridge
+// This is the Purppura bridge, which reads test-results from MQ, and submits
+// them to purppura, such that a human can be notified of test failures.
 //
-// The program should be built via:
+// The program should be built like so:
 //
 //     go build purppura-bridge.go
 //
@@ -9,8 +10,8 @@
 //
 //     $ ./purppura-bridge -mq="mq.example.com:1883" -url="http://purppura.example.com/events"
 //
-// This will connect to the MQ server specified and post to Purppura with
-// the given URL.
+// Every two minutes it will send a heartbeat to the purppura-server so
+// that you know it is working.
 //
 // Steve
 // --
@@ -29,6 +30,7 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/robfig/cron"
 	"github.com/yosssi/gmq/mqtt"
 	"github.com/yosssi/gmq/mqtt/client"
 )
@@ -94,6 +96,41 @@ func process(msg []byte) {
 
 	if err != nil {
 		fmt.Printf("Failed to post to purppura:%s\n", err.Error())
+		os.Exit(1)
+	}
+
+}
+
+// SendHeartbeat updates the purppura server every five minutes with
+// a hearbeat alert.  This will ensure that you're alerted if the bridge
+// fails, dies, or isn't running
+func SendHeartbeat() {
+
+	//
+	// The alert we'll send to the purppura server
+	//
+	values := map[string]string{
+		"detail":  "The purppura bridge isn't running!",
+		"subject": "The purppura-bridge hasn't sent a heartbeat recently, which means that overseer test-results won't raise alerts.",
+		"id":      "purppura-bridge",
+		"raise":   "+5m",
+	}
+
+	//
+	// Export the fields to json to post.
+	//
+	jsonValue, _ := json.Marshal(values)
+
+	//
+	// Post to purppura
+	//
+	_, err := http.Post(*pURL,
+		"application/json",
+		bytes.NewBuffer(jsonValue))
+
+	if err != nil {
+		fmt.Printf("Failed to post heartbeat to purppura:%s\n", err.Error())
+		os.Exit(1)
 	}
 
 }
@@ -142,7 +179,8 @@ func main() {
 	}
 
 	//
-	// Subscribe to the channel
+	// Subscribe to the channel such that we can proxy
+	// test results to the purppura-server
 	//
 	err = mq.Subscribe(&client.SubscribeOptions{
 		SubReqs: []*client.SubReq{
@@ -157,6 +195,12 @@ func main() {
 			},
 		},
 	})
+
+	// Make sure we send a heartbeat so we're alerted if
+	// the bridge fails
+	c := cron.New()
+	c.AddFunc("@every 1m", func() { SendHeartbeat() })
+	c.Start()
 
 	// Wait for receiving a signal.
 	<-sigc
