@@ -29,11 +29,19 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
+	"time"
 
 	"github.com/robfig/cron"
 	"github.com/yosssi/gmq/mqtt"
 	"github.com/yosssi/gmq/mqtt/client"
 )
+
+// Avoid threading issues with our last update-time
+var mutex sync.RWMutex
+
+// The last time we received an update
+var update int64
 
 // Should we be verbose?
 var verbose *bool
@@ -46,6 +54,12 @@ var pURL *string
 
 // Given a JSON string decode it and post to the Purppura URL.
 func process(msg []byte) {
+
+	// Update our last received time
+	mutex.Lock()
+	update = time.Now().Unix()
+	mutex.Unlock()
+
 	data := map[string]string{}
 
 	if err := json.Unmarshal(msg, &data); err != nil {
@@ -94,7 +108,7 @@ func process(msg []byte) {
 		os.Exit(1)
 	}
 
-	if ( *verbose ) {
+	if *verbose {
 		fmt.Printf("%s\n", jsonValue)
 	}
 
@@ -110,6 +124,56 @@ func process(msg []byte) {
 		os.Exit(1)
 	}
 
+}
+
+// CheckUpdates triggers an alert if we've not received anything
+// from MQ "recently"
+func CheckUpdates() {
+
+	// Get our last MQ-received time
+	mutex.Lock()
+	then := update
+	mutex.Unlock()
+
+	// Get the current time
+	now := time.Now().Unix()
+
+	//
+	// The alert we'll send to the purppura server
+	//
+	values := map[string]string{
+		"detail":  fmt.Sprintf("The purppura-bridge last received an update from MQ %d seconds ago.", now-then),
+		"subject": "No MQ traffic seen recently",
+		"id":      "purppura-bridge-mq",
+	}
+
+	// Raise or clear?
+	if now-then > 120 {
+		values["raise"] = "now"
+	} else {
+		values["raise"] = "clear"
+	}
+
+	//
+	// Export the fields to json to post.
+	//
+	jsonValue, err := json.Marshal(values)
+	if err != nil {
+		fmt.Printf("Failed to export to JSON - %s\n", err.Error())
+		os.Exit(1)
+	}
+
+	//
+	// Post to purppura
+	//
+	_, err = http.Post(*pURL,
+		"application/json",
+		bytes.NewBuffer(jsonValue))
+
+	if err != nil {
+		fmt.Printf("Failed to post purppura-bridge-mq to purppura:%s\n", err.Error())
+		os.Exit(1)
+	}
 }
 
 // SendHeartbeat updates the purppura server every five minutes with
@@ -208,10 +272,11 @@ func main() {
 		},
 	})
 
-	// Make sure we send a heartbeat so we're alerted if
-	// the bridge fails
 	c := cron.New()
+	// Make sure we send a heartbeat so we're alerted if the bridge fails
 	c.AddFunc("@every 1m", func() { SendHeartbeat() })
+	// Make sure we raise an alert if we don't have MQ-traffic
+	c.AddFunc("@every 1m", func() { CheckUpdates() })
 	c.Start()
 
 	// Wait for receiving a signal.
