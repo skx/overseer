@@ -1,4 +1,4 @@
-       //
+//
 // This is the Purppura bridge, which reads test-results from MQ, and submits
 // them to purppura, such that a human can be notified of test failures.
 //
@@ -85,12 +85,16 @@ func process(msg []byte) {
 	//
 	// Export the fields to json to post.
 	//
-	jsonValue, _ := json.Marshal(values)
+	jsonValue, err := json.Marshal(values)
+	if err != nil {
+		fmt.Printf("Failed to encode JSON:%s\n", err.Error())
+		os.Exit(1)
+	}
 
 	//
 	// Post to purppura
 	//
-	_, err := http.Post(*pURL,
+	_, err = http.Post(*pURL,
 		"application/json",
 		bytes.NewBuffer(jsonValue))
 
