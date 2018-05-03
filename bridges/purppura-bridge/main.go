@@ -35,6 +35,9 @@ import (
 	"github.com/yosssi/gmq/mqtt/client"
 )
 
+// Should we be verbose?
+var verbose *bool
+
 // The MQ handle
 var mq *client.Client
 
@@ -89,6 +92,10 @@ func process(msg []byte) {
 	if err != nil {
 		fmt.Printf("Failed to encode JSON:%s\n", err.Error())
 		os.Exit(1)
+	}
+
+	if ( *verbose ) {
+		fmt.Printf("%s\n", jsonValue)
 	}
 
 	//
@@ -149,6 +156,7 @@ func main() {
 	//
 	mqAddress := flag.String("mq", "127.0.0.1:1883", "The address & port of your MQ-server")
 	pURL = flag.String("purppura", "", "The purppura-server URL")
+	verbose = flag.Bool("verbose", false, "Be verbose?")
 	flag.Parse()
 
 	//
