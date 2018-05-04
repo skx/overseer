@@ -352,6 +352,27 @@ func TestReal(t *testing.T) {
 
 }
 
+// Test that later arguments replace earlier ones.
+func TestDuplicateArguments(t *testing.T) {
+	in := "http://steve.fi/ must run http with status 301 with status 302 with status any"
+
+	// Create a parser
+	p := New()
+
+	out, err := p.ParseLine(in, nil)
+	if err != nil {
+		t.Errorf("Error parsing %s - %s", in, err.Error())
+	}
+
+	// We expect one parameter: status
+	if len(out.Arguments) != 1 {
+		t.Errorf("Received the wrong number of parameters")
+	}
+	if out.Arguments["status"] != "any" {
+		t.Errorf("Failed to get the correct status-value")
+	}
+}
+
 // Test some invalid options
 func TestInvalidOptions(t *testing.T) {
 	tests := []string{

@@ -368,8 +368,21 @@ func (s *Parser) ParseArguments(input string) map[string]string {
 		value = s.TrimQuotes(value, '\'')
 		value = s.TrimQuotes(value, '"')
 
-		// Store the value in our map
-		res[name] = value
+		// Store the value in our map - unless there is already a value
+		// present.
+		//
+		// This works the way you'd expect because our regular expression
+		// is parsing "backwards". So parsing:
+		//
+		//   with foo bar with foo baz with foo steve
+		//
+		// We first store "steve", then we would store "baz" and
+		// finally "bar".  We skip this because of the non-empty
+		// test here, which means the last value is kept.
+		//
+		if res[name] == "" {
+			res[name] = value
+		}
 
 		// Continue matching the tail of the string.
 		input = prefix
