@@ -15,8 +15,11 @@ package parser
 
 import (
 	"bufio"
+	"bytes"
+	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"regexp"
 	"strings"
 
@@ -43,21 +46,67 @@ func New() *Parser {
 	return m
 }
 
+func (s *Parser) Executable(path string) (bool, error) {
+
+	stat, err := os.Stat(path)
+
+	if err != nil {
+
+		return false, err
+
+	}
+
+	mode := stat.Mode()
+
+	if !mode.IsRegular() {
+
+		return false, errors.New("Not regular")
+
+	}
+
+	if (mode & 0111) == 0 {
+
+		return false, nil
+
+	}
+
+	return true, nil
+}
+
 // ParseFile processes the filename specified, invoking the supplied
 // callback for every test-case which has been successfully parsed.
 func (s *Parser) ParseFile(filename string, cb ParsedTest) error {
 
-	// Open the given file.
-	file, err := os.Open(filename)
-	if err != nil {
-		return fmt.Errorf("Error opening %s - %s\n", filename, err.Error())
-	}
-	defer file.Close()
+	// This is the scanner we'll use
+	var scanner *bufio.Scanner
 
 	//
-	// We'll process it line by line
+	// If the file is executable then parse the output
 	//
-	scanner := bufio.NewScanner(file)
+	e, err := s.Executable(filename)
+	if (err == nil) && (e == true) {
+		cmd := exec.Command(filename)
+		var outb, errb bytes.Buffer
+		cmd.Stdout = &outb
+		cmd.Stderr = &errb
+		err = cmd.Run()
+		if err != nil {
+			return err
+		}
+		reader := bytes.NewReader(outb.Bytes())
+		scanner = bufio.NewScanner(reader)
+	} else {
+		//
+		// Otherwise just read it
+		//
+		file, err := os.Open(filename)
+		if err != nil {
+			return fmt.Errorf("Error opening %s - %s\n", filename, err.Error())
+		}
+		defer file.Close()
+		scanner = bufio.NewScanner(file)
+	}
+
 	for scanner.Scan() {
 
 		//
