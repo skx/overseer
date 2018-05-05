@@ -22,7 +22,7 @@ package main
 import (
 	"bytes"
 	"crypto/sha1"
-	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -77,7 +77,7 @@ func process(msg []byte) {
 	hasher := sha1.New()
 	hasher.Write([]byte(testTarget))
 	hasher.Write([]byte(input))
-	hash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+	hash := hex.EncodeToString(hasher.Sum(nil))
 
 	//
 	// Populate the default fields.
