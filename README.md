@@ -57,14 +57,7 @@ result of each test to a message-queue.  (i.e. An instance of [mosquitto](http:/
 This allows you to quickly and easily hook up your own local notification
 system, without the need to modify the overseer application itself.
 
-Included in the respository are two simple "bridges", which listen to the MQ topic results are published upon, and forwards the alerts to more useful systems:
-
-* [`irc-bridge.go`](bridges/irc-bridge.go)
-  * This posts test-failures to an IRC channel.
-  * Tests which pass are not reported, to avoid undue noise on your channel.
-* [`purppura-bridge.go`](bridges/purppura-bridge.go)
-  * This forwards each test-result to a [purppura host](https://github.com/skx/purppura/)
-  * From there alerts will reach a human via pushover.
+You can see more details of the [notification](#notification) later in this document.
 
 ## Usage
 
@@ -147,16 +140,18 @@ flag `-retry=false`.
 
 ## Notification
 
-The result of each of the tests is published as a simple JSON message to MQ.
+The result of each executed tests is published as a simple JSON message to the `overseer` topic of the specified MQ server.
 
-If you're using the mosquitto-queue (recommended) you can use the included  `mosquitto_sub` command to watch the `overseer` channel in real-time like so:
+If you're using the [mosquitto](https://www.mosquitto.org/)-queue (which is highly recommended) you can use the included  `mosquitto_sub` command to watch the `overseer` topic in real-time like so:
 
     $ mosquitto_sub -h 127.0.0.1 -p 1883 -t overseer
+    ..
     {"input":"http://www.steve.fi/ must run http with content 'https://steve.fi' with status '302'",
      "result":"passed",
      "target":"176.9.183.100",
      "time":"1525017261",
      "type":"http"}
+    ..
     {"input":"localhost must run ssh with port '2222'",
      "result":"passed",
      "target":"127.0.0.1",
@@ -164,8 +159,7 @@ If you're using the mosquitto-queue (recommended) you can use the included  `mos
      "type":"ssh"}
     ..
 
-Each test result is submitted as a JSON object, with the following fields being
-used:
+Each test result is submitted as a JSON object, with the following fields:
 
 | Field Name | Field Value                                                     |
 | ---------- | --------------------------------------------------------------- |
@@ -178,6 +172,14 @@ used:
 
 **NOTE**: The `input` field will be updated to mask any password options which have been submitted with the tests.
 
+Included in this repository are two simple "[bridges](bridges/)", which listen to the MQ topic, and forward the alerts to more useful systems:
+
+* `irc-bridge.go`
+  * This posts test-failures to an IRC channel.
+  * Tests which pass are not reported, to avoid undue noise on your channel.
+* `purppura-bridge.go`
+  * This forwards each test-result to a [purppura host](https://github.com/skx/purppura/)
+  * From there alerts will reach a human via pushover.
 
 
 ## Configuration File
