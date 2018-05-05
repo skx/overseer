@@ -6,7 +6,7 @@
 
 # Overseer
 
-Overseer is a [golang](https://golang.org/) based remote protocol tester, which allows you to monitor the state of your network, and the services running upon it.  The results of each test are posted to an MQ-host, where they can be processed by external systems.  (Sample processors are included, but the intention is that by using a message-queue the alerting mechanism is decoupled from the core of the project; allowing you to integrate with your preferred in-house choice.)
+Overseer is a simple and scalable [golang](https://golang.org/)-based remote protocol tester, which allows you to monitor the state of your network, and the services running upon it.  The results of each test are posted to a message-queue, where they can be processed by external systems.  (Sample processors are included, but the intention is that by using a message-queue the alerting mechanism is decoupled from the core of the project; allowing you to integrate with your preferred in-house choice.)
 
 "Remote Protocol Tester" sounds a little vague, so to be more concrete this application lets you test services are running and has built-in support for testing:
 
