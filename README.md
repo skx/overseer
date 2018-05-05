@@ -15,11 +15,11 @@ Overseer is a [golang](https://golang.org/) based remote protocol tester, which 
 * FTP
 * HTTP & HTTPS fetches.
    * HTTP basic-authentication is supported.
-   * Requests may be GET or POST.
-   * SSL certificate validation and expiration warning is supported.
+   * Requests may be DELETE, GET, HEAD, POST, PATCH, POST, & etc.
+   * SSL certificate validation and expiration warnings are supported.
 * IMAP & IMAPS
 * MySQL
-* ping
+* ping / ping6
 * POP3 & POP3S
 * Postgres
 * redis
@@ -29,18 +29,17 @@ Overseer is a [golang](https://golang.org/) based remote protocol tester, which 
 * VNC
 * XMPP
 
-(The existing protocol-handlers can be found beneath the top-level [protocols/](protocols/) directory in this repository.)
+(The implementation of the protocol-handlers can be found beneath the top-level [protocols/](protocols/) directory in this repository.)
 
-Tests to be carried out are defined in a simple format which has the general
-form:
+Tests to be executed are defined in a simple text-based format which has the general form:
 
-     $target must run $service [with $option_name $option_value] ..
+     $TARGET must run $SERVICE [with $OPTION_NAME $VALUE] ..
 
-You can see what the available tests look like in [the example test-file](input.txt), and the protocol-handlers are also self-documenting which means you can view sample usage via:
+You can see what the available tests look like in [the sample test-file](input.txt), and for reference each of the available protocol-handlers are self-documenting which means you can view example usage of each test via:
 
-     ~$ overseer examples [filter]
+     ~$ overseer examples [pattern]
 
-All of the protocol-tests transparently support both IPv4 and IPv6 hosts, although you may disable either address family if you prefer.
+All of the protocol-tests transparently support testing IPv4 and IPv6 targets, although you may globally disable either address family if you prefer.
 
 
 
@@ -58,6 +57,14 @@ result of each test to a message-queue.  (i.e. An instance of [mosquitto](http:/
 This allows you to quickly and easily hook up your own local notification
 system, without the need to modify the overseer application itself.
 
+Included in the respository are two simple "bridges", which listen to the MQ topic results are published upon, and forwards the alerts to more useful systems:
+
+* [`irc-bridge.go`](bridges/irc-bridge.go)
+  * This posts test-failures to an IRC channel.
+  * Tests which pass are not reported, to avoid undue noise on your channel.
+* [`purppura-bridge.go`](bridges/purppura-bridge.go)
+  * This forwards each test-result to a [purppura host](https://github.com/skx/purppura/)
+  * From there alerts will reach a human via pushover.
 
 ## Usage
 
@@ -168,16 +175,6 @@ used:
 | `time`     | The time the result was posted, in seconds past the epoch.      |
 | `target`   | The target of the test, either an IPv4 address or an IPv6 one.  |
 | `type`     | The type of test (ssh, ftp, etc).                               |
-
-Beneath the [bridges/](bridges/) directory you'll find some sample code
-which can connect to an MQ host, read the test-results as they arrive, and
-act upon them:
-
-* `irc-bridge.go`
-  * This posts test-failures to an IRC channel.
-  * Tests which pass are not reported, to avoid undue noise on your channel.
-* `purppura-bridge.go`
-  * This forwards each test-result to a [purppura host](https://github.com/skx/purppura/)
 
 **NOTE**: The `input` field will be updated to mask any password options which have been submitted with the tests.
 
