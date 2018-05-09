@@ -2,6 +2,28 @@
 #
 # Comments are supported and are prefixed with a leading '#'.
 #
+# NOTE: If an input file is executable it will be executed
+# and the output will be parsed, instead of the literal contents
+#
+# Although we've not discussed how tests are written yet, consider
+# this example a simple demonstration:
+#
+#  --
+#  #!/usr/bin/m4
+#  # Define a macro for a tinc-protocol test
+#  define(`tinc', `$1 must run tcp with port 655 with banner "^0 \S+ 17$"')
+#
+#  tinc(`foo.example.com')
+#  tinc(`bar.example.com)
+#
+#  # When processed the output will be:
+#  foo.example.com must run tcp with port 655 with banner "^0 \S+ 17$"
+#  bar.example.com must run tcp with port 655 with banner "^0 \S+ 17$"
+#  --
+#
+#
+##
+
 ####
 #
 #
@@ -9,14 +31,24 @@
 #
 #      TARGET must run PROTOCOL [test-specific options]
 #
-# So if you wish to test that a host is running ftp you'd write your
+# Where:
+#
+# `TARGET` is either the hostname, or an URI, of the target to be tested.
+#
+# `PROTOCOL` is one of the protocol-handlers implemented in the
+# overseer application.
+#
+# So if you wish to test that a host is running FTP you'd write your
 # test like so:
 #
 #      ftp.example.com must run ftp
 #
-# Test-specific options are of the form:
+# Test-specific options are always written like so:
 #
 #      with $OPTION_NAME $OPTION_VALUE
+#
+# `OPTION_VALUE` may be optionally quoted with single or double-quotes,
+# and this is necessary if the option contains whitespace.
 #
 # Most of the protocol-tests allow you to change the default port
 # against which they'd run, via the "port" option.  So if you wished
@@ -47,11 +79,12 @@
 # In short `with status any` tests:
 #
 # * You could resolve the target's hostname.
+#   * Any returned IPv4 and IPv6 address will be tested in turn
 # * You could make a HTTP-request.
 # * You received some kind of response
 #
 # If you wanted a more thorough test you might wish to look for
-# some specific text in body of the response - that is possible
+# some specific text in body of the response, which is possible
 # via the `content` argument.
 #
 # For example I might wish to ensure my website has my name in it:
@@ -75,6 +108,10 @@
 # You can see this in action via:
 #
 #          http://httpbin.org/user-agent must run http with content 'overseer/'
+#
+
+#
+# Now some more examples of various HTTP tests:
 #
 
 #
