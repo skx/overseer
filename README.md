@@ -129,12 +129,12 @@ To avoid triggering false alerts due to transient (network/host) failures
 tests which fail are retried several times before triggering a notification.
 
 This _smoothing_ is designed to avoid raising an alert, which then clears
-shortly afterwards - on the next overseer run - but the downside is that
-flapping services might not necessarily become visible.
+upon the next overseer run, but the downside is that flapping services might
+not necessarily become visible.
 
 If you're absolutely certain that your connectivity is good, and that
-services should never fail _ever_ you can disable this via the command-line
-flag `-retry=false`.
+alerts should always be raised for failing services you can disable this
+retry-logic via the command-line flag `-retry=false`.
 
 
 
