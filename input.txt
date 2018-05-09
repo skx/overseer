@@ -14,7 +14,7 @@
 #  define(`tinc', `$1 must run tcp with port 655 with banner "^0 \S+ 17$"')
 #
 #  tinc(`foo.example.com')
-#  tinc(`bar.example.com)
+#  tinc(`bar.example.com')
 #
 #  # When processed the output will be:
 #  foo.example.com must run tcp with port 655 with banner "^0 \S+ 17$"
