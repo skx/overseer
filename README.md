@@ -35,7 +35,7 @@ Tests to be executed are defined in a simple text-based format which has the gen
 
      $TARGET must run $SERVICE [with $OPTION_NAME $VALUE] ..
 
-You can see what the available tests look like in [the sample test-file](input.txt), and for reference each of the available protocol-handlers are self-documenting which means you can view example usage of each test via:
+You can see what the available tests look like in [the sample test-file](input.txt), and each of the available protocol-handlers are self-documenting which means you can view example usage via:
 
      ~$ overseer examples [pattern]
 
@@ -53,14 +53,14 @@ your system, assuming you have a working golang setup:
 
 Beyond the compile-time dependencies overseer requires two things at run-time:
 
-* A redis-queue
+* A [redis](https://redis.io/)-queue
 * A [mosquitto](https://www.mosquitto.org/) message-queue.
 
 Because `overseer` can be executed in a distributed fashion tests are not
 executed as they are parsed/read, instead they are inserted into a redis-queue.
-Workers then poll the queue, and fetching/executing jobs as they become available.
+Workers then poll the queue, and fetch/execute jobs as they become available.
 
-In small-scale deployments it is probably sufficient to have a single worker, 
+In small-scale deployments it is probably sufficient to have a single worker,
 and all the software running upon a single host.  For a larger number of
 tests (1000+) it might make more sense to have a pool of hosts each running
 a worker.
@@ -81,36 +81,36 @@ Executing tests is a two-step process:
 
 This might seem a little convoluted, however it is a great design if you
 have a lot of tests to be executed because it allows you to deploy multiple
-workers:
+workers - Instead of having a single host executing all the tests you can
+can have 10 hosts, each watching the redis-queue pulling jobs, & executing
+them as they become available.
 
-* Instead of having a single host executing all the tests.
-* You can have 10 hosts, each watching the redis-queue
-  * Each host will pull a job, execute it, then look for more.
+In short using a central queue allows you to scale out the testing horizontally, ensuring that all the jobs are executed as quickly as they can be.
 
-In short using a central queue allows you to scale out the testing, ensuring
-that all the jobs are executed as quickly as they can be.
-
-To add the jobs to the queue you would run:
+To add the jobs to the queue you should run:
 
        $ overseer enqueue \
            -redis-host=queue.example.com:6379 [-redis-pass='secret.here'] \
            test.file.1 test.file.2 .. test.file.N
 
-This will parse the tests contained in the specified files, adding each of them to the (shared) redis queue.  Once all of the jobs have been inserted into the queue the process will terminate.
+This will parse the tests contained in the specified files, adding each of them to the (shared) redis queue.  Once all of the jobs have been parsed and inserted into the queue the process will terminate.
 
-To drain the queue you can now start a worker, which will fetch the tests to be executed from the queue, and process them:
+To drain the queue you can should now start a worker, which will fetch the tests and process them:
 
        $ overseer worker -verbose \
           -redis-host=queue.example.com:6379 [-redis-pass='secret']
 
-To run jobs in parallel simply launch more instances of the worker, on the same host, or on different hosts.  Remember that you'll need to specify the MQ host upon which to publish the results:
+To run jobs in parallel simply launch more instances of the worker, on the same host, or on different hosts.  Remember that you'll need to specify the MQ host upon which to publish the results too:
 
        $ overseer worker \
           -verbose \
           -redis-host=queue.example.com:6379 [-redis-pass=secret] \
-          -mq=localhost:1883
+          -mq=mq.example.com:1883
 
-It is assumed you'd leave the workers running, under a process supervisor such as systemd, and run a regular `overseer enqueue ...` via cron to ensure the queue is constantly refilled with tests for the worker(s) to execute.
+Beneath [systemd/](systemd/) you will find some sample service-files which can be used to deploy overseer upon a single host:
+
+* A service to start a single worker, fetching jobs from a queue on the localhost.
+* A service & timer to regularly populate the queue with fresh jobs to be executed.
 
 
 
