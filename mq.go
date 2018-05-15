@@ -34,6 +34,51 @@ func ConnectMQ(addr string) error {
 		return (err)
 	}
 
+	//
+	// Ensure that our connection is established before we return
+	//
+	connected := false
+
+	//
+	// While we're not connected - try to subscribe to a topic
+	//
+	// The topic-name is irrelevant, we just want to make sure
+	// that our async code is completed before we return from this
+	// method.
+	//
+	for connected == false {
+		err = mq.Subscribe(&client.SubscribeOptions{
+			SubReqs: []*client.SubReq{
+				&client.SubReq{
+					TopicFilter: []byte("overseer"),
+					QoS:         mqtt.QoS0,
+				},
+			},
+		})
+		if err == nil {
+
+			// If we didn't receive an error then we're
+			// connected to our MQ server.
+
+			connected = true
+		}
+
+		// Round and round we go.
+		time.Sleep(10 * time.Millisecond)
+	}
+
+	//
+	// Unsubscribe, now we've connected to the server.
+	//
+	err = mq.Unsubscribe(&client.UnsubscribeOptions{
+		TopicFilters: [][]byte{
+			[]byte("overseer"),
+		},
+	})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
