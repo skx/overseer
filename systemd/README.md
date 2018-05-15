@@ -50,4 +50,4 @@ and a corresponding timer to trigger it.  To view the status of the timer:
 
 Finally you can look for errors parsing the files via:
 
-      # journalctl -u overseer-enqeue.service
+      # journalctl -u overseer-enqueue.service
