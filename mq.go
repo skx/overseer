@@ -54,7 +54,6 @@ func ConnectMQ(addr string) error {
 					QoS:         mqtt.QoS0,
 					Handler: func(topicName, message []byte) {
 					},
-
 				},
 			},
 		})
