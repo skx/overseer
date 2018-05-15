@@ -5,28 +5,13 @@
 //
 // The application is written in an extensible fashion, allowing new
 // test-types to be added easily, and the notification of failures is
-// handled in a flexible fashion too.
+// handled in a flexible fashion too via the use of MQ.
 //
-// There are two ways the application can run:
+// The application is designed to run in a distributed fashion, although
+// it is equally happy to run upon a single node.
 //
-// Simple
-//
-// overseer can be used in a simple way by directly giving it a list
-// of tests to process.  Each test will be executed locally and appropriate
-// notifications triggered.
-//
-// The `local` sub-command allows this:
-//
-//    overseer local test.file.1 test.file.2 .. test.file.N
-//
-//
-// Distributed
-//
-// If you have a lot of tests to run it might make sense to run the tests
-// from a small pool of hosts.  This can be achieved by storing tests in
-// a central redis queue.
-//
-// From the redis queue multiple workers can each fetch tests, and execute
+// Each of the tests to be executed is parsed and stored in a redis
+// queue, from where multiple workers can each fetch tests, and execute
 // them as they become available.
 //
 // To get started you'd first add your tests to the queue:

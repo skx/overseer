@@ -51,55 +51,46 @@ your system, assuming you have a working golang setup:
      $ go get -u github.com/skx/overseer
      $ go install github.com/skx/overseer
 
-Rather than being tied to a specific notification system overseer submits the
-result of each test to a message-queue.  (i.e. An instance of [mosquitto](http://mosquitto.org/).)
+Beyond the compile-time dependencies overseer requires two things at run-time:
 
-This allows you to quickly and easily hook up your own local notification
-system, without the need to modify the overseer application itself.
+* A redis-queue
+* A [mosquitto](https://www.mosquitto.org/) message-queue.
+
+Because `overseer` can be executed in a distributed fashion tests are not
+executed as they are parsed/read, instead they are inserted into a redis-queue.
+Workers then poll the queue, and fetching/executing jobs as they become available.
+
+In small-scale deployments it is probably sufficient to have a single worker, 
+and all the software running upon a single host.  For a larger number of
+tests (1000+) it might make more sense to have a pool of hosts each running
+a worker.
+
+Because we don't want to be tied to a specific notification-system results
+of each test are posted to the MQ host, which allows results to be retrieved
+and transmitted to your preferred notifier.
 
 You can see more details of the [notification](#notification) later in this document.
 
-## Usage
 
-There are two ways you can use overseer:
+## Executing Tests
 
-* Locally.
-   * For small networks, or a small number of tests.
-* Via a queue
-   * For huge networks, or a huge number of tests.
+Executing tests is a two-step process:
 
-In both cases the way that you get started is to write a series of tests, which describe the hosts & services you wish to monitor, then you'll need to execute the tests (to actually test hosts/services).
+* First of all tests are parsed and inserted into a redis-queue.
+* Secondly the tests are pulled from that queue and executed.
 
+This might seem a little convoluted, however it is a great design if you
+have a lot of tests to be executed because it allows you to deploy multiple
+workers:
 
-### Running Locally
+* Instead of having a single host executing all the tests.
+* You can have 10 hosts, each watching the redis-queue
+  * Each host will pull a job, execute it, then look for more.
 
-Assuming you have a "small" network you can then execute your tests
-directly like so:
+In short using a central queue allows you to scale out the testing, ensuring
+that all the jobs are executed as quickly as they can be.
 
-      $ overseer local -verbose test.file.1 test.file.2 .. test.file.N
-
-Each specified file will then be parsed and the tests executed one by one.
-
-Because `-verbose` has been specified the tests, and their results, will be displayed upon the console as they are executed.
-
-In real-world situation you'd also define an MQ-host too, such that the results
-would be reported to it:
-
-     $ overseer local \
-        -mq=localhost:1883 \
-        -verbose \
-        test.file.1 test.file.2
-
-(It is assumed you'd add a cronjob to run the tests every few minutes.)
-
-
-### Running from multiple hosts
-
-If you have a large network the expectation is that the tests will take a long time to execute serially, so to speed things up you would probably prefer to run the tests in parallel.
-
-Overseer supports distributed/parallel operation via the use of a shared [redis](https://redis.io/) queue.
-
-On __one__ host run the following to add your tests to the redis queue:
+To add the jobs to the queue you would run:
 
        $ overseer enqueue \
            -redis-host=queue.example.com:6379 [-redis-pass='secret.here'] \

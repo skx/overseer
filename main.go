@@ -20,7 +20,6 @@ func main() {
 	subcommands.Register(subcommands.CommandsCommand(), "")
 	subcommands.Register(&dumpCmd{}, "")
 	subcommands.Register(&enqueueCmd{}, "")
-	subcommands.Register(&localCmd{}, "")
 	subcommands.Register(&examplesCmd{}, "")
 	subcommands.Register(&versionCmd{}, "")
 	subcommands.Register(&workerCmd{}, "")

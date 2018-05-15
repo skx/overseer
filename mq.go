@@ -52,6 +52,9 @@ func ConnectMQ(addr string) error {
 				&client.SubReq{
 					TopicFilter: []byte("overseer"),
 					QoS:         mqtt.QoS0,
+					Handler: func(topicName, message []byte) {
+					},
+
 				},
 			},
 		})
