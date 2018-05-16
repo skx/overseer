@@ -1,4 +1,4 @@
-package main
+package notifier
 
 import (
 	"encoding/json"
@@ -9,30 +9,43 @@ import (
 	"github.com/skx/overseer/test"
 )
 
-// The handle to our server
-var r *redis.Client
+// Notifier holds our notifier-state, most obviously the connection
+// to the redis-server
+type Notifier struct {
+	// Redis is the redis-handle we use to publish notification
+	// messages upon.
+	Redis *redis.Client
+}
 
-// Connect connects to the redis-server specified, and returns an error
-// if that fails.
-func ConnectResults(addr string, password string) error {
-
-	r = redis.NewClient(&redis.Options{
+// New is the constructor for the notifier
+func New(addr string, password string) (*Notifier, error) {
+	tmp := new(Notifier)
+	tmp.Redis = redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: password,
 		DB:       0, // use default DB
 	})
 
-	return nil
+	//
+	// And run a ping, just to make sure it worked.
+	//
+	_, err := tmp.Redis.Ping().Result()
+	if err != nil {
+		fmt.Printf("Redis connection failed: %s\n", err.Error())
+		return nil, err
+	}
+
+	return tmp, nil
 }
 
 // NotifyResult is the method which is invoked to send a notification
 // via the redis host.
-func NotifyResult(test test.Test, result error) error {
+func (p *Notifier) Notify(test test.Test, result error) error {
 
 	//
 	// If we don't have a server configured then return immediately.
 	//
-	if r == nil {
+	if p.Redis == nil {
 		return nil
 	}
 
@@ -69,7 +82,7 @@ func NotifyResult(test test.Test, result error) error {
 	//
 	// Publish the message to the queue.
 	//
-	_, err = r.RPush("overseer.results", j).Result()
+	_, err = p.Redis.RPush("overseer.results", j).Result()
 	if err != nil {
 		fmt.Printf("Result addition failed: %s\n", err)
 		return err

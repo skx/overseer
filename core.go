@@ -8,11 +8,12 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/skx/overseer/notifier"
 	"github.com/skx/overseer/protocols"
 	"github.com/skx/overseer/test"
 )
 
-// run_test is the core of our application.
+// runTest is the core of our application.
 //
 // Given a test to be executed this function is responsible for invoking
 // it, and handling the result.
@@ -20,7 +21,7 @@ import (
 // The test result will be passed to the specified notifier instance upon
 // completion.
 //
-func runTest(tst test.Test, opts test.TestOptions) error {
+func runTest(tst test.Test, opts test.TestOptions, notify *notifier.Notifier) error {
 
 	//
 	// Setup our local state.
@@ -34,8 +35,8 @@ func runTest(tst test.Test, opts test.TestOptions) error {
 	tmp := protocols.ProtocolHandler(testType)
 
 	//
-	// Each test will be executed for each address-family, unless it is
-	// a HTTP-test.
+	// Each test will be executed for each address-family, so we need to
+	// keep track of the IPs of the real test-target.
 	//
 	var targets []string
 
@@ -58,9 +59,9 @@ func runTest(tst test.Test, opts test.TestOptions) error {
 	if err != nil {
 
 		//
-		// Issure our failure to the redis host.
+		// Notify the world about our DNS-failure.
 		//
-		NotifyResult(tst, fmt.Errorf("Failed to resolve name %s", testTarget))
+		notify.Notify(tst, fmt.Errorf("Failed to resolve name %s", testTarget))
 
 		//
 		// Otherwise we're done.
@@ -186,7 +187,7 @@ func runTest(tst test.Test, opts test.TestOptions) error {
 		// Now we can trigger the notification with our updated
 		// copy of the test.
 		//
-		NotifyResult(copy, result)
+		notify.Notify(copy, result)
 	}
 
 	return nil

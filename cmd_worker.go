@@ -12,6 +12,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/skx/overseer/notifier"
 	"github.com/skx/overseer/parser"
 	"github.com/skx/overseer/test"
 
@@ -93,9 +94,9 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 
 	//
-	// Connect to redis to publish our results
+	// Create a notifier object, for posting our results.
 	//
-	err := ConnectResults(p.RedisHost, p.RedisPassword)
+	notify, err := notifier.New(p.RedisHost, p.RedisPassword)
 
 	if err != nil {
 		fmt.Printf("Failed to connect to redis for publishing results: %s\n", err.Error())
@@ -143,7 +144,7 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 		//
 		// Get a job.
 		//
-		test, _ := r.BLPop(0, "overseer.jobs").Result()
+		test, _ := p._r.BLPop(0, "overseer.jobs").Result()
 
 		//
 		// Parse it
@@ -156,7 +157,7 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 			job, err := parse.ParseLine(test[1], nil)
 
 			if err == nil {
-				runTest(job, opts)
+				runTest(job, opts, notify)
 			} else {
 				fmt.Printf("Error parsing job from queue: %s - %s\n", test, err.Error())
 			}
