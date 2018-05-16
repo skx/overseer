@@ -149,7 +149,7 @@ You can check the size of the results set at any time via `redis-cli` like so:
     $ redis-cli llen overseer.results
     (integer) 0
 
-The JSON object, used to describe a single test result, has the following fields:
+The JSON object used to describe each test-result has the following fields:
 
 | Field Name | Field Value                                                     |
 | ---------- | --------------------------------------------------------------- |
