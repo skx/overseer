@@ -172,35 +172,6 @@ As mentioned this repository contains two simple "[bridges](bridges/)", which po
   * From there alerts will reach a human via pushover.
 
 
-## Configuration File
-
-If you prefer to use a configuration-file over the command-line arguments
-that is supported.  Each of the subcommands can process an optional JSON-based
-configuration file.
-
-The configuration file will override the default arguments, and thus
-cannot easily be set by a command-line flag itself.  Instead you should
-export the environmental variable `OVERSEER` with the path to a suitable
-file.
-
-For example you might run:
-
-     export OVERSEER=$(pwd)/overseer.json
-
-Where the contents of that file are:
-
-     {
-         "IPV6": true,
-         "IPv4": true,
-         "RedisHost": "localhost:6379",
-         "RedisPassword": "",
-         "Retry": true,
-         "Timeout": 10,
-         "Verbose": true
-     }
-
-
-
 ## Redis Specifics
 
 We use Redis as a queue as it is simple to deploy, stable, and well-known.
