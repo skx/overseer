@@ -198,7 +198,7 @@ Where the contents of that file are:
 We use Redis as a queue as it is simple to deploy, stable, and well-known.
 
 Redis doesn't natively operate as a queue, so we replicate this via the "list"
-primitives.  Adding a job to a queue is performed via a "[rpush](https://redis.io/commands/rpush)" operation, and pulling a job from the queue is achieved via an "[lpop](https://redis.io/commands/lpop)" command.
+primitives.  Adding a job to a queue is performed via a "[rpush](https://redis.io/commands/rpush)" operation, and pulling a job from the queue is achieved via an "[blpop](https://redis.io/commands/blpop)" command.
 
 We use two lists, as queues:
 
