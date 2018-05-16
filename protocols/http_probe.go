@@ -20,7 +20,7 @@
 //    with status any
 //
 // It is also possible to regard a fetch as a failure if the response body
-// does not contain a particular piece of test.  For example the following
+// does not contain a particular piece of text.  For example the following
 // would be regarded as a failure if my website did not contain my name
 // in the body of the response:
 //
@@ -145,7 +145,7 @@ HTTP Tester
    with status any
 
  It is also possible to regard a fetch as a failure if the response body
- does not contain a particular piece of test.  For example the following
+ does not contain a particular piece of text.  For example the following
  would be regarded as a failure if my website did not contain my name
  in the body of the response:
 
@@ -208,10 +208,9 @@ HTTP Tester
 // RunTest is the part of our API which is invoked to actually execute a
 // HTTP-test against the given URL.
 //
-//
 // For the purposes of clarity this test makes a HTTP-fetch.  The `test.Test`
-// structure contains are raw test, and the `target` variable contains the
-// IP address to make the request to.
+// structure contains our raw test, and the `target` variable contains the
+// IP address against which to make the request.
 //
 // So:
 //
@@ -456,8 +455,6 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 		//
 		expire := tst.Arguments["expiration"]
 		if expire != "" {
-
-			fmt.Printf("\tPeriod:%s\n", expire)
 
 			//
 			// How much to scale the given figure by
