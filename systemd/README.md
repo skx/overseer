@@ -31,6 +31,7 @@ Enable the worker:
 
 Now start the timer:
 
+     # systemctl enable overseer-enqueue.timer
      # systemctl start overseer-enqueue.timer
 
 
