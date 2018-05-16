@@ -145,11 +145,11 @@ func CheckUpdates() {
 	values := map[string]string{
 		"detail":  fmt.Sprintf("The purppura-bridge last received an update %d seconds ago.", now-then),
 		"subject": "No traffic seen recently",
-		"id":      "purppura-bridge",
+		"id":      "purppura-bridge-traffic",
 	}
 
 	// Raise or clear?
-	if now-then > ( 60 * 5 ) {
+	if now-then > (60 * 5) {
 		values["raise"] = "now"
 	} else {
 		values["raise"] = "clear"
@@ -188,7 +188,7 @@ func SendHeartbeat() {
 	values := map[string]string{
 		"detail":  "The purppura-bridge hasn't sent a heartbeat recently, which means that overseer test-results won't raise alerts.",
 		"subject": "The purppura bridge isn't running!",
-		"id":      "purppura-bridge",
+		"id":      "purppura-bridge-heartbeat",
 		"raise":   "+5m",
 	}
 
