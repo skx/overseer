@@ -248,13 +248,17 @@ func main() {
 		//
 		// Get test-results
 		//
-		msg, _ := r.LPop("overseer.results").Result()
+		msg, _ := r.BLPop(0, "overseer.results").Result()
 
 		//
-		// If they were non-empty process them
+		// If they were non-empty, process them.
 		//
-		if msg != "" {
-			process([]byte(msg))
+		//   msg[0] will be "overseer.results"
+		//
+		//   msg[1] will be the value removed from the list.
+		//
+		if len(msg) >= 1 {
+			process([]byte(msg[1]))
 		}
 	}
 }
