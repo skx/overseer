@@ -96,15 +96,13 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 
 	//
-	// If the MQ address is configured the connect.
+	// Connect to redis to publish our results
 	//
-	if p.MQ != "" {
-		err := ConnectMQ(p.MQ)
+	err := ConnectResults(p.RedisHost, p.RedisPassword)
 
-		if err != nil {
-			fmt.Printf("Failed to connect to MQ: %s\n", err.Error())
-			os.Exit(1)
-		}
+	if err != nil {
+		fmt.Printf("Failed to connect to redis for publishing results: %s\n", err.Error())
+		os.Exit(1)
 	}
 
 	//
@@ -119,7 +117,7 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 	//
 	// And run a ping, just to make sure it worked.
 	//
-	_, err := p._r.Ping().Result()
+	_, err = p._r.Ping().Result()
 	if err != nil {
 		fmt.Printf("Redis connection failed: %s\n", err.Error())
 		return subcommands.ExitFailure

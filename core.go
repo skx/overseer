@@ -58,11 +58,9 @@ func runTest(tst test.Test, opts test.TestOptions) error {
 	if err != nil {
 
 		//
-		// If we have a notifier tell it that we failed.
+		// Issure our failure to the redis host.
 		//
-		if mq != nil {
-			MQNotify(tst, fmt.Errorf("Failed to resolve name %s", testTarget))
-		}
+		NotifyResult(tst, fmt.Errorf("Failed to resolve name %s", testTarget))
 
 		//
 		// Otherwise we're done.
@@ -188,9 +186,7 @@ func runTest(tst test.Test, opts test.TestOptions) error {
 		// Now we can trigger the notification with our updated
 		// copy of the test.
 		//
-		if mq != nil {
-			MQNotify(copy, result)
-		}
+		NotifyResult(copy, result)
 	}
 
 	return nil

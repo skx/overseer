@@ -1,5 +1,5 @@
 //
-// This is the Purppura bridge, which reads test-results from MQ, and submits
+// This is the Purppura bridge, which reads test-results from redis, and submits
 // them to purppura, such that a human can be notified of test failures.
 //
 // The program should be built like so:
@@ -8,7 +8,7 @@
 //
 // Once built launch it like so:
 //
-//     $ ./purppura-bridge -mq="mq.example.com:1883" -url="http://purppura.example.com/events"
+//     $ ./purppura-bridge -url="http://purppura.example.com/events"
 //
 // Every two minutes it will send a heartbeat to the purppura-server so
 // that you know it is working.
@@ -28,13 +28,11 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"os/signal"
 	"sync"
 	"time"
 
+	"github.com/go-redis/redis"
 	"github.com/robfig/cron"
-	"github.com/yosssi/gmq/mqtt"
-	"github.com/yosssi/gmq/mqtt/client"
 )
 
 // Avoid threading issues with our last update-time
@@ -46,11 +44,15 @@ var update int64
 // Should we be verbose?
 var verbose *bool
 
-// The MQ handle
-var mq *client.Client
+// The redis handle
+var r *redis.Client
 
 // The URL of the purppura server
 var pURL *string
+
+// The redis connection details
+var redisHost *string
+var redisPass *string
 
 // Given a JSON string decode it and post to the Purppura URL.
 func process(msg []byte) {
@@ -126,11 +128,10 @@ func process(msg []byte) {
 
 }
 
-// CheckUpdates triggers an alert if we've not received anything
-// from MQ "recently"
+// CheckUpdates triggers an alert if we've not received anything recently
 func CheckUpdates() {
 
-	// Get our last MQ-received time
+	// Get our last-received time
 	mutex.Lock()
 	then := update
 	mutex.Unlock()
@@ -142,9 +143,9 @@ func CheckUpdates() {
 	// The alert we'll send to the purppura server
 	//
 	values := map[string]string{
-		"detail":  fmt.Sprintf("The purppura-bridge last received an update from MQ %d seconds ago.", now-then),
-		"subject": "No MQ traffic seen recently",
-		"id":      "purppura-bridge-mq",
+		"detail":  fmt.Sprintf("The purppura-bridge last received an update %d seconds ago.", now-then),
+		"subject": "No traffic seen recently",
+		"id":      "purppura-bridge",
 	}
 
 	// Raise or clear?
@@ -171,14 +172,14 @@ func CheckUpdates() {
 		bytes.NewBuffer(jsonValue))
 
 	if err != nil {
-		fmt.Printf("Failed to post purppura-bridge-mq to purppura:%s\n", err.Error())
+		fmt.Printf("Failed to post purppura-bridge to purppura:%s\n", err.Error())
 		os.Exit(1)
 	}
 }
 
-// SendHeartbeat updates the purppura server every five minutes with
-// a hearbeat alert.  This will ensure that you're alerted if the bridge
-// fails, dies, or isn't running
+// SendHeartbeat updates the purppura server with a hearbeat alert.
+// This will ensure that you're alerted if this bridge fails, dies, or
+// isn't running
 func SendHeartbeat() {
 
 	//
@@ -218,7 +219,8 @@ func main() {
 	//
 	// Parse our flags
 	//
-	mqAddress := flag.String("mq", "127.0.0.1:1883", "The address & port of your MQ-server")
+	redisHost := flag.String("redis-host", "127.0.0.1:6379", "Specify the address of the redis queue.")
+	redisPass := flag.String("redis-pass", "", "Specify the password of the redis queue.")
 	pURL = flag.String("purppura", "", "The purppura-server URL")
 	verbose = flag.Bool("verbose", false, "Be verbose?")
 	flag.Parse()
@@ -227,63 +229,48 @@ func main() {
 	// Sanity-check
 	//
 	if *pURL == "" {
-		fmt.Printf("Usage: purppura-bridge -mq=1.2.3.4:1883 -purpurra=https://alert.steve.fi/events\n")
+		fmt.Printf("Usage: purppura-bridge -purpurra=https://alert.steve.fi/events [-redis-host=127.0.0.1:6379] [-redis-pass=secret]\n")
 		os.Exit(1)
 
 	}
 
-	// Set up channel on which to send signal notifications.
-	sigc := make(chan os.Signal, 1)
-	signal.Notify(sigc, os.Interrupt, os.Kill)
-
 	//
-	// Create an MQTT Client.
+	// Create the redis client
 	//
-	mq = client.New(&client.Options{})
-
-	//
-	// Connect to the MQTT Server.
-	//
-	err := mq.Connect(&client.ConnectOptions{
-		Network:  "tcp",
-		Address:  *mqAddress,
-		ClientID: []byte("overseer-watcher"),
+	r = redis.NewClient(&redis.Options{
+		Addr:     *redisHost,
+		Password: *redisPass,
+		DB:       0, // use default DB
 	})
+
+	//
+	// And run a ping, just to make sure it worked.
+	//
+	_, err := r.Ping().Result()
 	if err != nil {
-		fmt.Printf("Error connecting: %s\n", err.Error())
+		fmt.Printf("Redis connection failed: %s\n", err.Error())
 		os.Exit(1)
 	}
-
-	//
-	// Subscribe to the channel such that we can proxy
-	// test results to the purppura-server
-	//
-	err = mq.Subscribe(&client.SubscribeOptions{
-		SubReqs: []*client.SubReq{
-			{
-				TopicFilter: []byte("overseer"),
-				QoS:         mqtt.QoS0,
-
-				// Define the processing of the message handler.
-				Handler: func(topicName, message []byte) {
-					process(message)
-				},
-			},
-		},
-	})
 
 	c := cron.New()
 	// Make sure we send a heartbeat so we're alerted if the bridge fails
-	c.AddFunc("@every 1m", func() { SendHeartbeat() })
+	c.AddFunc("@every 30s", func() { SendHeartbeat() })
 	// Make sure we raise an alert if we don't have MQ-traffic
-	c.AddFunc("@every 1m", func() { CheckUpdates() })
+	c.AddFunc("@every 30s", func() { CheckUpdates() })
 	c.Start()
 
-	// Wait for receiving a signal.
-	<-sigc
+	for true {
 
-	// Disconnect the Network Connection.
-	if err := mq.Disconnect(); err != nil {
-		panic(err)
+		//
+		// Get test-results
+		//
+		msg, _ := r.LPop("overseer.results").Result()
+
+		//
+		// If they were non-empty, process them.
+		//
+		if msg != "" {
+			process([]byte(msg))
+		}
 	}
 }

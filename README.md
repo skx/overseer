@@ -6,7 +6,7 @@
 
 # Overseer
 
-Overseer is a simple and scalable [golang](https://golang.org/)-based remote protocol tester, which allows you to monitor the state of your network, and the services running upon it.  The results of each test are posted to a message-queue, where they can be processed by external systems.  (Sample processors are included, but the intention is that by using a message-queue the alerting mechanism is decoupled from the core of the project; allowing you to integrate with your preferred in-house choice.)
+Overseer is a simple and scalable [golang](https://golang.org/)-based remote protocol tester, which allows you to monitor the state of your network, and the services running upon it.  The results of each test are posted to a redis-host, where they can be processed by external systems.  (Sample processors are included, but the intention is that by using a queue the alerting mechanism is decoupled from the core of the project; allowing you to integrate with your preferred in-house choice.)
 
 "Remote Protocol Tester" sounds a little vague, so to be more concrete this application lets you test services are running and has built-in support for testing:
 
@@ -51,10 +51,10 @@ your system, assuming you have a working golang setup:
      $ go get -u github.com/skx/overseer
      $ go install github.com/skx/overseer
 
-Beyond the compile-time dependencies overseer requires two things at run-time:
+Beyond the compile-time dependencies overseer requires a [redis](https://redis.io/) server which is used for two things:
 
-* A [redis](https://redis.io/)-queue
-* A [mosquitto](https://www.mosquitto.org/) message-queue.
+* As the storage-queue for parsed-jobs.
+* As the storage-queue for test-results.
 
 Because `overseer` can be executed in a distributed fashion tests are not
 executed as they are parsed/read, instead they are inserted into a redis-queue.
@@ -66,8 +66,7 @@ tests (1000+) it might make more sense to have a pool of hosts each running
 a worker.
 
 Because we don't want to be tied to a specific notification-system results
-of each test are posted to the MQ host, which allows results to be retrieved
-and transmitted to your preferred notifier.
+of each test are also posted to the same redis-host, which allows results to be retrieved and transmitted to your preferred notifier.
 
 You can see more details of the [notification](#notification) later in this document.
 
@@ -81,7 +80,7 @@ Executing tests is a two-step process:
 
 This might seem a little convoluted, however it is a great design if you
 have a lot of tests to be executed because it allows you to deploy multiple
-workers - Instead of having a single host executing all the tests you can
+workers.  Instead of having a single host executing all the tests you can
 can have 10 hosts, each watching the redis-queue pulling jobs, & executing
 them as they become available.
 
@@ -131,24 +130,15 @@ retry-logic via the command-line flag `-retry=false`.
 
 ## Notification
 
-The result of each executed tests is published as a simple JSON message to the `overseer` topic of the specified MQ server.
+The result of each executed tests is published as a simple JSON message to the `overseer.results` set of the specified redis-server.
 
-If you're using the [mosquitto](https://www.mosquitto.org/)-queue (which is highly recommended) you can use the included  `mosquitto_sub` command to watch the `overseer` topic in real-time like so:
+Results are added to the list as the tests are executed, and it is assumed a
+notifier will pop them off to trigger alerts to humans.
 
-    $ mosquitto_sub -h 127.0.0.1 -p 1883 -t overseer
-    ..
-    {"input":"http://www.steve.fi/ must run http with content 'https://steve.fi' with status '302'",
-     "result":"passed",
-     "target":"176.9.183.100",
-     "time":"1525017261",
-     "type":"http"}
-    ..
-    {"input":"localhost must run ssh with port '2222'",
-     "result":"passed",
-     "target":"127.0.0.1",
-     "time":"1525017262",
-     "type":"ssh"}
-    ..
+You can check the size of the results list at any time via `redis-cli` like so:
+
+    $ redis-cli llen overseer.results
+    (integer) 0
 
 Each test result is submitted as a JSON object, with the following fields:
 
@@ -163,7 +153,7 @@ Each test result is submitted as a JSON object, with the following fields:
 
 **NOTE**: The `input` field will be updated to mask any password options which have been submitted with the tests.
 
-Included in this repository are two simple "[bridges](bridges/)", which listen to the MQ topic, and forward the alerts to more useful systems:
+Included in this repository are two simple "[bridges](bridges/)", which poll results and forward the alerts to more useful systems:
 
 * `irc-bridge.go`
   * This posts test-failures to an IRC channel.

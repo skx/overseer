@@ -25,12 +25,10 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"os/signal"
 	"sync"
 
+	"github.com/go-redis/redis"
 	"github.com/thoj/go-ircevent"
-	"github.com/yosssi/gmq/mqtt"
-	"github.com/yosssi/gmq/mqtt/client"
 )
 
 // ircconn holds the IRC server connection.
@@ -51,8 +49,12 @@ var passed int64
 // Count of how many tests have executed and failed
 var failed int64
 
-// The MQ handle
-var mq *client.Client
+// The redis handle
+var r *redis.Client
+
+// The redis connection details
+var redisHost *string
+var redisPass *string
 
 //
 // Given a JSON string decode it and post to IRC if it describes
@@ -203,7 +205,8 @@ func main() {
 	//
 	// Parse our flags
 	//
-	mqAddress := flag.String("mq", "127.0.0.1:1883", "The address & port of your MQ-server")
+	redisHost := flag.String("redis-host", "127.0.0.1:6379", "Specify the address of the redis queue.")
+	redisPass := flag.String("redis-pass", "", "Specify the password of the redis queue.")
 	irc := flag.String("irc", "", "A URL describing your IRC server")
 	flag.Parse()
 
@@ -211,60 +214,47 @@ func main() {
 	// Sanity-check.
 	//
 	if *irc == "" {
-		fmt.Printf("Usage: irc-bridge -mq=1.2.3.4:1883 -irc=irc://user:pass@irc.example.com:6667/#channel\n")
+		fmt.Printf("Usage: irc-bridge -irc=irc://user:pass@irc.example.com:6667/#channel [-redis-host=127.0.0.1:6379] [-redis-pass=foo]\n")
 		os.Exit(1)
 	}
 
 	//
-	// Set up channel on which to send signal notifications.
+	// Connect to IRC
 	//
-	sigc := make(chan os.Signal, 1)
-	signal.Notify(sigc, os.Interrupt, os.Kill)
-
 	fmt.Printf("Connecting to IRC server via %s ..\n", *irc)
 	setupIRC(*irc)
 	fmt.Printf("Connected.  Press Ctrl-c to terminate.\n")
 
 	//
-	// Create an MQTT Client.
+	// Create the redis client
 	//
-	mq = client.New(&client.Options{})
+	r = redis.NewClient(&redis.Options{
+		Addr:     *redisHost,
+		Password: *redisPass,
+		DB:       0, // use default DB
+	})
 
 	//
-	// Connect to the MQTT Server.
+	// And run a ping, just to make sure it worked.
 	//
-	err := mq.Connect(&client.ConnectOptions{
-		Network:  "tcp",
-		Address:  *mqAddress,
-		ClientID: []byte("overseer-watcher"),
-	})
+	_, err := r.Ping().Result()
 	if err != nil {
-		fmt.Printf("Error connecting to MQ: %s\n", err.Error())
+		fmt.Printf("Redis connection failed: %s\n", err.Error())
 		os.Exit(1)
 	}
 
-	//
-	// Subscribe to the channel
-	//
-	err = mq.Subscribe(&client.SubscribeOptions{
-		SubReqs: []*client.SubReq{
-			{
-				TopicFilter: []byte("overseer"),
-				QoS:         mqtt.QoS0,
+	for true {
 
-				// Define the processing of the message handler.
-				Handler: func(topicName, message []byte) {
-					process(message)
-				},
-			},
-		},
-	})
+		//
+		// Get test-results
+		//
+		msg, _ := r.LPop("overseer.results").Result()
 
-	// Wait for receiving a signal.
-	<-sigc
-
-	// Disconnect the Network Connection.
-	if err := mq.Disconnect(); err != nil {
-		panic(err)
+		//
+		// If they were non-empty process them
+		//
+		if msg != "" {
+			process([]byte(msg))
+		}
 	}
 }
