@@ -6,14 +6,12 @@
 
 # Overseer
 
-Overseer is a simple and scalable [golang](https://golang.org/)-based remote protocol tester, which allows you to monitor the state of your network, and the services running upon it.  The result of each test are submitted to a redis-host, which can be processed by an external system.
-
-Sample [result-processors](#notifiers) are included, but the expectation is you'll prefer to process the results and issue notifications to humans via an in-house tool - be it pagerduty, or something similar.  By using a queue the alerting mechanism is decoupled from the core of the project.
+Overseer is a simple and scalable [golang](https://golang.org/)-based remote protocol tester, which allows you to monitor the state of your network, and the services running upon it.
 
 "Remote Protocol Tester" sounds a little vague, so to be more concrete this application lets you test services are running and has built-in support for testing:
 
 * DNS-servers
-  * via lookups of A, AAAA, MX, NS, or TXT records.
+  * Test lookups of A, AAAA, MX, NS, and TXT records.
 * FTP
 * HTTP & HTTPS fetches.
    * HTTP basic-authentication is supported.
@@ -47,8 +45,8 @@ All protocol-tests transparently support testing IPv4 and IPv6 targets, although
 
 ## Installation & Dependencies
 
-The following command should fetch/update `overseer`, and install it upon
-your system, assuming you have a working golang setup:
+The following commands should fetch/update `overseer`, and install it upon
+your system, assuming you have a working [golang](https://golang.org/) setup:
 
      $ go get -u github.com/skx/overseer
      $ go install github.com/skx/overseer
@@ -58,7 +56,7 @@ Beyond the compile-time dependencies overseer requires a [redis](https://redis.i
 * As the storage-queue for parsed-jobs.
 * As the storage-queue for test-results.
 
-Because `overseer` can be executed in a distributed fashion tests are not
+Because overseer can be executed in a distributed fashion tests are not
 executed as they are parsed/read, instead they are inserted into a redis-queue.
 Workers then poll the queue, and fetch/execute jobs as they become available.
 
@@ -70,23 +68,23 @@ a worker.
 Because we don't want to be tied to a specific notification-system results
 of each test are also posted to the same redis-host, which allows results to be retrieved and transmitted to your preferred notifier.
 
-You can see more details of the [notification](#notification) later in this document.
+More details about [notifications](#notification) are available later in this document.
 
 
 ## Executing Tests
 
-Executing tests is a two-step process:
+As mentioned already the process of executing the tests is done int two-steps:
 
-* First of all tests are parsed and inserted into a redis-queue.
+* First of all tests are parsed and inserted into a redis-based queue.
 * Secondly the tests are pulled from that queue and executed.
 
 This might seem a little convoluted, however it is a great design if you
-have a lot of tests to be executed because it allows you to deploy multiple
+have a lot of tests to be executed, because it allows you to deploy multiple
 workers.  Instead of having a single host executing all the tests you can
-can have 10 hosts, each watching the redis-queue pulling jobs, & executing
+can have 10 hosts, each watching the same redis-queue pulling jobs, & executing
 them as they become available.
 
-In short using a central queue allows you to scale out the testing horizontally, ensuring that all the jobs are executed as quickly as they can be.
+In short using a central queue allows you to scale out the testing horizontally.
 
 To add the jobs to the queue you should run:
 
@@ -101,16 +99,21 @@ To drain the queue you can should now start a worker, which will fetch the tests
        $ overseer worker -verbose \
           -redis-host=queue.example.com:6379 [-redis-pass='secret']
 
-To run jobs in parallel simply launch more instances of the worker, on the same host, or on different hosts.
+The worker will run constantly, not terminating unless manually killed.  With
+the worker running you can add more jobs by re-running the `overseer enqueue`
+command.
 
-       $ overseer worker \
-          -verbose \
-          -redis-host=queue.example.com:6379 [-redis-pass=secret]
+To run tests in parallel simply launch more instances of the worker, on the same host, or on different hosts.
+
+
+### Running Automatically
 
 Beneath [systemd/](systemd/) you will find some sample service-files which can be used to deploy overseer upon a single host:
 
-* A service to start a single worker, fetching jobs from a queue on the localhost.
+* A service to start a single worker, fetching jobs from a redis server.
+  * The redis-server is assumed to be running on `localhost`.
 * A service & timer to regularly populate the queue with fresh jobs to be executed.
+  * i.e. The first service is the worker, this second one feeds the worker.
 
 
 
@@ -131,17 +134,23 @@ retry-logic via the command-line flag `-retry=false`.
 
 ## Notification
 
-The result of each executed tests is published as a simple JSON message to the `overseer.results` set of the specified redis-server.
+The result of executing each test is submitted to the central redis-host, from where it can be pulled and used to notify a human of a problem.
 
-Results are added to the list as the tests are executed, and it is assumed a
-notifier will pop them off to trigger alerts to humans.
+Sample result-processors are [included](bridges/) in this repository which post
+test-resulst to a [purppura instance](https://github.com/skx/purppura), or an
+IRC channel.  These are primarily included for example purposes, the
+expectation is you'll prefer to process the results and issue notifications to
+humans via your favourite in-house tool - be it pagerduty, or something similar.
 
-You can check the size of the results list at any time via `redis-cli` like so:
+As mentioned results get sent to redis, and they are published in the form of  JSON objects to the `overseer.results` set.  This set will constantly grow unless
+results are pulled from it - as your notifier runs.
+
+You can check the size of the results set at any time via `redis-cli` like so:
 
     $ redis-cli llen overseer.results
     (integer) 0
 
-Each test result is submitted as a JSON object, with the following fields:
+The JSON object, used to describe a single test result, has the following fields:
 
 | Field Name | Field Value                                                     |
 | ---------- | --------------------------------------------------------------- |
@@ -154,7 +163,7 @@ Each test result is submitted as a JSON object, with the following fields:
 
 **NOTE**: The `input` field will be updated to mask any password options which have been submitted with the tests.
 
-Included in this repository are two simple "[bridges](bridges/)", which poll results and forward the alerts to more useful systems:
+As mentioned this repository contains two simple "[bridges](bridges/)", which poll the results from Redis, and forward them to more useful systems:
 
 * `irc-bridge.go`
   * This posts test-failures to an IRC channel.
