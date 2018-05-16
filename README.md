@@ -189,9 +189,14 @@ We use two lists, as queues:
 You can examine the length of either queue via the [llen](https://redis.io/commands/llen) operation.
 
 * To view jobs pending execution:
-   * `$ redis-cli llen oveseer.jobs`
+   * `redis-cli lrange oveseer.jobs 0 -1`
+   * Or to view just the count
+      * `redis-cli llen oveseer.jobs`
 * To view test-results which have yet to be notified:
-   * `$ redis-cli llen oveseer.results`
+   * `redis-cli lrange oveseer.results 0 -1`
+   * Or to view just the count
+      * `redis-cli llen oveseer.results`
+
 
 
 
