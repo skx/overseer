@@ -168,7 +168,7 @@ As mentioned this repository contains two simple "[bridges](bridges/)", which po
   * This posts test-failures to an IRC channel.
   * Tests which pass are not reported, to avoid undue noise on your channel.
 * `purppura-bridge.go`
-  * This forwards each test-result to a [purppura host](https://github.com/skx/purppura/)
+  * This forwards each test-result to a [purppura host](https://github.com/skx/purppura/).
   * From there alerts will reach a human via pushover.
 
 
