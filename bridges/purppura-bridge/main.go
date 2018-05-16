@@ -149,7 +149,7 @@ func CheckUpdates() {
 	}
 
 	// Raise or clear?
-	if now-then > 120 {
+	if now-then > ( 60 * 5 ) {
 		values["raise"] = "now"
 	} else {
 		values["raise"] = "clear"
