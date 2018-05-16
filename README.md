@@ -137,13 +137,12 @@ retry-logic via the command-line flag `-retry=false`.
 The result of executing each test is submitted to the central redis-host, from where it can be pulled and used to notify a human of a problem.
 
 Sample result-processors are [included](bridges/) in this repository which post
-test-resulst to a [purppura instance](https://github.com/skx/purppura), or an
+test-results to a [purppura instance](https://github.com/skx/purppura), or an
 IRC channel.  These are primarily included for example purposes, the
 expectation is you'll prefer to process the results and issue notifications to
 humans via your favourite in-house tool - be it pagerduty, or something similar.
 
-As mentioned results get sent to redis, and they are published in the form of  JSON objects to the `overseer.results` set.  This set will constantly grow unless
-results are pulled from it - as your notifier runs.
+The results themselves are published as JSON objects to the `overseer.results` set.   Your notifier should remove the results from this set, as it generates alerts to prevent it from growing indefinitely.
 
 You can check the size of the results set at any time via `redis-cli` like so:
 
