@@ -148,6 +148,10 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 		//
 		// Parse it
 		//
+		//   test[0] will be "overseer.jobs"
+		//
+		//   test[1] will be the value removed from the list.
+		//
 		if len(test) >= 1 {
 			job, err := parse.ParseLine(test[1], nil)
 

@@ -269,6 +269,10 @@ func main() {
 		//
 		// If they were non-empty, process them.
 		//
+		//   msg[0] will be "overseer.results"
+		//
+		//   msg[1] will be the value removed from the list.
+		//
 		if len(msg) >= 1 {
 			process([]byte(msg[1]))
 		}
