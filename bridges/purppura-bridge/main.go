@@ -264,13 +264,14 @@ func main() {
 		//
 		// Get test-results
 		//
-		msg, _ := r.LPop("overseer.results").Result()
+		msg, _ := r.BLPop(0, "overseer.results").Result()
 
 		//
 		// If they were non-empty, process them.
 		//
-		if msg != "" {
-			process([]byte(msg))
+		if len(msg) >= 1 {
+			process([]byte(msg[1]))
 		}
+
 	}
 }

@@ -143,13 +143,13 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 		//
 		// Get a job.
 		//
-		test, _ := p._r.LPop("overseer.jobs").Result()
+		test, _ := r.BLPop(0, "overseer.jobs").Result()
 
 		//
 		// Parse it
 		//
-		if test != "" {
-			job, err := parse.ParseLine(test, nil)
+		if len(test) >= 1 {
+			job, err := parse.ParseLine(test[1], nil)
 
 			if err == nil {
 				runTest(job, opts)
