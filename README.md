@@ -6,7 +6,9 @@
 
 # Overseer
 
-Overseer is a simple and scalable [golang](https://golang.org/)-based remote protocol tester, which allows you to monitor the state of your network, and the services running upon it.  The results of each test are posted to a redis-host, where they can be processed by external systems.  (Sample processors are included, but the intention is that by using a queue the alerting mechanism is decoupled from the core of the project; allowing you to integrate with your preferred in-house choice.)
+Overseer is a simple and scalable [golang](https://golang.org/)-based remote protocol tester, which allows you to monitor the state of your network, and the services running upon it.  The result of each test are submitted to a redis-host, which can be processed by an external system.
+
+Sample [result-processors](#notifiers) are included, but the expectation is you'll prefer to process the results and issue notifications to humans via an in-house tool - be it pagerduty, or something similar.  By using a queue the alerting mechanism is decoupled from the core of the project.
 
 "Remote Protocol Tester" sounds a little vague, so to be more concrete this application lets you test services are running and has built-in support for testing:
 
@@ -35,11 +37,11 @@ Tests to be executed are defined in a simple text-based format which has the gen
 
      $TARGET must run $SERVICE [with $OPTION_NAME $VALUE] ..
 
-You can see what the available tests look like in [the sample test-file](input.txt), and each of the available protocol-handlers are self-documenting which means you can view example usage via:
+You can see what the available tests look like in [the sample test-file](input.txt), and each of the included protocol-handlers are self-documenting which means you can view example usage via:
 
      ~$ overseer examples [pattern]
 
-All of the protocol-tests transparently support testing IPv4 and IPv6 targets, although you may globally disable either address family if you prefer.
+All protocol-tests transparently support testing IPv4 and IPv6 targets, although you may globally disable either address family if you prefer.
 
 
 
@@ -99,12 +101,11 @@ To drain the queue you can should now start a worker, which will fetch the tests
        $ overseer worker -verbose \
           -redis-host=queue.example.com:6379 [-redis-pass='secret']
 
-To run jobs in parallel simply launch more instances of the worker, on the same host, or on different hosts.  Remember that you'll need to specify the MQ host upon which to publish the results too:
+To run jobs in parallel simply launch more instances of the worker, on the same host, or on different hosts.
 
        $ overseer worker \
           -verbose \
-          -redis-host=queue.example.com:6379 [-redis-pass=secret] \
-          -mq=mq.example.com:1883
+          -redis-host=queue.example.com:6379 [-redis-pass=secret]
 
 Beneath [systemd/](systemd/) you will find some sample service-files which can be used to deploy overseer upon a single host:
 
@@ -190,6 +191,29 @@ Where the contents of that file are:
          "Timeout": 10,
          "Verbose": true
      }
+
+
+
+## Redis Specifics
+
+We use Redis as a queue as it is simple to deploy, stable, and well-known.
+
+Redis doesn't natively operate as a queue, so we replicate this via the "list"
+primitives.  Adding a job to a queue is performed via a "[rpush](https://redis.io/commands/rpush)" operation, and pulling a job from the queue is achieved via an "[lpop](https://redis.io/commands/lpop)" command.
+
+We use two lists, as queues:
+
+* `overseer.jobs`
+    * For storing tests to be executed by a worker.
+* `overseer.results`
+    * For storing results, to be processed by a notifier.
+
+You can examine the length of either queue via the [llen](https://redis.io/commands/llen) operation.
+
+* To view jobs pending execution:
+   * `$ redis-cli llen oveseer.jobs`
+* To view test-results which have yet to be notified:
+   * `$ redis-cli llen oveseer.results`
 
 
 
