@@ -4,7 +4,7 @@ Description=overseer worker-service
 [Service]
 User=root
 WorkingDirectory=/opt/overseer
-ExecStart=/opt/overseer/bin/overseer worker -mq=localhost:1883 -redis-host=127.0.0.1:6379
+ExecStart=/opt/overseer/bin/overseer worker -redis-host=127.0.0.1:6379
 KillMode=process
 Restart=always
 StartLimitInterval=2
