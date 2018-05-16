@@ -38,8 +38,8 @@ func New(addr string, password string) (*Notifier, error) {
 	return tmp, nil
 }
 
-// NotifyResult is the method which is invoked to send a notification
-// via the redis host.
+// Notify is the method which is invoked to send a notification
+// via an addition to the set/queue on the redis host.
 func (p *Notifier) Notify(test test.Test, result error) error {
 
 	//
