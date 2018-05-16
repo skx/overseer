@@ -343,7 +343,7 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 			if err == nil {
 				p.runTest(job, opts, notify)
 			} else {
-				fmt.Printf("Error parsing job from queue: %s - %s\n", test, err.Error())
+				fmt.Printf("Error parsing job from queue: %s - %s\n", test[1], err.Error())
 			}
 		}
 
