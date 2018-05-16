@@ -46,7 +46,8 @@ func New() *Parser {
 	return m
 }
 
-func (s *Parser) Executable(path string) (bool, error) {
+// executable returns true if the given file is executable.
+func (s *Parser) executable(path string) (bool, error) {
 
 	stat, err := os.Stat(path)
 
@@ -81,9 +82,10 @@ func (s *Parser) ParseFile(filename string, cb ParsedTest) error {
 	var scanner *bufio.Scanner
 
 	//
-	// If the file is executable then parse the output
+	// If the file is executable then parse the output of executing
+	// it, rather than the literal contents.
 	//
-	e, err := s.Executable(filename)
+	e, err := s.executable(filename)
 	if (err == nil) && (e == true) {
 		cmd := exec.Command(filename)
 		var outb, errb bytes.Buffer
