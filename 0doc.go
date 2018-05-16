@@ -5,7 +5,7 @@
 //
 // The application is written in an extensible fashion, allowing new
 // test-types to be added easily, and the notification of failures is
-// handled in a flexible fashion too via the use of MQ.
+// handled in a flexible fashion too via the use of a redis-server.
 //
 // The application is designed to run in a distributed fashion, although
 // it is equally happy to run upon a single node.

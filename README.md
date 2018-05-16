@@ -184,7 +184,6 @@ Where the contents of that file are:
      {
          "IPV6": true,
          "IPv4": true,
-         "MQ": "localhost:1883",
          "RedisHost": "localhost:6379",
          "RedisPassword": "",
          "Retry": true,

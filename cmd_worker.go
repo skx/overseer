@@ -23,7 +23,6 @@ type workerCmd struct {
 	IPv4          bool
 	IPv6          bool
 	Retry         bool
-	MQ            string
 	RedisHost     string
 	RedisPassword string
 	Timeout       int
@@ -56,7 +55,6 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 	var defaults workerCmd
 	defaults.IPv4 = true
 	defaults.IPv6 = true
-	defaults.MQ = ""
 	defaults.Retry = true
 	defaults.Timeout = 10
 	defaults.Verbose = false
@@ -87,7 +85,6 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 	f.IntVar(&p.Timeout, "timeout", defaults.Timeout, "The global timeout for all tests, in seconds.")
 	f.StringVar(&p.RedisHost, "redis-host", defaults.RedisHost, "Specify the address of the redis queue.")
 	f.StringVar(&p.RedisPassword, "redis-pass", defaults.RedisPassword, "Specify the password for the redis queue.")
-	f.StringVar(&p.MQ, "mq", defaults.MQ, "Specify the MQ address to connect to.")
 }
 
 //

@@ -6,7 +6,7 @@ overseer upon a single host.
 The expectation is:
 
 * You have overseer deployed as `/opt/overseer/bin/overseer`
-* Your local host is running MQ + Redis
+* Your local host is running Redis
 * You wish to execute all the tests available as `/opt/overseer/tests.d/*.conf`
 
 The goal is to:

@@ -1,4 +1,4 @@
-# MQ Bridges
+# Bridges
 
 Overseer only posts the results of the tests to a redis host, so if
 you wish to raise alerts to people you will need something to watch

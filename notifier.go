@@ -25,8 +25,8 @@ func ConnectResults(addr string, password string) error {
 	return nil
 }
 
-// MQNotify is the method which is invoked to send a notification
-// via the MQ connection setup in `ConnectMQ`.
+// NotifyResult is the method which is invoked to send a notification
+// via the redis host.
 func NotifyResult(test test.Test, result error) error {
 
 	//
@@ -58,7 +58,7 @@ func NotifyResult(test test.Test, result error) error {
 	}
 
 	//
-	// Convert the MAP to a JSON string we can send down the MQ link.
+	// Convert the MAP to a JSON string we can notify.
 	//
 	j, err := json.Marshal(msg)
 	if err != nil {
