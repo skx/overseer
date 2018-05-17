@@ -35,11 +35,9 @@
 #
 # `TARGET` is either the hostname, or an URI, of the target to be tested.
 #
-# `PROTOCOL` is one of the protocol-handlers implemented in the
-# overseer application.
+# `PROTOCOL` is one of the protocol-handlers implemented in the application.
 #
-# So if you wish to test that a host is running FTP you'd write your
-# test like so:
+# If you wished to test that a host is running FTP you'd write:
 #
 #      ftp.example.com must run ftp
 #
@@ -51,9 +49,9 @@
 # and this is necessary if the option contains whitespace.
 #
 # Most of the protocol-tests allow you to change the default port
-# against which they'd run, via the "port" option.  So if you wished
-# to run an FTP-test against a host running it on a non-standard port
-# you could do so like this:
+# against which they'd run, via the "port" option, so we could update
+# our previous example to monitor an FTP-server running on a non-standard
+# port like so:
 #
 #      ftp.example.com must run ftp with port 2211
 #
@@ -62,8 +60,13 @@
 
 
 #
-# When it comes to running HTTP/HTTPS tests the target must be an URL,
-# and success is determined by the HTTP status-code.
+# More people probably run HTTP/HTTPS servers than FTP-servers, so
+# the next test-type to document is that one.  Unlike the previous
+# case the target of the test is an an URL, rather than a hostname.
+#
+# The most basic HTTP test would be:
+#
+#      http://example.com/ must run http
 #
 # A HTTP status-code of 200 is regarded as a pass, and anything else
 # as a failure.  You can choose to regard any other return-code as a
@@ -79,9 +82,9 @@
 # In short `with status any` tests:
 #
 # * You could resolve the target's hostname.
-#   * Any returned IPv4 and IPv6 address will be tested in turn
+#   * Any returned IPv4 and IPv6 address will be tested in turn.
 # * You could make a HTTP-request.
-# * You received some kind of response
+# * You received some kind of response.
 #
 # If you wanted a more thorough test you might wish to look for
 # some specific text in body of the response, which is possible
@@ -91,7 +94,18 @@
 #
 #       https://steve.fi/ must run http with content 'Steve Kemp'
 #
-# You can of course combine the status & content options.
+# You can of course combine the status & content options:
+#
+#       https://steve.fi/ must run http with status any with content 'Kemp'
+#
+# Looking for a literal text-match in the body is usually sufficient
+# for ensuring that your site is available, however if it is not you
+# can also test that a specific regular-expression matches the content
+# of the response.
+#
+# Rather than using `content` we specify our pattern via `pattern`:
+#
+#       https://steve.fi/ must run http with pattern 'Steve\s+Kemp'
 #
 # If you need to make a HTTP POST request, rather than a GET, you can
 # do that by specifying the data to POST like so:
@@ -108,10 +122,6 @@
 # You can see this in action via:
 #
 #          http://httpbin.org/user-agent must run http with content 'overseer/'
-#
-
-#
-# Now some more examples of various HTTP tests:
 #
 
 #
@@ -132,7 +142,7 @@ http://steve.fi/ must run http with status 301 with content 'https://steve.fi'
 http://www.steve.fi/ must run http with status 302 with content 'https://steve.fi'
 
 #
-# We don't like www. round here.
+# I prefer to avoid www.-names:
 #
 https://www.steve.fi/ must run http with status 302 with content 'https://steve.fi'
 
@@ -339,6 +349,5 @@ mail.steve.org.uk must run imaps
 
 
 #
-#
-# This concludes our testing.
+# This concludes our introduction to overseer-based testing.
 #
