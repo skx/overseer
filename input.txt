@@ -330,24 +330,17 @@ ssh.steve.org.uk must run imaps with tls insecure
 mail.steve.org.uk must run imaps
 
 
-#
-# Similar tests are available for POP3, and POP3S
-#
-# mail.steve.org.uk must run pop3
-# mail.steve.org.uk must run pop3s with tls insecure
-#
-
-#
-# We might also test MySQL/Postgres, but I don't run them:
-#
-# localhost must run mysql with username 'root' with password 'sekrit'
-#
-# localhost must run psql with username 'postgres' with password 'sekrit'
-#
-#
-
+##
+## Further Examples
+##
 
 
 #
-# This concludes our introduction to overseer-based testing.
+# To see the complete list of available protocol-tests, along with sample
+# usage and supported arguments please run:
+#
+#     ./overseer examples
+#
+# This will show you test-types we've not covered here, including finger,
+# telnet, NTTP, posgres, and MySQL.
 #
