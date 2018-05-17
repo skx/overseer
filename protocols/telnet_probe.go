@@ -37,7 +37,6 @@ func (s *TELNETTest) Example() string {
 	str := `
 Telnet Tester
 -------------
-
  The telnet tester connects to a remote host and does nothing else.
 
  This test is invoked via input like so:
@@ -94,7 +93,7 @@ func (s *TELNETTest) RunTest(tst test.Test, target string, opts test.TestOptions
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	conn.Close()
 
 	return nil
 }

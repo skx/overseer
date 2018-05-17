@@ -43,7 +43,7 @@ func (s *FINGERTest) Example() string {
 	str := `
 Finger Tester
 -------------
-  The finger tester connects to a remote host and ensures that a response
+ The finger tester connects to a remote host and ensures that a response
  is received.
 
  This test is invoked via input like so:
@@ -129,8 +129,8 @@ func (s *FINGERTest) RunTest(tst test.Test, target string, opts test.TestOptions
 	conn.Close()
 
 	//
-	// If we didn't get a banner, (i.e. "~/.plan" contents), then
-	// the test failed.
+	// If we didn't get a response of some kind, (i.e. "~/.plan" contents)
+	// then the test failed.
 	//
 	if banner == "" {
 		return errors.New("Failed to read response from server")
