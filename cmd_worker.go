@@ -49,7 +49,7 @@ func (*workerCmd) Usage() string {
 // verbose shows a message only if we're running verbosely
 func (p *workerCmd) verbose(txt string) {
 	if p.Verbose {
-		fmt.Sprintf("%s", txt)
+		fmt.Printf(txt)
 	}
 }
 
