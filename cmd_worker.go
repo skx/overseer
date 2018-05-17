@@ -46,6 +46,13 @@ func (*workerCmd) Usage() string {
 `
 }
 
+// verbose shows a message only if we're running verbosely
+func (p *workerCmd) verbose(txt string) {
+	if p.Verbose {
+		fmt.Sprintf("%s", txt)
+	}
+}
+
 //
 // Flag setup.
 //
@@ -174,9 +181,7 @@ func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions, notify *notifi
 		//
 		// Show what we're doing.
 		//
-		if opts.Verbose {
-			fmt.Printf("Running '%s' test against %s (%s)\n", testType, testTarget, target)
-		}
+		p.verbose(fmt.Sprintf("Running '%s' test against %s (%s)\n", testType, testTarget, target))
 
 		//
 		// We'll repeat failing tests up to five times by default
@@ -217,9 +222,7 @@ func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions, notify *notifi
 			// If the test passed then we're good.
 			//
 			if result == nil {
-				if opts.Verbose {
-					fmt.Printf("\t[%d/%d] - Test passed.\n", attempt, maxAttempts)
-				}
+				p.verbose(fmt.Sprintf("\t[%d/%d] - Test passed.\n", attempt, maxAttempts))
 
 				// break out of loop
 				attempt = maxAttempts + 1
@@ -232,9 +235,7 @@ func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions, notify *notifi
 				// It will be repeated before a notifier
 				// is invoked.
 				//
-				if opts.Verbose {
-					fmt.Printf("\t[%d/%d] Test failed: %s\n", attempt, maxAttempts, result.Error())
-				}
+				p.verbose(fmt.Sprintf("\t[%d/%d] Test failed: %s\n", attempt, maxAttempts, result.Error()))
 
 			}
 		}
