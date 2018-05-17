@@ -89,6 +89,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -221,12 +222,28 @@ HTTP Tester
 func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
 
 	//
-	// Determine the port to connect to, via the protocol
-	// in the URI.
+	// Determine the port to connect to, initially via the protocol
+	// in the string, but allow the URI to override that.
 	//
-	port := 80
-	if strings.HasPrefix(tst.Target, "https:") {
-		port = 443
+	// e.g: We expect
+	//
+	//  http://example.com/      -> 80
+	//  https://example.com/     -> 443
+	//  http://example.com:8080/ -> 8080
+	//
+	port := "80"
+	u, err := url.Parse(tst.Target)
+	if err != nil {
+		return err
+	}
+	if u.Scheme == "http" {
+		port = "80"
+	}
+	if u.Scheme == "https" {
+		port = "443"
+	}
+	if u.Port() != "" {
+		port = u.Port()
 	}
 
 	//
@@ -259,13 +276,13 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 		//
 		// Assume an IPv4 address by default.
 		//
-		addr = fmt.Sprintf("%s:%d", address, port)
+		addr = fmt.Sprintf("%s:%s", address, port)
 
 		//
 		// If we find a ":" we know it is an IPv6 address though
 		//
 		if strings.Contains(address, ":") {
-			addr = fmt.Sprintf("[%s]:%d", address, port)
+			addr = fmt.Sprintf("[%s]:%s", address, port)
 		}
 
 		//
@@ -307,7 +324,6 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 	// Now we can make a request-object
 	//
 	var req *http.Request
-	var err error
 
 	//
 	// The default method is "GET"
