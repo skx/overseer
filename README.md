@@ -11,7 +11,8 @@ Overseer is a simple and scalable [golang](https://golang.org/)-based remote pro
 "Remote Protocol Tester" sounds a little vague, so to be more concrete this application lets you test services are running and has built-in support for testing:
 
 * DNS-servers
-  * Test lookups of A, AAAA, MX, NS, and TXT records.
+   * Test lookups of A, AAAA, MX, NS, and TXT records.
+* Finger
 * FTP
 * HTTP & HTTPS fetches.
    * HTTP basic-authentication is supported.
@@ -26,6 +27,7 @@ Overseer is a simple and scalable [golang](https://golang.org/)-based remote pro
 * rsync
 * SMTP
 * SSH
+* Telnet
 * VNC
 * XMPP
 
