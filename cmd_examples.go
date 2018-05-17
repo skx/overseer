@@ -64,14 +64,31 @@ func showExamples(filter string) {
 		out := x.Example()
 		fmt.Printf("%s\n", out)
 
-		fmt.Printf("Optional Arguments which are supported are now shown:\n\n")
+		fmt.Printf("Arguments which are supported are now shown:\n\n")
 
 		fmt.Printf("  %10s|%s\n", "Name", "Valid Value")
 		fmt.Printf("  ----------------------------------\n")
-		for opt, reg := range x.Arguments() {
-			fmt.Printf("  %10s|%s\n", opt, reg)
-		}
 
+		//
+		// The arguments this test supports
+		//
+		m := x.Arguments()
+
+		//
+		// Temporary structure to store the keys.
+		//
+		var keys []string
+		for k := range m {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+
+		//
+		// Now show the keys + values in sorted order
+		//
+		for _, k := range keys {
+			fmt.Printf("  %10s|%s\n", k, m[k])
+		}
 		fmt.Printf("\n\n")
 
 	}
