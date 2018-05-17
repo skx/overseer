@@ -20,6 +20,7 @@ Overseer is a simple and scalable [golang](https://golang.org/)-based remote pro
    * SSL certificate validation and expiration warnings are supported.
 * IMAP & IMAPS
 * MySQL
+* NNTP
 * ping / ping6
 * POP3 & POP3S
 * Postgres
