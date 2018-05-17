@@ -135,7 +135,7 @@ func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions, notify *notifi
 		if err != nil {
 			return err
 		}
-		testTarget = u.Host
+		testTarget = u.Hostname()
 	}
 
 	//
