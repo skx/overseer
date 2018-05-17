@@ -35,7 +35,7 @@ type NNTPTest struct {
 // their values.
 func (s *NNTPTest) Arguments() map[string]string {
 	known := map[string]string{
-		"port": "^[0-9]+$",
+		"port":  "^[0-9]+$",
 		"group": ".*",
 	}
 	return known
@@ -130,7 +130,7 @@ func (s *NNTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 		//
 		// Select the group
 		//
-		_, err = fmt.Fprintf(conn, "GROUP " + tst.Arguments["group"]+"\n")
+		_, err = fmt.Fprintf(conn, "GROUP "+tst.Arguments["group"]+"\n")
 		if err != nil {
 			return err
 		}
@@ -143,10 +143,10 @@ func (s *NNTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 			return err
 		}
 
-		if ( strings.HasPrefix(resp, "211" ) ) {
+		if strings.HasPrefix(resp, "211") {
 			return nil
 		} else {
-			return fmt.Errorf( "Selecting group %s failed - %s",  tst.Arguments["group"], resp )
+			return fmt.Errorf("Selecting group %s failed - %s", tst.Arguments["group"], resp)
 		}
 	}
 
