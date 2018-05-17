@@ -7,7 +7,12 @@
 //
 //    host.example.com must run finger with user 'skx'
 //
-//  NOTE: A user is mandatory.
+//  If you wish you can regard the fetch as a failure unless some specific
+// text is returned too:
+//
+//    host.example.com must run finger with user 'skx' with content '2018'
+//
+//  NOTE: The user-argument is mandatory.
 //
 
 package protocols
@@ -32,8 +37,9 @@ type FINGERTest struct {
 // their values.
 func (s *FINGERTest) Arguments() map[string]string {
 	known := map[string]string{
-		"port": "^[0-9]+$",
-		"user": ".*",
+		"content": ".*",
+		"port":    "^[0-9]+$",
+		"user":    ".*",
 	}
 	return known
 }
@@ -50,7 +56,12 @@ Finger Tester
 
     host.example.com must run finger with user 'skx'
 
- NOTE: A user is mandatory.
+ If you wish you can regard the fetch as a failure unless some specific
+ text is returned too:
+
+    host.example.com must run finger with user 'skx' with content '2018'
+
+ NOTE: The user-argument is mandatory.
 `
 	return str
 }
@@ -119,10 +130,10 @@ func (s *FINGERTest) RunTest(tst test.Test, target string, opts test.TestOptions
 	}
 
 	//
-	// Read the banner.
+	// Read the response from the finger-server
 	//
-	var banner string
-	banner, err = bufio.NewReader(conn).ReadString('\n')
+	var output string
+	output, err = bufio.NewReader(conn).ReadString('\n')
 	if err != nil {
 		return err
 	}
@@ -132,8 +143,19 @@ func (s *FINGERTest) RunTest(tst test.Test, target string, opts test.TestOptions
 	// If we didn't get a response of some kind, (i.e. "~/.plan" contents)
 	// then the test failed.
 	//
-	if banner == "" {
-		return errors.New("Failed to read response from server")
+	if output == "" {
+		return errors.New("The server didn't send a response.")
+	}
+
+	//
+	// If we require some specific content in the response we should
+	// test for that here.
+	//
+	content := tst.Arguments["content"]
+	if content != "" {
+		if !strings.Contains(output, content) {
+			return fmt.Errorf("The finger-output did not contain the required text '%s'", content)
+		}
 	}
 
 	return nil
