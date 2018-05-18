@@ -85,19 +85,10 @@ func (obj *Test) Sanitize() string {
 //
 // The options might change the way the test operates.
 type TestOptions struct {
-	// Retry controls whether failing tests should be retried.
-	Retry bool
-
 	// Timeout for the single test, in seconds.
 	Timeout time.Duration
 
 	// Verbose controls the level of disagnosting printing the
 	// tests & drivers produce.
 	Verbose bool
-
-	// Should the test probe IPv4 addresses?
-	IPv4 bool
-
-	// Should the test probe IPv6 addresses?
-	IPv6 bool
 }

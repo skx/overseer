@@ -28,6 +28,7 @@ type workerCmd struct {
 	IPv4          bool
 	IPv6          bool
 	Retry         bool
+	RetryDelay    time.Duration
 	RedisHost     string
 	RedisPassword string
 	Timeout       int
@@ -68,6 +69,7 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 	defaults.IPv4 = true
 	defaults.IPv6 = true
 	defaults.Retry = true
+	defaults.RetryDelay = 5 * time.Second
 	defaults.Timeout = 10
 	defaults.Verbose = false
 	defaults.RedisHost = "localhost:6379"
@@ -95,6 +97,7 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 	f.BoolVar(&p.IPv4, "4", defaults.IPv4, "Enable IPv4 tests.")
 	f.BoolVar(&p.IPv6, "6", defaults.IPv6, "Enable IPv6 tests.")
 	f.IntVar(&p.Timeout, "timeout", defaults.Timeout, "The global timeout for all tests, in seconds.")
+	f.DurationVar(&p.RetryDelay, "retry-delay", defaults.RetryDelay, "The time to sleep between failing tests.")
 	f.StringVar(&p.RedisHost, "redis-host", defaults.RedisHost, "Specify the address of the redis queue.")
 	f.StringVar(&p.RedisPassword, "redis-pass", defaults.RedisPassword, "Specify the password for the redis queue.")
 }
@@ -162,12 +165,12 @@ func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions, notify *notifi
 	//
 	for _, ip := range ips {
 		if ip.To4() != nil {
-			if opts.IPv4 {
+			if p.IPv4 {
 				targets = append(targets, fmt.Sprintf("%s", ip))
 			}
 		}
 		if ip.To16() != nil && ip.To4() == nil {
-			if opts.IPv6 {
+			if p.IPv6 {
 				targets = append(targets, fmt.Sprintf("%s", ip))
 			}
 		}
@@ -192,7 +195,7 @@ func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions, notify *notifi
 		//
 		// If retrying is disabled then don't retry.
 		//
-		if opts.Retry == false {
+		if p.Retry == false {
 			maxAttempts = attempt + 1
 		}
 
@@ -237,6 +240,11 @@ func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions, notify *notifi
 				//
 				p.verbose(fmt.Sprintf("\t[%d/%d] Test failed: %s\n", attempt, maxAttempts, result.Error()))
 
+				//
+				// Sleep before retrying the failing test.
+				//
+				p.verbose(fmt.Sprintf("\t\tSleeping for %s before retrying\n", p.RetryDelay.String()))
+				time.Sleep(p.RetryDelay)
 			}
 		}
 
@@ -311,9 +319,6 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 	//
 	var opts test.TestOptions
 	opts.Verbose = p.Verbose
-	opts.IPv4 = p.IPv4
-	opts.IPv6 = p.IPv6
-	opts.Retry = p.Retry
 	opts.Timeout = time.Duration(p.Timeout) * time.Second
 
 	//
