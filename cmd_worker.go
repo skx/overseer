@@ -25,15 +25,35 @@ import (
 
 // This is our structure, largely populated by command-line arguments
 type workerCmd struct {
-	IPv4          bool
-	IPv6          bool
-	Retry         bool
-	RetryDelay    time.Duration
-	RedisHost     string
+	// Should we run tests against IPv4 addresses?
+	IPv4 bool
+
+	// Should we run tests against IPv6 addresses?
+	IPv6 bool
+
+	// Should we retry failed tests a number of times to smooth failures?
+	Retry bool
+
+	// If we should retry failed tests, how many times before we give up?
+	RetryCount int
+
+	// Prior to retrying a failed test how long should we pause?
+	RetryDelay time.Duration
+
+	// The redis-host we're going to connect to for our queues.
+	RedisHost string
+
+	// The (optional) redis-password we'll use.
 	RedisPassword string
-	Timeout       int
-	Verbose       bool
-	_r            *redis.Client
+
+	// How long should tests run for?
+	Timeout time.Duration
+
+	// Should the testing, and the tests, be verbose?
+	Verbose bool
+
+	// The handle to our redis-server
+	_r *redis.Client
 }
 
 //
@@ -67,8 +87,9 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 	defaults.IPv4 = true
 	defaults.IPv6 = true
 	defaults.Retry = true
+	defaults.RetryCount = 5
 	defaults.RetryDelay = 5 * time.Second
-	defaults.Timeout = 10
+	defaults.Timeout = 10 * time.Second
 	defaults.Verbose = false
 	defaults.RedisHost = "localhost:6379"
 	defaults.RedisPassword = ""
@@ -95,9 +116,10 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 	//
 	f.BoolVar(&p.Verbose, "verbose", defaults.Verbose, "Show more output.")
 	f.BoolVar(&p.Retry, "retry", defaults.Retry, "Should failing tests be retried a few times before raising a notification.")
+	f.IntVar(&p.RetryCount, "retry-count", defaults.RetryCount, "How many times to retry a test, before regarding it as a failure.")
 	f.BoolVar(&p.IPv4, "4", defaults.IPv4, "Enable IPv4 tests.")
 	f.BoolVar(&p.IPv6, "6", defaults.IPv6, "Enable IPv6 tests.")
-	f.IntVar(&p.Timeout, "timeout", defaults.Timeout, "The global timeout for all tests, in seconds.")
+	f.DurationVar(&p.Timeout, "timeout", defaults.Timeout, "The global timeout for all tests, in seconds.")
 	f.DurationVar(&p.RetryDelay, "retry-delay", defaults.RetryDelay, "The time to sleep between failing tests.")
 	f.StringVar(&p.RedisHost, "redis-host", defaults.RedisHost, "Specify the address of the redis queue.")
 	f.StringVar(&p.RedisPassword, "redis-pass", defaults.RedisPassword, "Specify the password for the redis queue.")
@@ -191,7 +213,7 @@ func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions, notify *notifi
 		// We'll repeat failing tests up to five times by default
 		//
 		attempt := 0
-		maxAttempts := 5
+		maxAttempts := p.RetryCount
 
 		//
 		// If retrying is disabled then don't retry.
