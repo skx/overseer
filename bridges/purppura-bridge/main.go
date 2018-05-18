@@ -26,6 +26,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"sync"
@@ -106,10 +107,13 @@ func process(msg []byte) {
 	//
 	jsonValue, err := json.Marshal(values)
 	if err != nil {
-		fmt.Printf("Failed to encode JSON:%s\n", err.Error())
+		fmt.Printf("process: Failed to encode JSON:%s\n", err.Error())
 		os.Exit(1)
 	}
 
+	//
+	// If we're being verbose show what we're going to POST
+	//
 	if *verbose {
 		fmt.Printf("%s\n", jsonValue)
 	}
@@ -117,15 +121,33 @@ func process(msg []byte) {
 	//
 	// Post to purppura
 	//
-	_, err = http.Post(*pURL,
+	res, err := http.Post(*pURL,
 		"application/json",
 		bytes.NewBuffer(jsonValue))
 
 	if err != nil {
-		fmt.Printf("Failed to post to purppura:%s\n", err.Error())
+		fmt.Printf("process: Failed to post to purppura:%s\n", err.Error())
 		os.Exit(1)
 	}
 
+	//
+	// OK now we've submitted the post.
+	//
+	// We should retrieve the status-code + body, if the status-code
+	// is "odd" then we'll show them.
+	//
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Printf("process: Error reading response to post: %s\n", err.Error())
+		return
+	}
+	status := res.StatusCode
+
+	if status != 200 {
+		fmt.Printf("process: Error - Status code was not 200: %d\n", status)
+		fmt.Printf("process: Response - %s\n", body)
+	}
 }
 
 // CheckUpdates triggers an alert if we've not received anything recently
@@ -167,13 +189,32 @@ func CheckUpdates() {
 	//
 	// Post to purppura
 	//
-	_, err = http.Post(*pURL,
+	res, err := http.Post(*pURL,
 		"application/json",
 		bytes.NewBuffer(jsonValue))
 
 	if err != nil {
-		fmt.Printf("Failed to post purppura-bridge to purppura:%s\n", err.Error())
+		fmt.Printf("CheckUpdates: Failed to post purppura-bridge to purppura:%s\n", err.Error())
 		os.Exit(1)
+	}
+
+	//
+	// OK now we've submitted the post.
+	//
+	// We should retrieve the status-code + body, if the status-code
+	// is "odd" then we'll show them.
+	//
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Printf("CheckUpdates: Error reading response to post: %s\n", err.Error())
+		return
+	}
+	status := res.StatusCode
+
+	if status != 200 {
+		fmt.Printf("CheckUpdates: Error - Status code was not 200: %d\n", status)
+		fmt.Printf("CheckUpdates: Response - %s\n", body)
 	}
 }
 
@@ -200,13 +241,32 @@ func SendHeartbeat() {
 	//
 	// Post to purppura
 	//
-	_, err := http.Post(*pURL,
+	res, err := http.Post(*pURL,
 		"application/json",
 		bytes.NewBuffer(jsonValue))
 
 	if err != nil {
-		fmt.Printf("Failed to post heartbeat to purppura:%s\n", err.Error())
+		fmt.Printf("SendHeartbeat: Failed to post heartbeat to purppura:%s\n", err.Error())
 		os.Exit(1)
+	}
+
+	//
+	// OK now we've submitted the post.
+	//
+	// We should retrieve the status-code + body, if the status-code
+	// is "odd" then we'll show them.
+	//
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Printf("SendHeartbeat: Error reading response to post: %s\n", err.Error())
+		return
+	}
+	status := res.StatusCode
+
+	if status != 200 {
+		fmt.Printf("SendHeartbeat: Error - Status code was not 200: %d\n", status)
+		fmt.Printf("SendHeartbeat: Response - %s\n", body)
 	}
 
 }
