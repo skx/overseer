@@ -18,17 +18,16 @@ type Notifier struct {
 }
 
 // New is the constructor for the notifier
-func New(addr string, password string) (*Notifier, error) {
-	tmp := new(Notifier)
-	tmp.Redis = redis.NewClient(&redis.Options{
-		Addr:     addr,
-		Password: password,
-		DB:       0, // use default DB
-	})
+func New(client *redis.Client) (*Notifier, error) {
 
-	//
-	// And run a ping, just to make sure it worked.
-	//
+	// Create the object
+	tmp := new(Notifier)
+
+	// Save the redis-handle away
+	tmp.Redis = client
+
+	// And run a ping, just to make sure the handle
+	// is open/valid.
 	_, err := tmp.Redis.Ping().Result()
 	if err != nil {
 		fmt.Printf("Redis connection failed: %s\n", err.Error())

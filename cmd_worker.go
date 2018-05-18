@@ -60,10 +60,8 @@ func (p *workerCmd) verbose(txt string) {
 func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 
 	//
-	// Create the default options here
-	//
-	// This is done so we can load defaults via a configuration-file
-	// if present.
+	// Setup the default options here, these can be loaded/replaced
+	// via a configuration-file if it is present.
 	//
 	var defaults workerCmd
 	defaults.IPv4 = true
@@ -92,6 +90,9 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 		}
 	}
 
+	//
+	// Allow these defaults to be changed by command-line flags
+	//
 	f.BoolVar(&p.Verbose, "verbose", defaults.Verbose, "Show more output.")
 	f.BoolVar(&p.Retry, "retry", defaults.Retry, "Should failing tests be retried a few times before raising a notification.")
 	f.BoolVar(&p.IPv4, "4", defaults.IPv4, "Enable IPv4 tests.")
@@ -287,16 +288,6 @@ func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions, notify *notifi
 func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 
 	//
-	// Create a notifier object, for posting our results.
-	//
-	notify, err := notifier.New(p.RedisHost, p.RedisPassword)
-
-	if err != nil {
-		fmt.Printf("Failed to connect to redis for publishing results: %s\n", err.Error())
-		os.Exit(1)
-	}
-
-	//
 	// Connect to the redis-host.
 	//
 	p._r = redis.NewClient(&redis.Options{
@@ -308,14 +299,21 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 	//
 	// And run a ping, just to make sure it worked.
 	//
-	_, err = p._r.Ping().Result()
+	_, err := p._r.Ping().Result()
 	if err != nil {
 		fmt.Printf("Redis connection failed: %s\n", err.Error())
 		return subcommands.ExitFailure
 	}
 
 	//
-	// Setup the options for the tests.
+	// Create a notifier object, for posting our results, which
+	// uses the same redis-connection handle
+	//
+	var notify *notifier.Notifier
+	notify, err = notifier.New(p._r)
+
+	//
+	// Setup the test-options.
 	//
 	var opts test.TestOptions
 	opts.Verbose = p.Verbose
@@ -327,7 +325,7 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 	parse := parser.New()
 
 	//
-	// Wait for the members
+	// Wait for jobs, in a blocking-manner.
 	//
 	for true {
 
