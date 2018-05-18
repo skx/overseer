@@ -18,6 +18,7 @@ import (
 )
 
 type enqueueCmd struct {
+	RedisDB       int
 	RedisHost     string
 	RedisPassword string
 	_r            *redis.Client
@@ -48,6 +49,7 @@ func (p *enqueueCmd) SetFlags(f *flag.FlagSet) {
 	var defaults enqueueCmd
 	defaults.RedisHost = "localhost:6379"
 	defaults.RedisPassword = ""
+	defaults.RedisDB = 0
 
 	//
 	// If we have a configuration file then load it
@@ -65,6 +67,7 @@ func (p *enqueueCmd) SetFlags(f *flag.FlagSet) {
 		}
 	}
 
+	f.IntVar(&p.RedisDB, "redis-db", defaults.RedisDB, "Specify the database-number for redis.")
 	f.StringVar(&p.RedisHost, "redis-host", defaults.RedisHost, "Specify the address of the redis queue.")
 	f.StringVar(&p.RedisPassword, "redis-pass", defaults.RedisPassword, "Specify the password for the redis queue.")
 }
@@ -89,7 +92,7 @@ func (p *enqueueCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{
 	p._r = redis.NewClient(&redis.Options{
 		Addr:     p.RedisHost,
 		Password: p.RedisPassword,
-		DB:       0, // use default DB
+		DB:       p.RedisDB,
 	})
 
 	//

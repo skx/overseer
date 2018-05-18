@@ -43,6 +43,9 @@ type workerCmd struct {
 	// The redis-host we're going to connect to for our queues.
 	RedisHost string
 
+	// The redis-database we're going to use.
+	RedisDB int
+
 	// The (optional) redis-password we'll use.
 	RedisPassword string
 
@@ -92,6 +95,7 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 	defaults.Timeout = 10 * time.Second
 	defaults.Verbose = false
 	defaults.RedisHost = "localhost:6379"
+	defaults.RedisDB = 0
 	defaults.RedisPassword = ""
 
 	//
@@ -114,14 +118,24 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 	//
 	// Allow these defaults to be changed by command-line flags
 	//
+	// Verbose
 	f.BoolVar(&p.Verbose, "verbose", defaults.Verbose, "Show more output.")
-	f.BoolVar(&p.Retry, "retry", defaults.Retry, "Should failing tests be retried a few times before raising a notification.")
-	f.IntVar(&p.RetryCount, "retry-count", defaults.RetryCount, "How many times to retry a test, before regarding it as a failure.")
+
+	// Protocols
 	f.BoolVar(&p.IPv4, "4", defaults.IPv4, "Enable IPv4 tests.")
 	f.BoolVar(&p.IPv6, "6", defaults.IPv6, "Enable IPv6 tests.")
+
+	// Timeout
 	f.DurationVar(&p.Timeout, "timeout", defaults.Timeout, "The global timeout for all tests, in seconds.")
+
+	// Retry
+	f.BoolVar(&p.Retry, "retry", defaults.Retry, "Should failing tests be retried a few times before raising a notification.")
+	f.IntVar(&p.RetryCount, "retry-count", defaults.RetryCount, "How many times to retry a test, before regarding it as a failure.")
 	f.DurationVar(&p.RetryDelay, "retry-delay", defaults.RetryDelay, "The time to sleep between failing tests.")
+
+	// Redis
 	f.StringVar(&p.RedisHost, "redis-host", defaults.RedisHost, "Specify the address of the redis queue.")
+	f.IntVar(&p.RedisDB, "redis-db", defaults.RedisDB, "Specify the database-number for redis.")
 	f.StringVar(&p.RedisPassword, "redis-pass", defaults.RedisPassword, "Specify the password for the redis queue.")
 }
 
@@ -315,7 +329,7 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 	p._r = redis.NewClient(&redis.Options{
 		Addr:     p.RedisHost,
 		Password: p.RedisPassword,
-		DB:       0, // use default DB
+		DB:       p.RedisDB,
 	})
 
 	//
