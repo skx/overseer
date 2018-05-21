@@ -289,7 +289,7 @@ func main() {
 	// Sanity-check
 	//
 	if *pURL == "" {
-		fmt.Printf("Usage: purppura-bridge -purpurra=https://alert.steve.fi/events [-redis-host=127.0.0.1:6379] [-redis-pass=secret]\n")
+		fmt.Printf("Usage: purppura-bridge -purppura=https://alert.steve.fi/events [-redis-host=127.0.0.1:6379] [-redis-pass=secret]\n")
 		os.Exit(1)
 
 	}
@@ -315,7 +315,7 @@ func main() {
 	c := cron.New()
 	// Make sure we send a heartbeat so we're alerted if the bridge fails
 	c.AddFunc("@every 30s", func() { SendHeartbeat() })
-	// Make sure we raise an alert if we don't have MQ-traffic
+	// Make sure we raise an alert if we don't have recent results.
 	c.AddFunc("@every 30s", func() { CheckUpdates() })
 	c.Start()
 
