@@ -316,7 +316,7 @@ func main() {
 	// Make sure we send a heartbeat so we're alerted if the bridge fails
 	c.AddFunc("@every 30s", func() { SendHeartbeat() })
 	// Make sure we raise an alert if we don't have recent results.
-	c.AddFunc("@every 30s", func() { CheckUpdates() })
+	c.AddFunc("@every 5m", func() { CheckUpdates() })
 	c.Start()
 
 	for true {
