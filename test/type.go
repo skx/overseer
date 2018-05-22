@@ -88,7 +88,6 @@ type TestOptions struct {
 	// Timeout for the single test, in seconds.
 	Timeout time.Duration
 
-	// Verbose controls the level of disagnosting printing the
-	// tests & drivers produce.
+	// Should the protocol-tests run verbosely?
 	Verbose bool
 }
