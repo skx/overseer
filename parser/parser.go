@@ -50,25 +50,18 @@ func New() *Parser {
 func (s *Parser) executable(path string) (bool, error) {
 
 	stat, err := os.Stat(path)
-
 	if err != nil {
-
 		return false, err
-
 	}
 
 	mode := stat.Mode()
 
 	if !mode.IsRegular() {
-
 		return false, errors.New("Not regular")
-
 	}
 
 	if (mode & 0111) == 0 {
-
 		return false, nil
-
 	}
 
 	return true, nil
