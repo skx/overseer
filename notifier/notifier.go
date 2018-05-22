@@ -1,3 +1,14 @@
+// The notifier package is the thing that posts the results of
+// executed tests into a Redis-queue.
+//
+// From here external processes are expected to fetch them,
+// process them, and ultimately inform a human.
+//
+// The `bridges/` directory in the source-repository contains
+// a couple of sample notifiers.
+//
+
+
 package notifier
 
 import (
@@ -9,15 +20,14 @@ import (
 	"github.com/skx/overseer/test"
 )
 
-// Notifier holds our notifier-state, most obviously the connection
-// to the redis-server
+// Notifier holds a connection to the Redis queue used to store test-results.
 type Notifier struct {
-	// Redis is the redis-handle we use to publish notification
-	// messages upon.
+	// Redis is the is the redis-handle
 	Redis *redis.Client
 }
 
-// New is the constructor for the notifier
+// New is the constructor for the notifier, which copies the supplied redis
+// handle into the object - and tests it for validity.
 func New(client *redis.Client) (*Notifier, error) {
 
 	// Create the object
