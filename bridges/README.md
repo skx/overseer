@@ -7,6 +7,7 @@ that queue and take the appropriate action.
 This directory contains two utilities:
 
 * [purppura-bridge](purppura-bridge/)
-   * Posts test results to a purppura-instance.
+   * Posts test results to a [purppura](https://github.com/skx/purppura/)-instance.
 * [irc-bridge](irc-bridge/)
-   * Posts tests to an IRC server.
+   * Posts test-failures to an IRC channel.
+     * Test results which succeed are discarded.
