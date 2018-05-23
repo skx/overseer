@@ -17,7 +17,6 @@ import (
 
 	"github.com/go-redis/redis"
 	"github.com/google/subcommands"
-	"github.com/skx/overseer/notifier"
 	"github.com/skx/overseer/parser"
 	"github.com/skx/overseer/protocols"
 	"github.com/skx/overseer/test"
@@ -139,15 +138,66 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 	f.StringVar(&p.RedisPassword, "redis-pass", defaults.RedisPassword, "Specify the password for the redis queue.")
 }
 
-// runTest is really the core of our application.
+// notify is used to store the result of a test in our redis queue.
 //
-// Given a test to be executed this function is responsible for invoking
-// it, and handling the result.
-//
-// The test result will be passed to the specified notifier instance upon
-// completion.
-//
-func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions, notify *notifier.Notifier) error {
+func (p *workerCmd) notify(test test.Test, result error) error {
+
+	//
+	// If we don't have a redis-server then return immediately.
+	//
+	// (This shouldn't happen, as without a redis-handle we can't
+	// fetch jobs to execute.)
+	//
+	if p._r == nil {
+		return nil
+	}
+
+	//
+	// The message we'll publish will be a JSON hash
+	//
+	msg := map[string]string{
+		"input":  test.Input,
+		"result": "passed",
+		"target": test.Target,
+		"time":   fmt.Sprintf("%d", time.Now().Unix()),
+		"type":   test.Type,
+	}
+
+	//
+	// Was the test result a failure?  If so update the object
+	// to contain the failure-message, and record that it was
+	// a failure rather than the default pass.
+	//
+	if result != nil {
+		msg["result"] = "failed"
+		msg["error"] = result.Error()
+	}
+
+	//
+	// Convert the MAP to a JSON string we can notify.
+	//
+	j, err := json.Marshal(msg)
+	if err != nil {
+		fmt.Printf("Failed to encode test-result to JSON: %s", err.Error())
+		return err
+	}
+
+	//
+	// Publish the message to the queue.
+	//
+	_, err = p._r.RPush("overseer.results", j).Result()
+	if err != nil {
+		fmt.Printf("Result addition failed: %s\n", err)
+		return err
+	}
+
+	return nil
+}
+
+// runTest is really the core of our application, as it is responsible
+// for receiving a test to execute, executing it, and then issuing
+// the notification with the result.
+func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions) error {
 
 	//
 	// Setup our local state.
@@ -187,7 +237,7 @@ func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions, notify *notifi
 		//
 		// Notify the world about our DNS-failure.
 		//
-		notify.Notify(tst, fmt.Errorf("Failed to resolve name %s", testTarget))
+		p.notify(tst, fmt.Errorf("Failed to resolve name %s", testTarget))
 
 		//
 		// Otherwise we're done.
@@ -312,7 +362,7 @@ func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions, notify *notifi
 		// Now we can trigger the notification with our updated
 		// copy of the test.
 		//
-		notify.Notify(copy, result)
+		p.notify(copy, result)
 	}
 
 	return nil
@@ -342,14 +392,8 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 	}
 
 	//
-	// Create a notifier object, for posting our results, which
-	// uses the same redis-connection handle
-	//
-	var notify *notifier.Notifier
-	notify, err = notifier.New(p._r)
-
-	//
-	// Setup the test-options.
+	// Setup the options passed to each test, by copying our
+	// global ones.
 	//
 	var opts test.TestOptions
 	opts.Verbose = p.Verbose
@@ -381,7 +425,7 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 			job, err := parse.ParseLine(test[1], nil)
 
 			if err == nil {
-				p.runTest(job, opts, notify)
+				p.runTest(job, opts)
 			} else {
 				fmt.Printf("Error parsing job from queue: %s - %s\n", test[1], err.Error())
 			}
