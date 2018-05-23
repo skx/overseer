@@ -3,7 +3,7 @@
 # Comments are supported and are prefixed with a leading '#'.
 #
 # NOTE: If an input file is executable it will be executed
-# and the output will be parsed, instead of the literal contents
+# and the output will be parsed, instead of the literal contents.
 #
 # Although we've not discussed how tests are written yet, consider
 # this example a simple demonstration:
@@ -33,30 +33,52 @@
 #
 # Where:
 #
-# `TARGET` is either the hostname, or an URI, of the target to be tested.
+# `TARGET` is either the hostname or an URI of the target to be tested.
 #
 # `PROTOCOL` is one of the protocol-handlers implemented in the application.
-#
-# If you wished to test that a host is running FTP you'd write:
-#
-#      ftp.example.com must run ftp
 #
 # Test-specific options are always written like so:
 #
 #      with $OPTION_NAME $OPTION_VALUE
 #
-# `OPTION_VALUE` may be optionally quoted with single or double-quotes,
-# and this is necessary if the option contains whitespace.
-#
-# Most of the protocol-tests allow you to change the default port
-# against which they'd run, via the "port" option, so we could update
-# our previous example to monitor an FTP-server running on a non-standard
-# port like so:
-#
-#      ftp.example.com must run ftp with port 2211
+# `OPTION_VALUE` may optionally be quoted with single or double-quotes,
+# this is necessary if the option-value contains whitespace.
 #
 ####
 
+
+#
+# A simple example of a test would be to ensure that a host is running
+# an FTP daemon.
+#
+# The basic way to write this would be:
+#
+#   ftp.example.com must run ftp
+#
+# This validates that the remote host is running an FTP-server, but it doesn't
+# making a complete test.  To do that you'd want to actually retrieve a file
+# via FTP.
+#
+# To specify the file to retrieve we replace the target with an URI pointing
+# to the file we wish to retrieve:
+#
+#   ftp://ftp.cpan.org/pub/gnu/=README must run ftp
+#
+# Downloading a file requires a login, so by default we'll try an anonymous
+# one.  If you need to specify real credentials you can do so by adding
+# the appropriate username & password:
+#
+#   ftp://ftp.example.com/path/to/README must run ftp with username 'user@host.com' with password 'secret'
+#
+# Of course the URI could also be used to specify the login details:
+#
+#   ftp://user@example.com:secret@ftp.cpan.org/pub/gnu/=README must run ftp
+#
+# Finally you can ensure that you retrieved sane contents by testing the
+# resulting-file contains a specific string:
+#
+#   ftp://ftp.cpan.org/pub/gnu/=README must run ftp with content 'GNU'
+#
 
 
 #

@@ -1,23 +1,43 @@
 // FTP Tester
 //
-// The FTP tester connects to a remote host and ensures that a response
-// is received that looks like an FTP-server banner.
+// The FTP tester allows you to make a connection to an FTP-server,
+// and optionally retrieve a file.
 //
-// This test is invoked via input like so:
+// A basic test can be invoked via input like so:
 //
 //    host.example.com must run ftp [with port 21]
 //
+// A more complex test would involve actually retrieving a file.  To make
+// the test-definition natural you do this by specifying an URI:
+//
+//   ftp://ftp.cpan.org/pub/gnu/=README must run ftp
+//
+// Downloading a file requires a login, so by default we'll try an anonymous
+// one.  If you need to specify real credentials you can do so by adding
+// the appropriate username & password:
+//
+//   ftp://ftp.example.com/path/to/README must run ftp with username 'user@host.com' with password 'secret'
+//
+// Of course the URI could also be used to specify the login details:
+//
+//   ftp://user@example.com:secret@ftp.cpan.org/pub/gnu/=README must run ftp
+//
+// To ensure that the remote-file contains content you expect you can
+// also verify a specific string is included within the response, via the
+// "content" parameter:
+//
+//    ftp://ftp.example.com/path/to/README.md must run ftp with content '2018'
 
 package protocols
 
 import (
-	"bufio"
-	"errors"
 	"fmt"
-	"net"
+	"io/ioutil"
+	"net/url"
 	"strconv"
 	"strings"
 
+	"github.com/jlaffaye/ftp"
 	"github.com/skx/overseer/test"
 )
 
@@ -30,7 +50,10 @@ type FTPTest struct {
 // their values.
 func (s *FTPTest) Arguments() map[string]string {
 	known := map[string]string{
-		"port": "^[0-9]+$",
+		"content":  ".*",
+		"password": ".*",
+		"port":     "^[0-9]+$",
+		"username": ".*",
 	}
 	return known
 }
@@ -40,12 +63,33 @@ func (s *FTPTest) Example() string {
 	str := `
 FTP Tester
 ----------
- The FTP tester connects to a remote host and ensures that a response
- is received that looks like an FTP-server banner.
+ The FTP tester allows you to make a connection to an FTP-server,
+ and optionally retrieve a file.
 
- This test is invoked via input like so:
+ A basic test can be invoked via input like so:
 
-    host.example.com must run ftp
+    host.example.com must run ftp [with port 21]
+
+ A more complex test would involve actually retrieving a file.  To make
+ the test-definition natural you do this by specifying an URI:
+
+   ftp://ftp.cpan.org/pub/gnu/=README must run ftp
+
+ Downloading a file requires a login, so by default we'll try an anonymous
+ one.  If you need to specify real credentials you can do so by adding
+ the appropriate username & password:
+
+   ftp://ftp.example.com/path/to/README must run ftp with username 'user@host.com' with password 'secret'
+
+ Of course the URI could also be used to specify the login details:
+
+   ftp://user@example.com:secret@ftp.cpan.org/pub/gnu/=README must run ftp
+
+ To ensure that the remote-file contains content you expect you can
+ also verify a specific string is included within the response, via the
+ "content" parameter:
+
+    ftp://ftp.example.com/path/to/README.md must run ftp with content '2018'
 `
 	return str
 }
@@ -56,6 +100,9 @@ FTP Tester
 // In this case we make a TCP connection, defaulting to port 21, and
 // look for a response which appears to be an FTP-server.
 func (s *FTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
+	//
+	// Holder for any error we might encounter.
+	//
 	var err error
 
 	//
@@ -64,7 +111,55 @@ func (s *FTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) e
 	port := 21
 
 	//
+	// Our default credentials
+	//
+	username := "anonymous"
+	password := "overseer@example.com"
+
+	//
+	// The target-file we're going to retrieve, if any
+	//
+	file := "/"
+
+	//
+	// If we've been given an URI then we should update the
+	// port if it is non-standard, and possibly retrieve an
+	// actual file too.
+	//
+	if strings.Contains(tst.Target, "://") {
+
+		// Parse the URI.
+		u, err := url.Parse(tst.Target)
+		if err != nil {
+			return err
+		}
+
+		// Record the path to fetch.
+		file = u.Path
+
+		// Update the default port, if a port-number was given.
+		if u.Port() != "" {
+			port, err = strconv.Atoi(u.Port())
+			if err != nil {
+				return err
+			}
+		}
+
+		// The URI might contain username/password
+		if u.User.Username() != "" {
+			username = u.User.Username()
+			p, _ := u.User.Password()
+			if p != "" {
+				password = p
+			}
+		}
+	}
+
+	fmt.Printf("Username: %s -> %s\n", username, password)
+	//
 	// If the user specified a different port update to use it.
+	//
+	// Do this after the URI-parsing.
 	//
 	if tst.Arguments["port"] != "" {
 		port, err = strconv.Atoi(tst.Arguments["port"])
@@ -72,11 +167,6 @@ func (s *FTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) e
 			return err
 		}
 	}
-
-	//
-	// Set an explicit timeout
-	//
-	d := net.Dialer{Timeout: opts.Timeout}
 
 	//
 	// Default to connecting to an IPv4-address
@@ -91,24 +181,67 @@ func (s *FTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) e
 	}
 
 	//
-	// Make the TCP connection.
+	// Make the connection.
 	//
-	conn, err := d.Dial("tcp", address)
+	var conn *ftp.ServerConn
+	conn, err = ftp.DialTimeout(address, opts.Timeout)
 	if err != nil {
 		return err
 	}
+	defer conn.Quit()
 
 	//
-	// Read the banner.
+	// If the user specified different/real credentials, use them instead.
 	//
-	banner, err := bufio.NewReader(conn).ReadString('\n')
-	if err != nil {
-		return err
+	if tst.Arguments["username"] != "" {
+		username = tst.Arguments["username"]
 	}
-	conn.Close()
+	if tst.Arguments["password"] != "" {
+		password = tst.Arguments["password"]
+	}
 
-	if !strings.Contains(banner, "220") {
-		return errors.New("Banner doesn't look like an FTP success")
+	//
+	// If we have been given a path/file to fetch, via an URI
+	// input, then fetch it.
+	//
+	// Before attempting the fetch login.
+	//
+	if file != "/" {
+
+		//
+		// Login
+		//
+		err = conn.Login(username, password)
+		if err != nil {
+			return err
+		}
+
+		//
+		// Retrieve the file.
+		//
+		resp, err := conn.Retr(file)
+		if err != nil {
+			return err
+		}
+		defer resp.Close()
+
+		//
+		// Actually fetch the contents of the file.
+		//
+		buf, err := ioutil.ReadAll(resp)
+		if err != nil {
+			return err
+		}
+
+		//
+		// If we're doing a content-match then do that here
+		//
+		if tst.Arguments["content"] != "" {
+			if !strings.Contains(string(buf), tst.Arguments["content"]) {
+				return fmt.Errorf("Body didn't contain '%s'", tst.Arguments["content"])
+			}
+		}
+
 	}
 
 	return nil
