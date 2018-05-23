@@ -7,7 +7,7 @@
 //
 //    host.example.com must run nntp [with port 119]
 //
-// For a more complete test you can also validate the existance of a
+// For a more complete test you can also validate the existence of a
 // specific newsgroup:
 //
 //    blaine.gmane.org must run nntp with group 'gmane.org.wikimedia.foundation.uk'
@@ -53,7 +53,7 @@ NNTP Tester
 
     host.example.com must run nntp [with port 119]
 
- For a more complete test you can also validate the existance of a
+ For a more complete test you can also validate the existence of a
  specific newsgroup:
 
     blaine.gmane.org must run nntp with group 'gmane.org.wikimedia.foundation.uk'
