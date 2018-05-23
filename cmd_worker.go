@@ -253,12 +253,12 @@ func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions) error {
 	for _, ip := range ips {
 		if ip.To4() != nil {
 			if p.IPv4 {
-				targets = append(targets, fmt.Sprintf("%s", ip))
+				targets = append(targets, ip.String())
 			}
 		}
 		if ip.To16() != nil && ip.To4() == nil {
 			if p.IPv6 {
-				targets = append(targets, fmt.Sprintf("%s", ip))
+				targets = append(targets, ip.String())
 			}
 		}
 	}
@@ -397,7 +397,7 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 	//
 	var opts test.TestOptions
 	opts.Verbose = p.Verbose
-	opts.Timeout = time.Duration(p.Timeout) * time.Second
+	opts.Timeout = p.Timeout
 
 	//
 	// Create a parser for our input
