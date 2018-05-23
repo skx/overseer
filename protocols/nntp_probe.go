@@ -143,9 +143,7 @@ func (s *NNTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 			return err
 		}
 
-		if strings.HasPrefix(resp, "211") {
-			return nil
-		} else {
+		if !strings.HasPrefix(resp, "211") {
 			return fmt.Errorf("Selecting group %s failed - %s", tst.Arguments["group"], resp)
 		}
 	}
