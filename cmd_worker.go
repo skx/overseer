@@ -17,6 +17,7 @@ import (
 
 	"github.com/go-redis/redis"
 	"github.com/google/subcommands"
+	_ "github.com/skx/golang-metrics"
 	"github.com/skx/overseer/parser"
 	"github.com/skx/overseer/protocols"
 	"github.com/skx/overseer/test"
