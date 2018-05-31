@@ -34,6 +34,7 @@ import (
 
 	"github.com/go-redis/redis"
 	"github.com/robfig/cron"
+	_ "github.com/skx/golang-metrics"
 )
 
 // Avoid threading issues with our last update-time
