@@ -12,11 +12,13 @@ import (
 	"net"
 	"net/url"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/go-redis/redis"
 	"github.com/google/subcommands"
+	graphite "github.com/marpaia/graphite-golang"
 	_ "github.com/skx/golang-metrics"
 	"github.com/skx/overseer/parser"
 	"github.com/skx/overseer/protocols"
@@ -57,6 +59,9 @@ type workerCmd struct {
 
 	// The handle to our redis-server
 	_r *redis.Client
+
+	// The handle to our graphite-server
+	_g *graphite.Graphite
 }
 
 //
@@ -140,7 +145,6 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 }
 
 // notify is used to store the result of a test in our redis queue.
-//
 func (p *workerCmd) notify(test test.Test, result error) error {
 
 	//
@@ -195,10 +199,55 @@ func (p *workerCmd) notify(test test.Test, result error) error {
 	return nil
 }
 
+// alphaNumeric removes all non alpha-numeric characters from the
+// given string, and returns it.  We replace the characters that
+// are invalid with `_`.
+func (p *workerCmd) alphaNumeric(input string) string {
+	//
+	// Remove non alphanumeric
+	//
+	reg, err := regexp.Compile("[^A-Za-z0-9]+")
+	if err != nil {
+		panic(err)
+	}
+	return (reg.ReplaceAllString(input, "_"))
+}
+
+// formatMetrics Format a test for metrics submission.
+//
+// This is a little wierd because ideally we'd want to submit to the
+// metrics-host :
+//
+//    overseer.$testType.$testTarget.$key => value
+//
+// But of course the target might not be what we think it is for all
+// cases - i.e. A DNS test the target is the name of the nameserver rather
+// than the thing to lookup, which is the natural target.
+//
+func (p *workerCmd) formatMetrics(tst test.Test, key string) string {
+
+	prefix := "overseer.test."
+
+	//
+	// Special-case for the DNS-test
+	//
+	if tst.Type == "dns" {
+		return (prefix + ".dns." + p.alphaNumeric(tst.Arguments["lookup"]) + "." + key)
+	}
+
+	//
+	// Otherwise we have a normal test.
+	//
+	return (prefix + tst.Type + "." + p.alphaNumeric(tst.Target) + "." + key)
+}
+
 // runTest is really the core of our application, as it is responsible
 // for receiving a test to execute, executing it, and then issuing
 // the notification with the result.
 func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions) error {
+
+	// Create a map for metric-recording.
+	metrics := map[string]string{}
 
 	//
 	// Setup our local state.
@@ -229,9 +278,10 @@ func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions) error {
 		testTarget = u.Hostname()
 	}
 
-	//
+	// Record the time before we lookup our targets IPs.
+	timeA := time.Now()
+
 	// Now resolve the target to IPv4 & IPv6 addresses.
-	//
 	ips, err := net.LookupIP(testTarget)
 	if err != nil {
 
@@ -247,9 +297,19 @@ func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions) error {
 		return err
 	}
 
+	// Calculate the time the DNS-resolution took - in milliseconds.
+	timeB := time.Now()
+	duration := timeB.Sub(timeA)
+	diff := fmt.Sprintf("%f", float64(duration)/float64(time.Millisecond))
+
+	// Record time in our metric hash
+	metrics["overseer.dns."+p.alphaNumeric(testTarget)+".duration"] = diff
+
 	//
-	// We'll now run the test against each of the resulting IPv4 and
+	// We'll run the test against each of the resulting IPv4 and
 	// IPv6 addresess - ignoring any IP-protocol which is disabled.
+	//
+	// Save the results in our `targets` array, unless disabled.
 	//
 	for _, ip := range ips {
 		if ip.To4() != nil {
@@ -293,6 +353,19 @@ func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions) error {
 		var result error
 
 		//
+		// Record the start-time of the test.
+		//
+		timeA = time.Now()
+
+		//
+		// Start the count here for graphing execution attempts.
+		//
+		// We start at minus-one so that most case will show only
+		// zero attempts total.
+		//
+		c := -1
+
+		//
 		// Prepare to repeat the test.
 		//
 		// We only repeat tests that fail, if the test passes then
@@ -303,6 +376,7 @@ func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions) error {
 		//
 		for attempt < maxAttempts {
 			attempt += 1
+			c += 1
 
 			//
 			// Run the test
@@ -337,6 +411,17 @@ func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions) error {
 		}
 
 		//
+		// Now the test is complete we can record the time it
+		// took to carry out, and the number of attempts it
+		// took to complete.
+		//
+		timeB = time.Now()
+		duration := timeB.Sub(timeA)
+		diff = fmt.Sprintf("%f", float64(duration)/float64(time.Millisecond))
+		metrics[p.formatMetrics(tst, "duration")] = diff
+		metrics[p.formatMetrics(tst, "attempts")] = fmt.Sprintf("%d", c)
+
+		//
 		// Post the result of the test to the notifier.
 		//
 		// Before we trigger the notification we need to
@@ -366,6 +451,25 @@ func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions) error {
 		p.notify(copy, result)
 	}
 
+	//
+	// If we have a metric-host we can now submit each of the values
+	// to it.
+	//
+	// There will be three results for each test:
+	//
+	//  1.  The DNS-lookup-time of the target.
+	//
+	//  2.  The time taken to run the test.
+	//
+	//  3.  The number of attempts (retries, really) before the
+	//      test was completed.
+	//
+	if p._g != nil {
+		for key, val := range metrics {
+			p._g.SimpleSend(key, val)
+		}
+	}
+
 	return nil
 }
 
@@ -382,6 +486,17 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 		Password: p.RedisPassword,
 		DB:       p.RedisDB,
 	})
+
+	//
+	// Connect to our graphite-host
+	//
+	if os.Getenv("METRICS") != "" {
+		var err error
+		p._g, err = graphite.GraphiteFactory("udp", os.Getenv("METRICS"), 2003, "")
+		if err != nil {
+			fmt.Printf("Error setting up metrics - skipping - %s\n", err.Error())
+		}
+	}
 
 	//
 	// And run a ping, just to make sure it worked.
