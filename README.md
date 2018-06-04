@@ -175,6 +175,21 @@ As mentioned this repository contains two simple "[bridges](bridges/)", which po
   * From there alerts will reach a human via pushover.
 
 
+
+## Metrics
+
+Overseer has built-in support for exporting metrics to a remote carbon-server:
+
+* Details of the system itself
+   * Via the [go-metrics](https://github.com/skx/golang-metrics) package.
+* Details of the tests executed
+   * Including the time to run tests, perform DNS lookups, and retry-counts.
+
+To enable this support simply export the environmental variable `METRICS`
+with the hostname of your remote metrics-host prior to launching the worker.
+
+
+
 ## Redis Specifics
 
 We use Redis as a queue as it is simple to deploy, stable, and well-known.
