@@ -13,6 +13,7 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -490,11 +491,28 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 	//
 	// Connect to our graphite-host
 	//
-	if os.Getenv("METRICS") != "" {
-		var err error
-		p._g, err = graphite.GraphiteFactory("udp", os.Getenv("METRICS"), 2003, "")
+	host := os.Getenv("METRICS")
+	if host != "" {
+
+		// Split the into Host + Port
+		ho, pr, err := net.SplitHostPort(host)
 		if err != nil {
-			fmt.Printf("Error setting up metrics - skipping - %s\n", err.Error())
+			// If that failed we assume the port was missing
+			ho = host
+			pr = "2003"
+		}
+
+		// Ensure that the port is an integer
+		port, err := strconv.Atoi(pr)
+		if err == nil {
+			p._g, err = graphite.GraphiteFactory("udp", ho, port, "")
+
+			if err != nil {
+				fmt.Printf("Error setting up metrics - skipping - %s\n", err.Error())
+			}
+		} else {
+			fmt.Printf("Error setting up metrics - failed to convert port to number - %s\n", err.Error())
+
 		}
 	}
 
