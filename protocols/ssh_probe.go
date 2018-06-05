@@ -107,8 +107,8 @@ func (s *SSHTest) RunTest(tst test.Test, target string, opts test.TestOptions) e
 	}
 	conn.Close()
 
-	if !strings.Contains(banner, "OpenSSH") {
-		return errors.New("Banner doesn't look like OpenSSH")
+	if !strings.Contains(banner, "SSH-") {
+		return errors.New("Banner doesn't look like an SSH server")
 	}
 
 	return nil
