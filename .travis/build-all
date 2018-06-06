@@ -6,6 +6,7 @@ BASE="overseer"
 # Get the dependencies
 go get -t -v -d $(go list ./...)
 
+D=$(pwd)
 
 #
 # We build on multiple platforms/archs
@@ -18,6 +19,8 @@ for OS in ${BUILD_PLATFORMS[@]}; do
 
     # For each arch
     for ARCH in ${BUILD_ARCHS[@]}; do
+
+        cd ${D}
 
         # Setup a suffix for the binary
         SUFFIX="${OS}"
@@ -41,7 +44,18 @@ for OS in ${BUILD_PLATFORMS[@]}; do
         export GOOS=${OS}
         export CGO_ENABLED=0
 
+        # Build the main-binary
         go build -ldflags "-X main.version=$(git describe --tags 2>/dev/null || echo 'master')" -o "${BASE}-${SUFFIX}"
 
+        # Build each bridge
+        for br in ${D}/bridges/*/; do
+
+            bridge=$(basename $br)
+
+            # Build the bridge I use
+            cd ${br}
+            go build -o ../../${bridge}-${SUFFIX}
+
+        done
     done
 done
