@@ -76,6 +76,51 @@ func (*workerCmd) Usage() string {
 `
 }
 
+// MetricsFromEnvironment sets up a carbon connection from the environment
+// if suitable values are found
+func (p *workerCmd) MetricsFromEnvironment() {
+
+	//
+	// Get the hostname to connect to.
+	//
+	host := os.Getenv("METRICS_HOST")
+	if host == "" {
+		host = os.Getenv("METRICS")
+	}
+
+	// No host then we'll return
+	if host == "" {
+		return
+	}
+
+	// Split the into Host + Port
+	ho, pr, err := net.SplitHostPort(host)
+	if err != nil {
+		// If that failed we assume the port was missing
+		ho = host
+		pr = "2003"
+	}
+
+	// Setup the protocol to use
+	protocol := os.Getenv("METRICS_PROTOCOL")
+	if protocol == "" {
+		protocol = "udp"
+	}
+
+	// Ensure that the port is an integer
+	port, err := strconv.Atoi(pr)
+	if err == nil {
+		p._g, err = graphite.GraphiteFactory(protocol, ho, port, "")
+
+		if err != nil {
+			fmt.Printf("Error setting up metrics - skipping - %s\n", err.Error())
+		}
+	} else {
+		fmt.Printf("Error setting up metrics - failed to convert port to number - %s\n", err.Error())
+
+	}
+}
+
 // verbose shows a message only if we're running verbosely
 func (p *workerCmd) verbose(txt string) {
 	if p.Verbose {
@@ -467,6 +512,11 @@ func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions) error {
 	//
 	if p._g != nil {
 		for key, val := range metrics {
+			v := os.Getenv("METRICS_VERBOSE")
+			if v != "" {
+				fmt.Printf("%s %s\n", key, val)
+			}
+
 			p._g.SimpleSend(key, val)
 		}
 	}
@@ -489,34 +539,6 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 	})
 
 	//
-	// Connect to our graphite-host
-	//
-	host := os.Getenv("METRICS")
-	if host != "" {
-
-		// Split the into Host + Port
-		ho, pr, err := net.SplitHostPort(host)
-		if err != nil {
-			// If that failed we assume the port was missing
-			ho = host
-			pr = "2003"
-		}
-
-		// Ensure that the port is an integer
-		port, err := strconv.Atoi(pr)
-		if err == nil {
-			p._g, err = graphite.GraphiteFactory("udp", ho, port, "")
-
-			if err != nil {
-				fmt.Printf("Error setting up metrics - skipping - %s\n", err.Error())
-			}
-		} else {
-			fmt.Printf("Error setting up metrics - failed to convert port to number - %s\n", err.Error())
-
-		}
-	}
-
-	//
 	// And run a ping, just to make sure it worked.
 	//
 	_, err := p._r.Ping().Result()
@@ -524,6 +546,11 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 		fmt.Printf("Redis connection failed: %s\n", err.Error())
 		return subcommands.ExitFailure
 	}
+
+	//
+	// Setup our metrics-connection, if enabled
+	//
+	p.MetricsFromEnvironment()
 
 	//
 	// Setup the options passed to each test, by copying our
