@@ -102,12 +102,39 @@ func (s *Parser) ParseFile(filename string, cb ParsedTest) error {
 		scanner = bufio.NewScanner(file)
 	}
 
+	//
+	// We read into this string.
+	//
+	line := ""
+
+	//
+	// Loop
+	//
 	for scanner.Scan() {
 
 		//
-		// Get a line and trim leading/trailing whitespace
+		// Get the line, and strip leading/trailing space.
 		//
-		line := scanner.Text()
+		tmp := scanner.Text()
+		tmp = strings.TrimSpace(tmp)
+
+		//
+		// Append to our existing line.
+		//
+		line += tmp
+
+		//
+		// If the line ends with "\" then we remove
+		// that character, and repeat.
+		//
+		if strings.HasSuffix(line, "\\") {
+			line = strings.TrimSuffix(line, "\\")
+			continue
+		}
+
+		//
+		// OK we've either got a line that doesn't end
+		// with this, or we'll add
 		line = strings.TrimSpace(line)
 
 		//
@@ -120,6 +147,11 @@ func (s *Parser) ParseFile(filename string, cb ParsedTest) error {
 				return err
 			}
 		}
+
+		//
+		// OK we've processed the line.
+		//
+		line = ""
 	}
 
 	//

@@ -194,6 +194,49 @@ func TestNoArguments(t *testing.T) {
 	}
 }
 
+// Test parsing things that should return no options
+func TestContinuation(t *testing.T) {
+
+	file, err := ioutil.TempFile(os.TempDir(), "prefix")
+	defer os.Remove(file.Name())
+
+	// Write to the file
+	lines := `
+127.0.\
+0.1 \
+   must   \
+     run redis
+
+
+`
+	//
+	err = ioutil.WriteFile(file.Name(), []byte(lines), 0644)
+	if err != nil {
+		t.Errorf("Error writing our test-case")
+	}
+
+	//
+	// Now parse the file
+	//
+	p := New()
+	err = p.ParseFile(file.Name(), func(tst test.Test) error {
+		if tst.Type != "redis" {
+			t.Errorf("Our parser was broken!")
+		}
+		if tst.Target != "127.0.0.1" {
+			t.Errorf("Our parser was broken!")
+		}
+		if tst.Sanitize() != "127.0.0.1 must run redis" {
+			t.Errorf("Our parser resulted in a mismatched result!")
+		}
+		return nil
+	})
+
+	if err != nil {
+		t.Errorf("Expected no error, but found %s", err.Error())
+	}
+}
+
 // Test parsing an argument that fails validation
 func TestInvalidArgument(t *testing.T) {
 
