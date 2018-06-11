@@ -194,7 +194,7 @@ func TestNoArguments(t *testing.T) {
 	}
 }
 
-// Test parsing things that should return no options
+// Test parsing a multi-line statement
 func TestContinuation(t *testing.T) {
 
 	file, err := ioutil.TempFile(os.TempDir(), "prefix")
@@ -216,10 +216,16 @@ func TestContinuation(t *testing.T) {
 	}
 
 	//
+	// Count of parsed lines.
+	//
+	count := 0
+
+	//
 	// Now parse the file
 	//
 	p := New()
 	err = p.ParseFile(file.Name(), func(tst test.Test) error {
+		count += 1
 		if tst.Type != "redis" {
 			t.Errorf("Our parser was broken!")
 		}
@@ -234,6 +240,49 @@ func TestContinuation(t *testing.T) {
 
 	if err != nil {
 		t.Errorf("Expected no error, but found %s", err.Error())
+	}
+	if count != 1 {
+		t.Errorf("Expected a single valid line, found %d", count)
+	}
+}
+
+// Test parsing a continued-comment.
+func TestCommentContinuation(t *testing.T) {
+
+	file, err := ioutil.TempFile(os.TempDir(), "prefix")
+	defer os.Remove(file.Name())
+
+	// Write to the file
+	lines := `
+# This is a comment \
+comment must run http \
+ This is still a comment.
+`
+	//
+	err = ioutil.WriteFile(file.Name(), []byte(lines), 0644)
+	if err != nil {
+		t.Errorf("Error writing our test-case")
+	}
+
+	//
+	// Count of parsed lines.
+	//
+	count := 0
+
+	//
+	// Now parse the file
+	//
+	p := New()
+	err = p.ParseFile(file.Name(), func(tst test.Test) error {
+		count += 1
+		return nil
+	})
+
+	if err != nil {
+		t.Errorf("Expected no error, but found %s", err.Error())
+	}
+	if count != 0 {
+		t.Errorf("Expected zero valid lines, found %d", count)
 	}
 }
 
