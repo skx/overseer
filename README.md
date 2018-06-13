@@ -59,9 +59,10 @@ Beyond the compile-time dependencies overseer requires a [redis](https://redis.i
 * As the storage-queue for parsed-jobs.
 * As the storage-queue for test-results.
 
-Because overseer can be executed in a distributed fashion tests are not
-executed as they are parsed/read, instead they are inserted into a redis-queue.
-Workers then poll the queue, and fetch/execute jobs as they become available.
+Because overseer is executed in a distributed fashion tests are not executed
+as they are parsed/read, instead they are inserted into a redis-queue. A worker,
+or number of workers, then poll that queue fetching/executing jobs as they
+become available.
 
 In small-scale deployments it is probably sufficient to have a single worker,
 and all the software running upon a single host.  For a larger number of
@@ -76,7 +77,7 @@ More details about [notifications](#notification) are available later in this do
 
 ## Executing Tests
 
-As mentioned already the process of executing the tests is done int two-steps:
+As mentioned already executing tests a two-step process:
 
 * First of all tests are parsed and inserted into a redis-based queue.
 * Secondly the tests are pulled from that queue and executed.
@@ -89,7 +90,7 @@ them as they become available.
 
 In short using a central queue allows you to scale out the testing horizontally.
 
-To add the jobs to the queue you should run:
+To add your tests to the queue you should run:
 
        $ overseer enqueue \
            -redis-host=queue.example.com:6379 [-redis-pass='secret.here'] \
