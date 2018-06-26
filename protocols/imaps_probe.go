@@ -138,13 +138,21 @@ func (s *IMAPSTest) RunTest(tst test.Test, target string, opts test.TestOptions)
 	con, err := client.DialWithDialerTLS(dial, address, tlsSetup)
 	if err != nil {
 		return err
+
 	}
+	defer con.Close()
 
 	//
 	// If we got username/password then use them
 	//
 	if (tst.Arguments["username"] != "") && (tst.Arguments["password"] != "") {
 		err = con.Login(tst.Arguments["username"], tst.Arguments["password"])
+		if err != nil {
+			return err
+		}
+
+		// Logout so that we don't keep the handle open.
+		err = con.Logout()
 		if err != nil {
 			return err
 		}
