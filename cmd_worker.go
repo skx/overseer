@@ -52,6 +52,9 @@ type workerCmd struct {
 	// The (optional) redis-password we'll use.
 	RedisPassword string
 
+	// Tag applied to all results
+	Tag string
+
 	// How long should tests run for?
 	Timeout time.Duration
 
@@ -143,6 +146,7 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 	defaults.Retry = true
 	defaults.RetryCount = 5
 	defaults.RetryDelay = 5 * time.Second
+	defaults.Tag = ""
 	defaults.Timeout = 10 * time.Second
 	defaults.Verbose = false
 	defaults.RedisHost = "localhost:6379"
@@ -188,6 +192,9 @@ func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 	f.StringVar(&p.RedisHost, "redis-host", defaults.RedisHost, "Specify the address of the redis queue.")
 	f.IntVar(&p.RedisDB, "redis-db", defaults.RedisDB, "Specify the database-number for redis.")
 	f.StringVar(&p.RedisPassword, "redis-pass", defaults.RedisPassword, "Specify the password for the redis queue.")
+
+	// Tag
+	f.StringVar(&p.Tag, "tag", defaults.Tag, "Specify the tag to add to all test-results.")
 }
 
 // notify is used to store the result of a test in our redis queue.
@@ -212,6 +219,7 @@ func (p *workerCmd) notify(test test.Test, result error) error {
 		"target": test.Target,
 		"time":   fmt.Sprintf("%d", time.Now().Unix()),
 		"type":   test.Type,
+		"tag":    p.Tag,
 	}
 
 	//
