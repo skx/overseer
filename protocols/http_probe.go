@@ -538,6 +538,9 @@ func (s *HTTPTest) SSLExpiration(host string, verbose bool) (int64, error) {
 	// If the string matches https://, then strip it off
 	//
 	re, err := regexp.Compile(`^https:\/\/([^\/]+)`)
+	if err != nil {
+		return 0, err
+	}
 	res := re.FindAllStringSubmatch(host, -1)
 	for _, v := range res {
 		host = v[1]
