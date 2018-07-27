@@ -23,6 +23,9 @@ func TestMissingFile(t *testing.T) {
 // Test reading samples from a file
 func TestFile(t *testing.T) {
 	file, err := ioutil.TempFile(os.TempDir(), "prefix")
+	if err != nil {
+		t.Errorf("Error creating temporary-directory %s", err.Error())
+	}
 	defer os.Remove(file.Name())
 
 	// Write to the file
@@ -51,6 +54,10 @@ http://example.com/ must run http with content 'moi'
 // Test reading macro-based samples from a file
 func TestFileMacro(t *testing.T) {
 	file, err := ioutil.TempFile(os.TempDir(), "prefix")
+	if err != nil {
+		t.Errorf("Error creating temporary-directory %s", err.Error())
+	}
+
 	defer os.Remove(file.Name())
 
 	// Write to the file
@@ -78,6 +85,9 @@ FOO must run ssh
 // Test redefinining macros is a bug.
 func TestFileMacroRedefined(t *testing.T) {
 	file, err := ioutil.TempFile(os.TempDir(), "prefix")
+	if err != nil {
+		t.Errorf("Error creating temporary-directory %s", err.Error())
+	}
 	defer os.Remove(file.Name())
 
 	// Write to the file
@@ -198,6 +208,9 @@ func TestNoArguments(t *testing.T) {
 func TestContinuation(t *testing.T) {
 
 	file, err := ioutil.TempFile(os.TempDir(), "prefix")
+	if err != nil {
+		t.Errorf("Error creating temporary-directory %s", err.Error())
+	}
 	defer os.Remove(file.Name())
 
 	// Write to the file
@@ -250,6 +263,9 @@ func TestContinuation(t *testing.T) {
 func TestCommentContinuation(t *testing.T) {
 
 	file, err := ioutil.TempFile(os.TempDir(), "prefix")
+	if err != nil {
+		t.Errorf("Error creating temporary-directory %s", err.Error())
+	}
 	defer os.Remove(file.Name())
 
 	// Write to the file
@@ -494,6 +510,9 @@ func TestInvalidOptions(t *testing.T) {
 // Test invoking a callback.
 func TestCallback(t *testing.T) {
 	file, err := ioutil.TempFile(os.TempDir(), "prefix")
+	if err != nil {
+		t.Errorf("Error creating temporary-directory %s", err.Error())
+	}
 	defer os.Remove(file.Name())
 
 	// Content to write to a file
@@ -538,6 +557,9 @@ http://example.com/ must run http with content 'moi'
 // Test sanitise
 func TestSanitize(t *testing.T) {
 	file, err := ioutil.TempFile(os.TempDir(), "prefix")
+	if err != nil {
+		t.Errorf("Error creating temporary-directory %s", err.Error())
+	}
 	defer os.Remove(file.Name())
 
 	// Content to write to a file
