@@ -269,7 +269,7 @@ func (p *workerCmd) alphaNumeric(input string) string {
 
 // formatMetrics Format a test for metrics submission.
 //
-// This is a little wierd because ideally we'd want to submit to the
+// This is a little weird because ideally we'd want to submit to the
 // metrics-host :
 //
 //    overseer.$testType.$testTarget.$key => value
