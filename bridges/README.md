@@ -1,13 +1,29 @@
 # Bridges
 
-Overseer only posts the results of the tests to a redis host, so if
-you wish to raise alerts to people you will need something to watch
-that queue and take the appropriate action.
+Overseer only submits the results of the tests it executes to a redis queue,
+in order to actually inform a human about a failure you need to process the
+result-queue, and pass the messages on.
 
-This directory contains two utilities:
+Note that each test `overseer` executes is stateless, so if you have a failing
+test the notification will be repeated.
 
-* [purppura-bridge](purppura-bridge/)
-   * Posts test results to a [purppura](https://github.com/skx/purppura/)-instance.
+To give a concrete example, assume the following test:
+
+    http://example.com/ must run http
+
+If the remote host is offline _every_ time that overseer executes that
+test it will record a fresh failure so if you're using the email/IRC bridge
+you'll receive a fresh email/IRC-message each time the test is executed.
+
+> (The purppura-bridge keeps local state, so it will ensure that humans are only notified once - even though it itself is updated at the end of every run.)
+
+The following bridges are distributed with `overseer`:
+
+* [email-bridge](email-bridge/)
+   * Submits test-failures via email.
+     * Test results which succeed are discarded.
 * [irc-bridge](irc-bridge/)
    * Posts test-failures to an IRC channel.
      * Test results which succeed are discarded.
+* [purppura-bridge](purppura-bridge/)
+   * Posts test results to a [purppura](https://github.com/skx/purppura/)-instance.

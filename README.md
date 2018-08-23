@@ -4,11 +4,12 @@
 [![Release](https://img.shields.io/github/release/skx/overseer.svg)](https://github.com/skx/overseer/releases/latest)
 
 
+
 # Overseer
 
 Overseer is a simple and scalable [golang](https://golang.org/)-based remote protocol tester, which allows you to monitor the state of your network, and the services running upon it.
 
-"Remote Protocol Tester" sounds a little vague, so to be more concrete this application lets you test services are running and has built-in support for testing:
+"Remote Protocol Tester" sounds a little vague, so to be more concrete this application lets you test that (remote) services are running, and has built-in support for performing testing against:
 
 * DNS-servers
    * Test lookups of A, AAAA, MX, NS, and TXT records.
@@ -42,7 +43,7 @@ You can see what the available tests look like in [the sample test-file](input.t
 
      ~$ overseer examples [pattern]
 
-All protocol-tests transparently support testing IPv4 and IPv6 targets, although you may globally disable either address family if you prefer.
+All protocol-tests transparently support testing IPv4 and IPv6 targets, although you may globally disable either address family if you wish.
 
 
 
@@ -61,8 +62,8 @@ Beyond the compile-time dependencies overseer requires a [redis](https://redis.i
 
 Because overseer is executed in a distributed fashion tests are not executed
 as they are parsed/read, instead they are inserted into a redis-queue. A worker,
-or number of workers, then poll that queue fetching/executing jobs as they
-become available.
+or number of workers, poll the queue fetching & executing jobs as they become
+available.
 
 In small-scale deployments it is probably sufficient to have a single worker,
 and all the software running upon a single host.  For a larger number of
@@ -73,6 +74,7 @@ Because we don't want to be tied to a specific notification-system results
 of each test are also posted to the same redis-host, which allows results to be retrieved and transmitted to your preferred notifier.
 
 More details about [notifications](#notification) are available later in this document.
+
 
 
 ## Executing Tests
@@ -110,6 +112,7 @@ command.
 To run tests in parallel simply launch more instances of the worker, on the same host, or on different hosts.
 
 
+
 ### Running Automatically
 
 Beneath [systemd/](systemd/) you will find some sample service-files which can be used to deploy overseer upon a single host:
@@ -138,11 +141,13 @@ retry-logic via the command-line flag `-retry=false`.
 
 ## Notification
 
-The result of executing each test is submitted to the central redis-host, from where it can be pulled and used to notify a human of a problem.
+The result of each test is submitted to the central redis-host, from where it can be pulled and used to notify a human of a problem.
 
 Sample result-processors are [included](bridges/) in this repository which post
-test-results to a [purppura instance](https://github.com/skx/purppura), or an
-IRC channel.  These are primarily included for example purposes, the
+test-results to a [purppura instance](https://github.com/skx/purppura), via
+email, or by posting a message to an IRC channel.
+
+The sample bridges are primarily included for demonstration purposes, the
 expectation is you'll prefer to process the results and issue notifications to
 humans via your favourite in-house tool - be it pagerduty, or something similar.
 
@@ -166,12 +171,15 @@ The JSON object used to describe each test-result has the following fields:
 
 **NOTE**: The `input` field will be updated to mask any password options which have been submitted with the tests.
 
-As mentioned this repository contains two simple "[bridges](bridges/)", which poll the results from Redis, and forward them to more useful systems:
+As mentioned this repository contains some demonstration "[bridges](bridges/)", which poll the results from Redis, and forward them to more useful systems:
 
-* `irc-bridge.go`
+* `email-bridge/main.go`
+  * This posts test-failures via email.
+  * Tests which pass are not reported.
+* `irc-bridge/main.go`
   * This posts test-failures to an IRC channel.
   * Tests which pass are not reported, to avoid undue noise on your channel.
-* `purppura-bridge.go`
+* `purppura-bridge/main.go`
   * This forwards each test-result to a [purppura host](https://github.com/skx/purppura/).
   * From there alerts will reach a human via pushover.
 
@@ -181,9 +189,9 @@ As mentioned this repository contains two simple "[bridges](bridges/)", which po
 
 Overseer has built-in support for exporting metrics to a remote carbon-server:
 
-* Details of the system itself
+* Details of the system itself.
    * Via the [go-metrics](https://github.com/skx/golang-metrics) package.
-* Details of the tests executed
+* Details of the tests executed.
    * Including the time to run tests, perform DNS lookups, and retry-counts.
 
 To enable this support simply export the environmental variable `METRICS`
@@ -198,7 +206,7 @@ We use Redis as a queue as it is simple to deploy, stable, and well-known.
 Redis doesn't natively operate as a queue, so we replicate this via the "list"
 primitives.  Adding a job to a queue is performed via a "[rpush](https://redis.io/commands/rpush)" operation, and pulling a job from the queue is achieved via an "[blpop](https://redis.io/commands/blpop)" command.
 
-We use two lists, as queues:
+We use the following two lists as queues:
 
 * `overseer.jobs`
     * For storing tests to be executed by a worker.
