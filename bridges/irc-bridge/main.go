@@ -1,9 +1,7 @@
 //
-// This is the IRC bridge
+// This is the IRC bridge, which should be built via:
 //
-// The program should be built via:
-//
-//     go build irc-bridge.go
+//     go build .
 //
 // Once built launch it like so:
 //
@@ -28,7 +26,6 @@ import (
 	"sync"
 
 	"github.com/go-redis/redis"
-	"github.com/thoj/go-ircevent"
 )
 
 // ircconn holds the IRC server connection.

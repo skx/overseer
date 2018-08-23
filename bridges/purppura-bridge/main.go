@@ -4,7 +4,7 @@
 //
 // The program should be built like so:
 //
-//     go build purppura-bridge.go
+//     go build .
 //
 // Once built launch it like so:
 //
