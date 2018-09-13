@@ -21,6 +21,7 @@ type enqueueCmd struct {
 	RedisDB       int
 	RedisHost     string
 	RedisPassword string
+	RedisSocket   string
 	_r            *redis.Client
 }
 
@@ -50,6 +51,7 @@ func (p *enqueueCmd) SetFlags(f *flag.FlagSet) {
 	defaults.RedisHost = "localhost:6379"
 	defaults.RedisPassword = ""
 	defaults.RedisDB = 0
+	defaults.RedisSocket = ""
 
 	//
 	// If we have a configuration file then load it
@@ -70,6 +72,7 @@ func (p *enqueueCmd) SetFlags(f *flag.FlagSet) {
 	f.IntVar(&p.RedisDB, "redis-db", defaults.RedisDB, "Specify the database-number for redis.")
 	f.StringVar(&p.RedisHost, "redis-host", defaults.RedisHost, "Specify the address of the redis queue.")
 	f.StringVar(&p.RedisPassword, "redis-pass", defaults.RedisPassword, "Specify the password for the redis queue.")
+	f.StringVar(&p.RedisSocket, "redis-socket", defaults.RedisSocket, "If set, will be used for the redis connections.")
 }
 
 //
@@ -89,11 +92,20 @@ func (p *enqueueCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{
 	//
 	// Connect to the redis-host.
 	//
-	p._r = redis.NewClient(&redis.Options{
-		Addr:     p.RedisHost,
-		Password: p.RedisPassword,
-		DB:       p.RedisDB,
-	})
+	if p.RedisSocket != "" {
+		p._r = redis.NewClient(&redis.Options{
+			Network:  "unix",
+			Addr:     p.RedisSocket,
+			Password: p.RedisPassword,
+			DB:       p.RedisDB,
+		})
+	} else {
+		p._r = redis.NewClient(&redis.Options{
+			Addr:     p.RedisHost,
+			Password: p.RedisPassword,
+			DB:       p.RedisDB,
+		})
+	}
 
 	//
 	// And run a ping, just to make sure it worked.
