@@ -25,6 +25,8 @@ import (
 	"os"
 	"sync"
 
+	irc "github.com/thoj/go-ircevent"
+
 	"github.com/go-redis/redis"
 )
 
