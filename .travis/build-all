@@ -11,7 +11,7 @@ D=$(pwd)
 #
 # We build on multiple platforms/archs
 #
-BUILD_PLATFORMS="linux windows darwin freebsd"
+BUILD_PLATFORMS="linux windows darwin freebsd arm64"
 BUILD_ARCHS="amd64 386"
 
 # For each platform
@@ -43,6 +43,14 @@ for OS in ${BUILD_PLATFORMS[@]}; do
         export GOARCH=${ARCH}
         export GOOS=${OS}
         export CGO_ENABLED=0
+
+        # hack for ARM
+        if [ "${GOOS}" = "arm64" ]; then
+            export GOOS=""
+            export GOARCH=arm64
+            export GOARM=7
+            SUFFIX="arm64"
+        fi
 
         # Build the main-binary
         go build -ldflags "-X main.version=$(git describe --tags 2>/dev/null || echo 'master')" -o "${BASE}-${SUFFIX}"
