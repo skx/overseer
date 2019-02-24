@@ -1,0 +1,69 @@
+#!/bin/bash
+
+# The basename of our binary
+BASE="overseer"
+
+# Get the dependencies
+go mod init
+
+D=$(pwd)
+
+#
+# We build on multiple platforms/archs
+#
+BUILD_PLATFORMS="linux windows darwin freebsd arm64"
+BUILD_ARCHS="amd64 386"
+
+# For each platform
+for OS in ${BUILD_PLATFORMS[@]}; do
+
+    # For each arch
+    for ARCH in ${BUILD_ARCHS[@]}; do
+
+        cd ${D}
+
+        # Setup a suffix for the binary
+        SUFFIX="${OS}"
+
+        # i386 is better than 386
+        if [ "$ARCH" = "386" ]; then
+            SUFFIX="${SUFFIX}-i386"
+        else
+            SUFFIX="${SUFFIX}-${ARCH}"
+        fi
+
+        # Windows binaries should end in .EXE
+        if [ "$OS" = "windows" ]; then
+            SUFFIX="${SUFFIX}.exe"
+        fi
+
+        echo "Building for ${OS} [${ARCH}] -> ${BASE}-${SUFFIX}"
+
+        # Run the build
+        export GOARCH=${ARCH}
+        export GOOS=${OS}
+        export CGO_ENABLED=0
+
+        # hack for ARM
+        if [ "${GOOS}" = "arm64" ]; then
+            export GOOS=""
+            export GOARCH=arm64
+            export GOARM=7
+            SUFFIX="arm64"
+        fi
+
+        # Build the main-binary
+        go build -ldflags "-X main.version=$(git describe --tags 2>/dev/null || echo 'master')" -o "${BASE}-${SUFFIX}"
+
+        # Build each bridge
+        for br in ${D}/bridges/*/; do
+
+            bridge=$(basename $br)
+
+            # Build the bridge I use
+            cd ${br}
+            go build -o ../../${bridge}-${SUFFIX}
+
+        done
+    done
+done
