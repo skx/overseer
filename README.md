@@ -48,11 +48,26 @@ All protocol-tests transparently support testing IPv4 and IPv6 targets, although
 
 ## Installation & Dependencies
 
-The following commands should fetch/update `overseer`, and install it upon
-your system, assuming you have a working [golang](https://golang.org/) setup:
+There are two ways to install this project from source, which depend on the version of the [go](https://golang.org/) version you're using.
+
+If you just need the binaries you can find them upon the [project release page](https://github.com/skx/overseer/releases).
+
+
+### Sourcce Installation go <=  1.11
+
+If you're using `go` before 1.11 then the following command should fetch/update `overseer`, and install it upon your system:
 
      $ go get -u github.com/skx/overseer
-     $ go install github.com/skx/overseer
+
+### Source installation go  >= 1.12
+
+If you're using a more recent version of `go` (which is _highly_ recommended), you need to clone to a directory which is not present upon your `GOPATH`:
+
+    git clone https://github.com/skx/overseer
+    cd overseer
+    go install
+
+### Dependencies
 
 Beyond the compile-time dependencies overseer requires a [redis](https://redis.io/) server which is used for two things:
 
