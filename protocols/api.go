@@ -42,7 +42,7 @@ type ProtocolTest interface {
 	// Return a suitable error if the test fails, or nil to indicate
 	// it passed.
 	//
-	RunTest(tst test.Test, target string, opts test.TestOptions) error
+	RunTest(tst test.Test, target string, opts test.Options) error
 }
 
 // This is a map of known-tests.

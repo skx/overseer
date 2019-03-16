@@ -68,14 +68,14 @@ PSQL Tester
 //
 // In this case we make a TCP connection to the database host and attempt
 // to login with the specified username & password.
-func (s *PSQLTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
+func (s *PSQLTest) RunTest(tst test.Test, target string, opts test.Options) error {
 	var err error
 
 	//
 	// The password might be blank, but the username is required.
 	//
 	if tst.Arguments["username"] == "" {
-		return errors.New("No username specified.")
+		return errors.New("no username specified")
 	}
 
 	//

@@ -75,11 +75,11 @@ func process(msg []byte) {
 	//
 	if result == "" {
 		mutex.Lock()
-		passed += 1
+		passed++
 		mutex.Unlock()
 	} else {
 		mutex.Lock()
-		failed += 1
+		failed++
 		mutex.Unlock()
 	}
 

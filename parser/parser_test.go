@@ -112,7 +112,7 @@ FOO must run ftp
 	if err == nil {
 		t.Errorf("Expected error parsing file, didn't see one!")
 	}
-	if !strings.Contains(err.Error(), "Redeclaring an existing macro") {
+	if !strings.Contains(err.Error(), "redeclaring an existing macro") {
 		t.Errorf("The expected error differed from what we received")
 	}
 }
@@ -238,7 +238,7 @@ func TestContinuation(t *testing.T) {
 	//
 	p := New()
 	err = p.ParseFile(file.Name(), func(tst test.Test) error {
-		count += 1
+		count++
 		if tst.Type != "redis" {
 			t.Errorf("Our parser was broken!")
 		}
@@ -290,7 +290,7 @@ comment must run http \
 	//
 	p := New()
 	err = p.ParseFile(file.Name(), func(tst test.Test) error {
-		count += 1
+		count++
 		return nil
 	})
 
@@ -418,10 +418,10 @@ func TestQuoteRemovalSanity(t *testing.T) {
 		double := 0
 		for _, c := range out.Arguments["content"] {
 			if c == '"' {
-				double += 1
+				double++
 			}
 			if c == '\'' {
-				single += 1
+				single++
 			}
 		}
 

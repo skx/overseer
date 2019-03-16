@@ -81,10 +81,10 @@ func (obj *Test) Sanitize() string {
 	return res
 }
 
-// TestOptions are options which are passed to every test-handler.
+// Options are options which are passed to every test-handler.
 //
 // The options might change the way the test operates.
-type TestOptions struct {
+type Options struct {
 	// Timeout for the single test, in seconds.
 	Timeout time.Duration
 

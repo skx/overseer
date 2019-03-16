@@ -84,7 +84,7 @@ SMTP Tester
 //
 // In this case we make a TCP connection, defaulting to port 25, and
 // look for a response which appears to be an SMTP-server.
-func (s *SMTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
+func (s *SMTPTest) RunTest(tst test.Test, target string, opts test.Options) error {
 	var err error
 
 	//
@@ -164,7 +164,7 @@ func (s *SMTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 
 		hasStartTLS, _ := client.Extension("STARTTLS")
 		if !hasStartTLS {
-			return errors.New("We cannot login without STARTTLS, and that was not advertised.")
+			return errors.New("we cannot login without STARTTLS, and that was not advertised")
 		}
 
 		if err = client.StartTLS(tlsconfig); err != nil {

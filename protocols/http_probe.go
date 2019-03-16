@@ -219,7 +219,7 @@ HTTP Tester
 //
 //    target => "176.9.183.100"
 //
-func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
+func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.Options) error {
 
 	//
 	// Determine the port to connect to, initially via the protocol

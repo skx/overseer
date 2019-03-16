@@ -59,7 +59,7 @@ POP3 Tester
 // In this case we make a POP3 connection to the specified host, and if
 // a username + password were specified we then attempt to authenticate
 // to the remote host too.
-func (s *POP3Test) RunTest(tst test.Test, target string, opts test.TestOptions) error {
+func (s *POP3Test) RunTest(tst test.Test, target string, opts test.Options) error {
 	var err error
 
 	//

@@ -51,7 +51,7 @@ Telnet Tester
 //
 // In this case we make a TCP connection to the specified port, and assume
 // that everything is OK if that succeeded.
-func (s *TELNETTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
+func (s *TELNETTest) RunTest(tst test.Test, target string, opts test.Options) error {
 	var err error
 
 	//

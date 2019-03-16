@@ -102,7 +102,7 @@ Ping Tester
 //
 // In this case we run a ping-command with the appropriate binary depending
 // on the address-family of the target host.
-func (s *PINGTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
+func (s *PINGTest) RunTest(tst test.Test, target string, opts test.Options) error {
 	ip := net.ParseIP(target)
 
 	//
@@ -128,7 +128,7 @@ func (s *PINGTest) RunTest(tst test.Test, target string, opts test.TestOptions) 
 	//
 	// Unknown family, or otherwise bogus name.
 	//
-	return errors.New("Neither IPv4 nor IPv6 address!")
+	return errors.New("neither IPv4 nor IPv6 address")
 }
 
 //

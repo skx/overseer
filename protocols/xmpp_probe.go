@@ -54,7 +54,7 @@ XMPP Tester
 //
 // In this case we make a TCP connection, defaulting to port 5222, and
 // look for a response which appears to be an XMPP-server.
-func (s *XMPPTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
+func (s *XMPPTest) RunTest(tst test.Test, target string, opts test.Options) error {
 	var err error
 
 	//
