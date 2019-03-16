@@ -94,7 +94,8 @@ func (s *Parser) ParseFile(filename string, cb ParsedTest) error {
 		//
 		// Otherwise just read it
 		//
-		file, err := os.Open(filename)
+		var file *os.File
+		file, err = os.Open(filename)
 		if err != nil {
 			return fmt.Errorf("error opening %s - %s", filename, err.Error())
 		}

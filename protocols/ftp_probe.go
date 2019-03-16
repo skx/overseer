@@ -129,7 +129,8 @@ func (s *FTPTest) RunTest(tst test.Test, target string, opts test.Options) error
 	if strings.Contains(tst.Target, "://") {
 
 		// Parse the URI.
-		u, err := url.Parse(tst.Target)
+		var u *url.URL
+		u, err = url.Parse(tst.Target)
 		if err != nil {
 			return err
 		}
