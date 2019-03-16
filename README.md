@@ -3,6 +3,22 @@
 [![Release](https://img.shields.io/github/release/skx/overseer.svg)](https://github.com/skx/overseer/releases/latest)
 
 
+Table of Contents
+=================
+
+* [Overseer](#overseer)
+* [Installation &amp; Dependencies](#installation--dependencies)
+  * [Sourcce Installation go &lt;=  1.11](#sourcce-installation-go---111)
+  * [Source installation go  &gt;= 1.12](#source-installation-go---112)
+  * [Dependencies](#dependencies)
+* [Executing Tests](#executing-tests)
+  * [Running Automatically](#running-automatically)
+  * [Smoothing Test Failures](#smoothing-test-failures)
+* [Notifications](#notifications)
+* [Metrics](#metrics)
+* [Redis Specifics](#redis-specifics)
+* [Github Setup](#github-setup)
+
 
 # Overseer
 
@@ -53,7 +69,7 @@ There are two ways to install this project from source, which depend on the vers
 If you just need the binaries you can find them upon the [project release page](https://github.com/skx/overseer/releases).
 
 
-### Sourcce Installation go <=  1.11
+### Source Installation go <=  1.11
 
 If you're using `go` before 1.11 then the following command should fetch/update `overseer`, and install it upon your system:
 
@@ -66,6 +82,7 @@ If you're using a more recent version of `go` (which is _highly_ recommended), y
     git clone https://github.com/skx/overseer
     cd overseer
     go install
+
 
 ### Dependencies
 
@@ -138,7 +155,7 @@ Beneath [systemd/](systemd/) you will find some sample service-files which can b
 
 
 
-## Smoothing Test Failures
+### Smoothing Test Failures
 
 To avoid triggering false alerts due to transient (network/host) failures
 tests which fail are retried several times before triggering a notification.
@@ -153,7 +170,7 @@ retry-logic via the command-line flag `-retry=false`.
 
 
 
-## Notification
+## Notifications
 
 The result of each test is submitted to the central redis-host, from where it can be pulled and used to notify a human of a problem.
 
