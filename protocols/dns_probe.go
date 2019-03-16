@@ -54,7 +54,7 @@ func (s *DNSTest) lookup(server string, name string, ltype string, timeout time.
 		return nil, err
 	}
 	if r.Rcode == dns.RcodeNameError {
-		return nil, fmt.Errorf("No such domain %s\n", dns.Fqdn(name))
+		return nil, fmt.Errorf("no such domain %s", dns.Fqdn(name))
 	}
 
 	for _, ent := range r.Answer {
@@ -169,13 +169,13 @@ DNS Tester
 // In this case we make a DNS-lookup against the named host, and compare
 // the result with what the user specified.
 // look for a response which appears to be an FTP-server.
-func (s *DNSTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
+func (s *DNSTest) RunTest(tst test.Test, target string, opts test.Options) error {
 
 	if tst.Arguments["lookup"] == "" {
-		return errors.New("No value to lookup specified.")
+		return errors.New("no value to lookup specified")
 	}
 	if tst.Arguments["type"] == "" {
-		return errors.New("No record-type to lookup.")
+		return errors.New("no record-type to lookup")
 	}
 
 	//

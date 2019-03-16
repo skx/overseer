@@ -99,7 +99,7 @@ FTP Tester
 //
 // In this case we make a TCP connection, defaulting to port 21, and
 // look for a response which appears to be an FTP-server.
-func (s *FTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
+func (s *FTPTest) RunTest(tst test.Test, target string, opts test.Options) error {
 	//
 	// Holder for any error we might encounter.
 	//
@@ -129,7 +129,8 @@ func (s *FTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) e
 	if strings.Contains(tst.Target, "://") {
 
 		// Parse the URI.
-		u, err := url.Parse(tst.Target)
+		var u *url.URL
+		u, err = url.Parse(tst.Target)
 		if err != nil {
 			return err
 		}

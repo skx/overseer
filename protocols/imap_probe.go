@@ -60,7 +60,7 @@ IMAP Tester
 // In this case we make a IMAP connection to the specified host, and if
 // a username + password were specified we then attempt to authenticate
 // to the remote host too.
-func (s *IMAPTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
+func (s *IMAPTest) RunTest(tst test.Test, target string, opts test.Options) error {
 
 	var err error
 

@@ -54,7 +54,7 @@ Redis Tester
 //
 // In this case we make a Redis-test against the given target.
 //
-func (s *REDISTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
+func (s *REDISTest) RunTest(tst test.Test, target string, opts test.Options) error {
 
 	//
 	// Predeclare our error

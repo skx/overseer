@@ -71,14 +71,14 @@ Finger Tester
 //
 // In this case we make a TCP connection, defaulting to port 79, and
 // look for a non-empty response.
-func (s *FINGERTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
+func (s *FINGERTest) RunTest(tst test.Test, target string, opts test.Options) error {
 	var err error
 
 	//
 	// Ensure we have a username
 	//
 	if tst.Arguments["user"] == "" {
-		return errors.New("A 'user' argument is mandatory.")
+		return errors.New("a 'user' argument is mandatory")
 	}
 
 	//
@@ -144,7 +144,7 @@ func (s *FINGERTest) RunTest(tst test.Test, target string, opts test.TestOptions
 	// then the test failed.
 	//
 	if output == "" {
-		return errors.New("The server didn't send a response.")
+		return errors.New("the server didn't send a response")
 	}
 
 	//

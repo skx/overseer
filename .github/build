@@ -3,9 +3,7 @@
 # The basename of our binary
 BASE="overseer"
 
-# Get the dependencies
-go mod init
-
+# Save our directory, since we build in child-directories later.
 D=$(pwd)
 
 #

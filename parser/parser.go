@@ -94,9 +94,10 @@ func (s *Parser) ParseFile(filename string, cb ParsedTest) error {
 		//
 		// Otherwise just read it
 		//
-		file, err := os.Open(filename)
+		var file *os.File
+		file, err = os.Open(filename)
 		if err != nil {
-			return fmt.Errorf("Error opening %s - %s\n", filename, err.Error())
+			return fmt.Errorf("error opening %s - %s", filename, err.Error())
 		}
 		defer file.Close()
 		scanner = bufio.NewScanner(file)
@@ -202,7 +203,7 @@ func (s *Parser) ParseLine(input string, cb ParsedTest) (test.Test, error) {
 		// If this macro-exists that is a fatal error
 		//
 		if s.MACROS[name] != nil {
-			return result, fmt.Errorf("Redeclaring an existing macro is a fatal-error, %s exists already.\n", name)
+			return result, fmt.Errorf("redeclaring an existing macro is a fatal-error, %s exists already", name)
 		}
 
 		//
@@ -229,7 +230,7 @@ func (s *Parser) ParseLine(input string, cb ParsedTest) (test.Test, error) {
 	// If it didn't then we have a malformed line
 	//
 	if len(out) != 3 {
-		return result, fmt.Errorf("WARNING: Unrecognized line - '%s'\n", input)
+		return result, fmt.Errorf("WARNING: Unrecognized line - '%s'", input)
 	}
 
 	//

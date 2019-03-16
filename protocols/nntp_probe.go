@@ -66,7 +66,7 @@ NNTP Tester
 //
 // In this case we make a TCP connection, defaulting to port 119, and
 // look for a response which appears to be an NNTP-server.
-func (s *NNTPTest) RunTest(tst test.Test, target string, opts test.TestOptions) error {
+func (s *NNTPTest) RunTest(tst test.Test, target string, opts test.Options) error {
 	var err error
 
 	//

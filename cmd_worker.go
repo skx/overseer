@@ -302,7 +302,7 @@ func (p *workerCmd) formatMetrics(tst test.Test, key string) string {
 // runTest is really the core of our application, as it is responsible
 // for receiving a test to execute, executing it, and then issuing
 // the notification with the result.
-func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions) error {
+func (p *workerCmd) runTest(tst test.Test, opts test.Options) error {
 
 	// Create a map for metric-recording.
 	metrics := map[string]string{}
@@ -433,8 +433,8 @@ func (p *workerCmd) runTest(tst test.Test, opts test.TestOptions) error {
 		// cost that flapping services might be missed.
 		//
 		for attempt < maxAttempts {
-			attempt += 1
-			c += 1
+			attempt++
+			c++
 
 			//
 			// Run the test
@@ -577,7 +577,7 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 	// Setup the options passed to each test, by copying our
 	// global ones.
 	//
-	var opts test.TestOptions
+	var opts test.Options
 	opts.Verbose = p.Verbose
 	opts.Timeout = p.Timeout
 
