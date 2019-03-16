@@ -104,7 +104,7 @@ a worker.
 Because we don't want to be tied to a specific notification-system results
 of each test are also posted to the same redis-host, which allows results to be retrieved and transmitted to your preferred notifier.
 
-More details about [notifications](#notification) are available later in this document.
+More details about [notifications](#notifications) are available later in this document.
 
 
 
