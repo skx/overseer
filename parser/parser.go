@@ -73,34 +73,41 @@ func (s *Parser) ParseFile(filename string, cb ParsedTest) error {
 
 	// This is the scanner we'll use
 	var scanner *bufio.Scanner
+	var err error
 
-	//
-	// If the file is executable then parse the output of executing
-	// it, rather than the literal contents.
-	//
-	e, err := s.executable(filename)
-	if (err == nil) && (e == true) {
-		cmd := exec.Command(filename)
-		var outb, errb bytes.Buffer
-		cmd.Stdout = &outb
-		cmd.Stderr = &errb
-		err = cmd.Run()
-		if err != nil {
-			return err
-		}
-		reader := bytes.NewReader(outb.Bytes())
-		scanner = bufio.NewScanner(reader)
+	// Read from stdin
+	if filename == "-" {
+		scanner = bufio.NewScanner(os.Stdin)
 	} else {
+
 		//
-		// Otherwise just read it
+		// If the file is executable then parse the output of executing
+		// it, rather than the literal contents.
 		//
-		var file *os.File
-		file, err = os.Open(filename)
-		if err != nil {
-			return fmt.Errorf("error opening %s - %s", filename, err.Error())
+		e, err := s.executable(filename)
+		if (err == nil) && (e == true) {
+			cmd := exec.Command(filename)
+			var outb, errb bytes.Buffer
+			cmd.Stdout = &outb
+			cmd.Stderr = &errb
+			err = cmd.Run()
+			if err != nil {
+				return err
+			}
+			reader := bytes.NewReader(outb.Bytes())
+			scanner = bufio.NewScanner(reader)
+		} else {
+			//
+			// Otherwise just read it
+			//
+			var file *os.File
+			file, err = os.Open(filename)
+			if err != nil {
+				return fmt.Errorf("error opening %s - %s", filename, err.Error())
+			}
+			defer file.Close()
+			scanner = bufio.NewScanner(file)
 		}
-		defer file.Close()
-		scanner = bufio.NewScanner(file)
 	}
 
 	//
