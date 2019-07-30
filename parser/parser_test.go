@@ -509,9 +509,9 @@ func TestInvalidOptions(t *testing.T) {
 
 func TestMaxRetries(t *testing.T) {
 	tests := []string{
-		"http://example.com/ must run http with maxRetries 0",
-		"http://example.com/ must run http with maxRetries 1",
-		"http://example.com/ must run http with maxRetries 2",
+		"http://example.com/ must run http with retries 0",
+		"http://example.com/ must run http with retries 1",
+		"http://example.com/ must run http with retries 2",
 	}
 
 	// Create a parser
@@ -527,7 +527,7 @@ func TestMaxRetries(t *testing.T) {
 		}
 
 		if tst.MaxRetries != idx {
-			t.Errorf("Invalid maxRetries number. Expected %d, got %d", idx, tst.MaxRetries)
+			t.Errorf("Invalid retries number. Expected %d, got %d", idx, tst.MaxRetries)
 
 		}
 	}

@@ -325,7 +325,7 @@ func (s *Parser) ParseLine(input string, cb ParsedTest) (test.Test, error) {
 	for arg, val := range result.Arguments {
 
 		// Is there a custom per-test override?
-		if arg == "maxRetries" {
+		if arg == "retries" {
 			maxRetries, err := strconv.ParseInt(val, 10, 32)
 			if err != nil {
 				return result, fmt.Errorf("Non-numeric argument '%s' for test-type '%s' in input '%s'", arg, testType, input)
