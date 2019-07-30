@@ -74,7 +74,6 @@ func (s *Parser) ParseFile(filename string, cb ParsedTest) error {
 
 	// This is the scanner we'll use
 	var scanner *bufio.Scanner
-	var err error
 
 	// Read from stdin
 	if filename == "-" {
@@ -151,7 +150,7 @@ func (s *Parser) ParseFile(filename string, cb ParsedTest) error {
 		// a comment then process it.
 		//
 		if (line != "") && (!strings.HasPrefix(line, "#")) {
-			_, err = s.ParseLine(line, cb)
+			_, err := s.ParseLine(line, cb)
 			if err != nil {
 				return err
 			}
