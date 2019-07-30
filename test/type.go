@@ -40,6 +40,9 @@ type Test struct {
 	// In the example above this would be `1.2.3.4 must run ftp`.
 	Input string
 
+	// MaxRetries overrides the global overseer setting for max test retries, if >= 0
+	MaxRetries int
+
 	// Arguments contains a map of any optional arguments supplied to
 	// test test.
 	//

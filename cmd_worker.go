@@ -19,7 +19,7 @@ import (
 
 	"github.com/go-redis/redis"
 	"github.com/google/subcommands"
-	graphite "github.com/marpaia/graphite-golang"
+	"github.com/marpaia/graphite-golang"
 	_ "github.com/skx/golang-metrics"
 	"github.com/skx/overseer/parser"
 	"github.com/skx/overseer/protocols"
@@ -403,6 +403,10 @@ func (p *workerCmd) runTest(tst test.Test, opts test.Options) error {
 		//
 		if p.Retry == false {
 			maxAttempts = attempt + 1
+		}
+
+		if tst.MaxRetries >= 0 {
+			maxAttempts = tst.MaxRetries + 1
 		}
 
 		//

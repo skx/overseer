@@ -21,6 +21,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/skx/overseer/protocols"
@@ -312,6 +313,7 @@ func (s *Parser) ParseLine(input string, cb ParsedTest) (test.Test, error) {
 	//
 	// Create a temporary structure to hold our test
 	//
+	result.MaxRetries = -1
 	result.Target = testTarget
 	result.Type = testType
 	result.Input = input
@@ -328,6 +330,19 @@ func (s *Parser) ParseLine(input string, cb ParsedTest) (test.Test, error) {
 	// For each argument which was supplied..
 	//
 	for arg, val := range result.Arguments {
+
+		// Is there a custom per-test override?
+		if arg == "retries" {
+			maxRetries, err := strconv.ParseInt(val, 10, 32)
+			if err != nil {
+				return result, fmt.Errorf("Non-numeric argument '%s' for test-type '%s' in input '%s'", arg, testType, input)
+			}
+			result.MaxRetries = int(maxRetries)
+
+			// We don't want to pass a non-test var to the actual test
+			delete(result.Arguments, arg)
+			continue
+		}
 
 		//
 		// Is that argument present in the arguments the

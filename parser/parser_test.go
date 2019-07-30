@@ -507,6 +507,32 @@ func TestInvalidOptions(t *testing.T) {
 	}
 }
 
+func TestMaxRetries(t *testing.T) {
+	tests := []string{
+		"http://example.com/ must run http with retries 0",
+		"http://example.com/ must run http with retries 1",
+		"http://example.com/ must run http with retries 2",
+	}
+
+	// Create a parser
+	p := New()
+
+	// Parse each line
+	for idx, input := range tests {
+
+		tst, err := p.ParseLine(input, nil)
+		if err != nil {
+			t.Errorf("We did not expect an error parsing %s!", input)
+			continue
+		}
+
+		if tst.MaxRetries != idx {
+			t.Errorf("Invalid retries number. Expected %d, got %d", idx, tst.MaxRetries)
+
+		}
+	}
+}
+
 // Test invoking a callback.
 func TestCallback(t *testing.T) {
 	file, err := ioutil.TempFile(os.TempDir(), "prefix")
