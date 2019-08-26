@@ -51,10 +51,6 @@ var failed int64
 // The redis handle
 var r *redis.Client
 
-// The redis connection details
-var redisHost *string
-var redisPass *string
-
 //
 // Given a JSON string decode it and post to IRC if it describes
 // a test-failure.
@@ -192,7 +188,7 @@ func setupIRC(data string) {
 	//
 	// Wait until we've connected before returning.
 	//
-	for joined == false {
+	for !joined {
 	}
 }
 
@@ -242,7 +238,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	for true {
+	for {
 
 		//
 		// Get test-results

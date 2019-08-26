@@ -52,10 +52,6 @@ var r *redis.Client
 // The URL of the purppura server
 var pURL *string
 
-// The redis connection details
-var redisHost *string
-var redisPass *string
-
 // Given a JSON string decode it and post to the Purppura URL.
 func process(msg []byte) {
 
@@ -320,7 +316,7 @@ func main() {
 	c.AddFunc("@every 5m", func() { CheckUpdates() })
 	c.Start()
 
-	for true {
+	for {
 
 		//
 		// Get test-results
