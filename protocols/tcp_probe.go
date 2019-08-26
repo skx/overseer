@@ -97,7 +97,7 @@ func (s *TCPTest) RunTest(tst test.Test, target string, opts test.Options) error
 	// If there was no port that's an error
 	//
 	if port == -1 {
-		return errors.New("You must specify the port for TCP-tests")
+		return errors.New("you must specify the port when running a TCP test")
 	}
 
 	//
@@ -150,7 +150,7 @@ func (s *TCPTest) RunTest(tst test.Test, target string, opts test.Options) error
 		//
 		match := re.FindAllStringSubmatch(string(banner), -1)
 		if len(match) < 1 {
-			return fmt.Errorf("Remote banner '%s' didn't match the regular expression '%s'", banner, tst.Arguments["banner"])
+			return fmt.Errorf("remote banner '%s' didn't match the regular expression '%s'", banner, tst.Arguments["banner"])
 		}
 	}
 

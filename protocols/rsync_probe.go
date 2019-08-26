@@ -108,7 +108,7 @@ func (s *RSYNCTest) RunTest(tst test.Test, target string, opts test.Options) err
 	conn.Close()
 
 	if !strings.Contains(banner, "RSYNC") {
-		return errors.New("Banner doesn't look like an rsync-banner")
+		return errors.New("banner doesn't look like a rsync-banner")
 	}
 
 	return nil
