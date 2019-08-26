@@ -57,28 +57,28 @@ func (s *DNSTest) lookup(server string, name string, ltype string, timeout time.
 		return nil, fmt.Errorf("no such domain %s", dns.Fqdn(name))
 	}
 
-	for _, ent := range r.Answer {
+	for _, entry := range r.Answer {
 
 		//
 		// Lookup the value
 		//
-		switch ent.(type) {
+		switch ent := entry.(type) {
 		case *dns.A:
-			a := ent.(*dns.A).A
-			results = append(results, fmt.Sprintf("%s", a))
+			a := ent.A
+			results = append(results, a.String())
 		case *dns.AAAA:
-			aaaa := ent.(*dns.AAAA).AAAA
-			results = append(results, fmt.Sprintf("%s", aaaa))
+			aaaa := ent.AAAA
+			results = append(results, aaaa.String())
 		case *dns.MX:
-			mxName := ent.(*dns.MX).Mx
-			mxPrio := ent.(*dns.MX).Preference
+			mxName := ent.Mx
+			mxPrio := ent.Preference
 			results = append(results, fmt.Sprintf("%d %s", mxPrio, mxName))
 		case *dns.NS:
-			nameserver := ent.(*dns.NS).Ns
+			nameserver := ent.Ns
 			results = append(results, nameserver)
 		case *dns.TXT:
-			txt := ent.(*dns.TXT).Txt
-			results = append(results, fmt.Sprintf("%s", txt[0]))
+			txt := ent.Txt
+			results = append(results, txt[0])
 		}
 	}
 	return results, nil
@@ -99,7 +99,7 @@ func (s *DNSTest) localQuery(server string, qname string, lookupType string) (*d
 
 	qtype := StringToType[lookupType]
 	if qtype == 0 {
-		return nil, fmt.Errorf("Unsupported record to lookup '%s'", lookupType)
+		return nil, fmt.Errorf("unsupported record to lookup '%s'", lookupType)
 	}
 	localm.SetQuestion(qname, qtype)
 
@@ -201,7 +201,7 @@ func (s *DNSTest) RunTest(tst test.Test, target string, opts test.Options) error
 	found := strings.Join(res, ",")
 
 	if found != tst.Arguments["result"] {
-		return fmt.Errorf("Expected DNS result to be '%s', but found '%s'", tst.Arguments["result"], found)
+		return fmt.Errorf("expected DNS result to be '%s', but found '%s'", tst.Arguments["result"], found)
 	}
 
 	return nil
