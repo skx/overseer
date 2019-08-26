@@ -152,7 +152,7 @@ func TestUnknownInput(t *testing.T) {
 		if err == nil {
 			t.Errorf("Should have found error parsing line: %s\n", err.Error())
 		}
-		if !strings.Contains(err.Error(), "Unrecognized line") {
+		if !strings.Contains(err.Error(), "unrecognized line") {
 			t.Errorf("Received unexpected error: %s\n", err.Error())
 		}
 	}
@@ -174,7 +174,7 @@ func TestUnknownProtocols(t *testing.T) {
 		if err == nil {
 			t.Errorf("Should have found error parsing line: %s\n", err.Error())
 		}
-		if !strings.Contains(err.Error(), "Unknown test-type") {
+		if !strings.Contains(err.Error(), "unknown test-type") {
 			t.Errorf("Received unexpected error: %s\n", err.Error())
 		}
 	}
@@ -500,7 +500,7 @@ func TestInvalidOptions(t *testing.T) {
 			t.Errorf("We expected an error parsing %s, but found none!", input)
 		}
 
-		if !strings.Contains(err.Error(), "Unsupported argument") {
+		if !strings.Contains(err.Error(), "unsupported argument") {
 			t.Errorf("The error we received was the wrong error: %s", err.Error())
 
 		}
@@ -522,7 +522,8 @@ func TestMaxRetries(t *testing.T) {
 
 		tst, err := p.ParseLine(input, nil)
 		if err != nil {
-			t.Errorf("We did not expect an error parsing %s!", input)
+			t.Errorf("We did not expect an error parsing %s - got %s!", input, err)
+
 			continue
 		}
 

@@ -112,7 +112,7 @@ func (s *PINGTest) RunTest(tst test.Test, target string, opts test.Options) erro
 		if s.Ping4(target) {
 			return nil
 		}
-		return errors.New("Failed to ping")
+		return errors.New("failed to ping binary")
 	}
 
 	//
@@ -122,7 +122,7 @@ func (s *PINGTest) RunTest(tst test.Test, target string, opts test.Options) erro
 		if s.Ping6(target) {
 			return nil
 		}
-		return errors.New("Failed to ping")
+		return errors.New("failed to ping target")
 	}
 
 	//

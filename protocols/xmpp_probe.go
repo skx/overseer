@@ -122,7 +122,7 @@ func (s *XMPPTest) RunTest(tst test.Test, target string, opts test.Options) erro
 	}
 
 	if !strings.Contains(banner, "<?xml") {
-		return fmt.Errorf("Banner doesn't look like an XMPP-banner '%s'", banner)
+		return fmt.Errorf("banner doesn't look like an XMPP-banner '%s'", banner)
 	}
 
 	return nil

@@ -34,10 +34,6 @@ var email *string
 // The redis handle
 var r *redis.Client
 
-// The redis connection details
-var redisHost *string
-var redisPass *string
-
 // Template is our text/template which is used to generate the email
 // notification to the user.
 var Template = `From: {{.From}}
@@ -195,7 +191,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	for true {
+	for {
 
 		//
 		// Get test-results

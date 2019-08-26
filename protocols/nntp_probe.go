@@ -119,7 +119,7 @@ func (s *NNTPTest) RunTest(tst test.Test, target string, opts test.Options) erro
 	defer conn.Close()
 
 	if !strings.Contains(banner, "200") {
-		return errors.New("Banner doesn't look like a news-server")
+		return errors.New("banner doesn't look like a news-server")
 	}
 
 	//
@@ -144,7 +144,7 @@ func (s *NNTPTest) RunTest(tst test.Test, target string, opts test.Options) erro
 		}
 
 		if !strings.HasPrefix(resp, "211") {
-			return fmt.Errorf("Selecting group %s failed - %s", tst.Arguments["group"], resp)
+			return fmt.Errorf("selecting newsgroup %s failed - %s", tst.Arguments["group"], resp)
 		}
 	}
 

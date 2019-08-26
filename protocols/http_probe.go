@@ -415,7 +415,7 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.Options) erro
 	// said "with status any".
 	//
 	if ok != status && (tst.Arguments["status"] != "any") {
-		return fmt.Errorf("Status code was %d not %d", status, ok)
+		return fmt.Errorf("status code was %d not %d", status, ok)
 	}
 
 	//
@@ -423,7 +423,7 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.Options) erro
 	//
 	if tst.Arguments["content"] != "" {
 		if !strings.Contains(string(body), tst.Arguments["content"]) {
-			return fmt.Errorf("Body didn't contain '%s'", tst.Arguments["content"])
+			return fmt.Errorf("body didn't contain '%s'", tst.Arguments["content"])
 		}
 	}
 
@@ -439,7 +439,7 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.Options) erro
 		// Skip unless this handler matches the filter.
 		match := re.FindAllStringSubmatch(string(body), -1)
 		if len(match) < 1 {
-			return fmt.Errorf("Body didn't match the regular expression '%s'", tst.Arguments["pattern"])
+			return fmt.Errorf("body didn't match the regular expression '%s'", tst.Arguments["pattern"])
 		}
 	}
 
