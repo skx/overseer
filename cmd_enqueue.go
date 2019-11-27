@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 
 	"github.com/go-redis/redis"
 	"github.com/google/subcommands"
@@ -18,11 +19,13 @@ import (
 )
 
 type enqueueCmd struct {
-	RedisDB       int
-	RedisHost     string
-	RedisPassword string
-	RedisSocket   string
-	_r            *redis.Client
+	RedisDB          int
+	RedisHost        string
+	RedisPassword    string
+	RedisSocket      string
+	RedisDialTimeout time.Duration
+
+	_r *redis.Client
 }
 
 //
@@ -52,6 +55,7 @@ func (p *enqueueCmd) SetFlags(f *flag.FlagSet) {
 	defaults.RedisPassword = ""
 	defaults.RedisDB = 0
 	defaults.RedisSocket = ""
+	defaults.RedisDialTimeout = 5 * time.Second
 
 	//
 	// If we have a configuration file then load it
@@ -101,9 +105,10 @@ func (p *enqueueCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{
 		})
 	} else {
 		p._r = redis.NewClient(&redis.Options{
-			Addr:     p.RedisHost,
-			Password: p.RedisPassword,
-			DB:       p.RedisDB,
+			Addr:        p.RedisHost,
+			Password:    p.RedisPassword,
+			DB:          p.RedisDB,
+			DialTimeout: p.RedisDialTimeout,
 		})
 	}
 
