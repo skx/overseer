@@ -5,9 +5,9 @@ go get -u golang.org/x/lint/golint
 go get -u golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow
 go get -u honnef.co/go/tools/cmd/staticcheck
 
-# Run the static-check tool
+# Run the static-check tool; any output is a failure.
 t=$(mktemp)
-staticcheck -checks all ./... | grep -v " is overwritten before first use " > $t
+staticcheck -checks all ./...  > $t
 if [ -s $t ]; then
     echo "Found errors via 'staticcheck'"
     cat $t

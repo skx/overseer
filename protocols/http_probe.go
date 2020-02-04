@@ -280,6 +280,7 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.Options) erro
 	// we don't rewrite anything, don't do anything manually, and
 	// instead just connect to the right IP by magic.
 	//
+    //lint:ignore SA4009 we're deliberately forcing a specific IPv4 vs. IPv6 address
 	dial := func(ctx context.Context, network, addr string) (net.Conn, error) {
 		//
 		// Assume an IPv4 address by default.
