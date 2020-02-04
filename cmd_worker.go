@@ -234,7 +234,7 @@ func (p *workerCmd) notify(test test.Test, result error) error {
 	//
 	// Was the test result a failure?  If so update the object
 	// to contain the failure-message, and record that it was
-	// a failure rather than the default pass.
+	// a failure rather than a pass.
 	//
 	if result != nil {
 		msg["result"] = "failed"
@@ -242,7 +242,8 @@ func (p *workerCmd) notify(test test.Test, result error) error {
 	}
 
 	//
-	// Convert the MAP to a JSON string we can notify.
+	// Convert the result-object to a JSON string we can add to
+	// the redis-queue for the notifier to work with.
 	//
 	j, err := json.Marshal(msg)
 	if err != nil {
@@ -347,6 +348,13 @@ func (p *workerCmd) runTest(tst test.Test, opts test.Options) error {
 	// Now resolve the target to IPv4 & IPv6 addresses.
 	ips, err := net.LookupIP(testTarget)
 	if err != nil {
+
+		//
+		// We failed to resolve the target, so we have to raise
+		// a failure.  But before we do that we need to sanitize
+		// the test.
+		//
+		tst.Input = tst.Sanitize()
 
 		//
 		// Notify the world about our DNS-failure.
@@ -609,7 +617,7 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 		//
 		// Parse it
 		//
-		//   test[0] will be "overseer.jobs"
+		//   test[0] will be the list-name (i.e. "overseer.jobs")
 		//
 		//   test[1] will be the value removed from the list.
 		//
