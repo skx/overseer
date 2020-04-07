@@ -18,7 +18,7 @@ import (
 type ProtocolTest interface {
 
 	//
-	// Arguments return the arguments which this protocol-test, along
+	// Arguments return the arguments which this protocol-test accepts, along
 	// with a regular expression which will be used to validate a non-empty
 	// argument.
 	//
@@ -30,7 +30,6 @@ type ProtocolTest interface {
 	// Optional arguments will automatically be documented.
 	Example() string
 
-	//
 	//
 	// RunTest actually invokes the protocol-handler to run its
 	// tests.
