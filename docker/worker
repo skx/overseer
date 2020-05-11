@@ -1,0 +1,3 @@
+#!/bin/sh
+
+overseer worker -verbose -redis-host=redis:6379 -4=true -6=false

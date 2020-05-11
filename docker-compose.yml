@@ -1,0 +1,25 @@
+version: "3"
+
+services:
+  enqueue:
+    restart: always
+    image: overseer:enqueue
+    volumes:
+      - ./tests.d/:/etc/overseer
+    links:
+      - redis:redis
+  worker:
+    restart: always
+    image: overseer:worker
+    links:
+      - redis:redis
+  bridge:
+    restart: always
+    image: overseer:bridge
+    links:
+      - redis:redis
+    environment:
+      - PURPURRA=https://offsite.steve.fi/events
+  redis:
+    restart: always
+    image: redis

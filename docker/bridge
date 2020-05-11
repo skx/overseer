@@ -1,0 +1,3 @@
+#!/bin/sh
+
+purppura-bridge -redis-host=redis:6379 -purppura=${PURPPURA}

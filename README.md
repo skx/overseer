@@ -17,6 +17,7 @@ Table of Contents
 * [Notifications](#notifications)
 * [Metrics](#metrics)
 * [Redis Specifics](#redis-specifics)
+* [Docker](#docker)
 * [Github Setup](#github-setup)
 
 
@@ -253,10 +254,27 @@ You can examine the length of either queue via the [llen](https://redis.io/comma
       * `redis-cli llen overseer.results`
 
 
+
+
+## Docker
+
+There are a series of Dockerfiles contained within this repository, they're designed to allow you to test things in a simple fashion.  However they do have the notification bridge hardcoded.
+
+You can build the images like so:
+
+```
+docker build -t overseer:bridge  -f Dockerfile.bridge .
+docker build -t oversser:enqueue -f Dockerfile.enqueue .
+docker build -t overseer:worker  -f Dockerfile.worker .
+```
+
+Once built the supplied [docker-compose.yml](docker-compose.yml) file will let you launch them, using a shared redis instance.
+
+
 ## Github Setup
 
-This repository is configured to run tests upon every commit, and when pull-requests are created/updated.  The testing is carried out via [.github/run-tests.sh](.github/run-tests.sh) which is used by the [github-action-tester](https://github.com/skx/github-action-tester) action.  
-Releases are automated in a similar fashion via [.github/build](.github/build), and the [github-action-publish-binaries](https://github.com/skx/github-action-publish-binaries) action.  
+This repository is configured to run tests upon every commit, and when pull-requests are created/updated.  The testing is carried out via [.github/run-tests.sh](.github/run-tests.sh) which is used by the [github-action-tester](https://github.com/skx/github-action-tester) action.
+Releases are automated in a similar fashion via [.github/build](.github/build), and the [github-action-publish-binaries](https://github.com/skx/github-action-publish-binaries) action.
 
 Steve
 --
