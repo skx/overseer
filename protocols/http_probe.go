@@ -280,7 +280,7 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.Options) erro
 	// we don't rewrite anything, don't do anything manually, and
 	// instead just connect to the right IP by magic.
 	//
-    //lint:ignore SA4009 we're deliberately forcing a specific IPv4 vs. IPv6 address
+	//lint:ignore SA4009 we're deliberately forcing a specific IPv4 vs. IPv6 address
 	dial := func(ctx context.Context, network, addr string) (net.Conn, error) {
 		//
 		// Assume an IPv4 address by default.
@@ -541,13 +541,13 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.Options) erro
 		//
 		// Check the expiration
 		//
-		hours, err := s.SSLExpiration(tst.Target, opts.Verbose)
+		hours, cn, err := s.SSLExpiration(tst.Target, opts.Verbose)
 
 		if err == nil {
 			// Is the age too short?
 			if int64(hours) < int64(period) {
 
-				return fmt.Errorf("SSL certificate will expire in %d hours (%d days)", hours, int(hours/24))
+				return fmt.Errorf("SSL certificate '%s' will expire in %d hours (%d days)", cn, hours, int(hours/24))
 			}
 		}
 
@@ -561,18 +561,21 @@ func (s *HTTPTest) RunTest(tst test.Test, target string, opts test.Options) erro
 
 // SSLExpiration returns the number of hours remaining for a given
 // SSL certificate chain.
-func (s *HTTPTest) SSLExpiration(host string, verbose bool) (int64, error) {
+func (s *HTTPTest) SSLExpiration(host string, verbose bool) (int64, string, error) {
 
 	// Expiry time, in hours
 	var hours int64
 	hours = -1
+
+	// The common-name of the certificate involved.
+	cn := ""
 
 	//
 	// If the string matches https://, then strip it off
 	//
 	re, err := regexp.Compile(`^https:\/\/([^\/]+)`)
 	if err != nil {
-		return 0, err
+		return 0, "", err
 	}
 	res := re.FindAllStringSubmatch(host, -1)
 	for _, v := range res {
@@ -596,7 +599,7 @@ func (s *HTTPTest) SSLExpiration(host string, verbose bool) (int64, error) {
 
 	conn, err := tls.Dial("tcp", host, nil)
 	if err != nil {
-		return 0, err
+		return 0, "", err
 	}
 	defer conn.Close()
 
@@ -614,18 +617,20 @@ func (s *HTTPTest) SSLExpiration(host string, verbose bool) (int64, error) {
 			// If we've not checked anything this is the benchmark
 			if hours == -1 {
 				hours = expiresIn
+				cn = cert.Subject.CommonName
 			} else {
 				// Otherwise replace our result if the
 				// certificate is going to expire more
 				// recently than the current "winner".
 				if expiresIn < hours {
 					hours = expiresIn
+					cn = cert.Subject.CommonName
 				}
 			}
 		}
 	}
 
-	return hours, nil
+	return hours, cn, nil
 }
 
 // init is used to dynamically register our protocol-tester.
