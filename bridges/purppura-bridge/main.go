@@ -165,6 +165,7 @@ func CheckUpdates() {
 		"detail":  fmt.Sprintf("The purppura-bridge last received an update %d seconds ago.", now-then),
 		"subject": "No traffic seen recently",
 		"id":      "purppura-bridge-traffic",
+		"source":  "127.127.127.127",
 	}
 
 	// Raise or clear?
@@ -227,6 +228,7 @@ func SendHeartbeat() {
 		"detail":  "The purppura-bridge hasn't sent a heartbeat recently, which means that overseer test-results won't raise alerts.",
 		"subject": "The purppura bridge isn't running!",
 		"id":      "purppura-bridge-heartbeat",
+		"source":  "127.127.127.127",
 		"raise":   "+5m",
 	}
 
