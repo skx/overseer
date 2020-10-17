@@ -1,3 +1,10 @@
 #!/bin/sh
+#
+# Accept jobs from the queue, and process them.
+#
 
-overseer worker -verbose -redis-host=redis:6379 -4=true -6=false
+overseer worker -redis-host=redis:6379 \
+          -verbose \
+          -verbose \
+          -4=true \
+          -6=false
