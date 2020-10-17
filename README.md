@@ -176,8 +176,7 @@ retry-logic via the command-line flag `-retry=false`.
 The result of each test is submitted to the central redis-host, from where it can be pulled and used to notify a human of a problem.
 
 Sample result-processors are [included](bridges/) in this repository which post
-test-results to a [purppura instance](https://github.com/skx/purppura), or via
-email.
+test-results to Telegram, a [purppura instance](https://github.com/skx/purppura), or via email.
 
 The sample bridges are primarily included for demonstration purposes, the
 expectation is you'll prefer to process the results and issue notifications to
@@ -211,6 +210,8 @@ As mentioned this repository contains some demonstration "[bridges](bridges/)", 
 * `purppura-bridge/main.go`
   * This forwards each test-result to a [purppura host](https://github.com/skx/purppura/).
   * From there alerts will reach a human via pushover.
+* `telegram-bridge/main.go`
+  * This forwards each test-failure as a message to a Telegram user.
 
 
 
@@ -268,7 +269,8 @@ docker build -t oversser:enqueue -f Dockerfile.enqueue .
 docker build -t overseer:worker  -f Dockerfile.worker .
 ```
 
-Once built the supplied [docker-compose.yml](docker-compose.yml) file will let you launch them, using a shared redis instance.
+Once built the supplied [docker-compose.yml](docker-compose.yml) file will let you launch them, using a shared redis instance.  The notifications will go via telegram by default, so you'll need to populate a token for a bot and setup your recipient user-ID.
+
 
 
 ## Github Setup

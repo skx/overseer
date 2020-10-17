@@ -4,7 +4,7 @@
 #    docker build -t oversser:enqueue -f Dockerfile.enqueue .
 #
 
-FROM golang:1.14
+FROM golang:1.15
 
 # Create a working directory
 WORKDIR /go/src/app

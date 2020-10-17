@@ -9,20 +9,21 @@
 #
 while true; do
 
-   #
-   # Add all tests
-   #
-   for file in /etc/overseer/*.cfg; do
+    #
+    # Add all tests
+    #
+    for file in /etc/overseer/*.cfg; do
 
-      #
-      # Redis comes from "redis"
-      #
-      overseer enqueue -redis-host=redis:6379 $file
-   done
+        #
+        # Redis comes from "redis"
+        #
+        echo "Adding tests from ${file}"
+        overseer enqueue -redis-host=redis:6379 $file
+    done
 
-   #
-   # Repeat in a minute
-   #
-   sleep 59
+    #
+    # Repeat in a minute
+    #
+    sleep 59
 
 done

@@ -19,7 +19,8 @@ services:
     links:
       - redis:redis
     environment:
-      - PURPURRA=https://offsite.steve.fi/events
+      - TELEGRAM_TOKEN=xxxxxxxxxxxxxxxxxxxxx
+      - TELEGRAM_NOTIFY=yyyyyyyy
   redis:
     restart: always
     image: redis

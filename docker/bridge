@@ -1,3 +1,14 @@
 #!/bin/sh
+#
+# Telegram notifier.
+#
 
-purppura-bridge -redis-host=redis:6379 -purppura=${PURPPURA}
+echo "*********************************"
+echo "Telegram token: ${TELEGRAM_TOKEN}"
+echo "Telegram user: ${TELEGRAM_NOTIFY}"
+echo "*********************************"
+
+
+telegram-bridge -redis-host=redis:6379 \
+                -token=${TELEGRAM_TOKEN} \
+                -recipient=${TELEGRAM_NOTIFY}
