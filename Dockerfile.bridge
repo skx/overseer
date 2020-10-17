@@ -4,7 +4,7 @@
 #    docker build -t overseer:bridge -f Dockerfile.bridge .
 #
 
-FROM golang:1.14
+FROM golang:1.15
 
 # Create a working directory
 WORKDIR /go/src/app
@@ -13,7 +13,7 @@ WORKDIR /go/src/app
 COPY . .
 
 # Install
-RUN cd /go/src/app/bridges/purppura-bridge/ && go install -v .
+RUN cd /go/src/app/bridges/telegram-bridge/ && go install -v .
 
 # Entry-point
 CMD [ "docker/bridge" ]
