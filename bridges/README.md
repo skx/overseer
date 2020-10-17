@@ -24,3 +24,5 @@ The following bridges are distributed with `overseer`:
      * Test results which succeed are discarded.
 * [purppura-bridge](purppura-bridge/)
    * Posts test results to a [purppura](https://github.com/skx/purppura/)-instance.
+* [telegram-bridge](telegram-bridge/)
+   * Posts test results to a telegram user.
