@@ -75,9 +75,7 @@ type workerCmd struct {
 	_g *graphite.Graphite
 }
 
-//
 // Glue
-//
 func (*workerCmd) Name() string     { return "worker" }
 func (*workerCmd) Synopsis() string { return "Fetch jobs from the central queue and execute them" }
 func (*workerCmd) Usage() string {
@@ -138,9 +136,7 @@ func (p *workerCmd) verbose(txt string) {
 	}
 }
 
-//
 // Flag setup.
-//
 func (p *workerCmd) SetFlags(f *flag.FlagSet) {
 
 	//
@@ -282,12 +278,11 @@ func (p *workerCmd) alphaNumeric(input string) string {
 // This is a little weird because ideally we'd want to submit to the
 // metrics-host :
 //
-//    overseer.$testType.$testTarget.$key => value
+//	overseer.$testType.$testTarget.$key => value
 //
 // But of course the target might not be what we think it is for all
 // cases - i.e. A DNS test the target is the name of the nameserver rather
 // than the thing to lookup, which is the natural target.
-//
 func (p *workerCmd) formatMetrics(tst test.Test, key string) string {
 
 	prefix := "overseer.test."
@@ -553,9 +548,7 @@ func (p *workerCmd) runTest(tst test.Test, opts test.Options) error {
 	return nil
 }
 
-//
 // Entry-point.
-//
 func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 
 	//
@@ -633,5 +626,6 @@ func (p *workerCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 
 	}
 
-	return subcommands.ExitSuccess
+	// Not reached:
+	// return subcommands.ExitSuccess
 }
