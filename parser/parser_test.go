@@ -150,7 +150,7 @@ func TestUnknownInput(t *testing.T) {
 		_, err := p.ParseLine(line, nil)
 
 		if err == nil {
-			t.Errorf("Should have found error parsing line: %s\n", err.Error())
+			t.Errorf("Should have found error parsing line: %s\n", line)
 		}
 		if !strings.Contains(err.Error(), "unrecognized line") {
 			t.Errorf("Received unexpected error: %s\n", err.Error())
@@ -172,7 +172,7 @@ func TestUnknownProtocols(t *testing.T) {
 		_, err := p.ParseLine(line, nil)
 
 		if err == nil {
-			t.Errorf("Should have found error parsing line: %s\n", err.Error())
+			t.Errorf("Should have found error parsing line: %s\n", line)
 		}
 		if !strings.Contains(err.Error(), "unknown test-type") {
 			t.Errorf("Received unexpected error: %s\n", err.Error())
