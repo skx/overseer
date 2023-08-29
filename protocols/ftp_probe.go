@@ -185,7 +185,7 @@ func (s *FTPTest) RunTest(tst test.Test, target string, opts test.Options) error
 	// Make the connection.
 	//
 	var conn *ftp.ServerConn
-	conn, err = ftp.DialTimeout(address, opts.Timeout)
+	conn, err = ftp.Dial(address, ftp.DialWithTimeout(opts.Timeout))
 	if err != nil {
 		return err
 	}
@@ -248,9 +248,7 @@ func (s *FTPTest) RunTest(tst test.Test, target string, opts test.Options) error
 	return nil
 }
 
-//
 // Register our protocol-tester.
-//
 func init() {
 	Register("ftp", func() ProtocolTest {
 		return &FTPTest{}
